@@ -1,7 +1,10 @@
 #include "../include/server/server.h"
+#include "../include/server/server_errors.h"
 
 int errno;
-int send_http_error(int, int);
+
+const char *allowed_methods[NUM_ALLOWED_METHODS] = { "GET" };
+const char *disallowed_methods[NUM_DISALLOWED_METHODS] = { "POST", "HEAD", "PUT", "DELETE" };
 
 int initialize_server()
 {
@@ -16,7 +19,7 @@ int initialize_server()
 
     if((status = getaddrinfo(0, INPUT_PORT, &hints, &serv_info)) != 0)
     {
-        fprintf(stderr, "getaddrinfo() error: %s\n", gai_strerror(status));
+        fprintf(stderr, "[./server/server.c | initialize_server()] getaddrinfo() error: %s\n", gai_strerror(status));
         exit(1);
     }
 
@@ -30,7 +33,7 @@ int initialize_server()
     int yes = 1;
     if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1)
     {
-        printf("[./server/server.c | initialize_server()] setsockopt() error\n");
+        printf("[./server/server.c | initialize_server()] setsockopt() error\n", strerror(errno));
         exit(1);
     }
 
@@ -111,7 +114,7 @@ int run_server(int sockfd)
         {
             send_http_error(405, new_fd);
 
-            printf("[./server/server.c | run_server()] Unknown HTTP Method in incoming header\n");
+            printf("[./server/server.c | run_server()] Disallowed HTTP Method in incoming header\n");
             continue;
         }
 
@@ -119,7 +122,7 @@ int run_server(int sockfd)
         {
             send_http_error(400, new_fd);
 
-            printf("[./server/server.c | run_server()] Bad HTTP Request in incoming header\n");
+            printf("[./server/server.c | run_server()] Unknown HTTP Request in incoming header\n");
             continue;
         }
 
@@ -227,47 +230,4 @@ int run_server(int sockfd)
         free(send_buffer);
         free(response_buffer);
     }
-}
-
-int send_http_error(int error, int sock)
-{
-    char *header = "HTTP/1.1 418 I'm a teapot\r\n\r\n";
-
-    switch(error)
-    {
-        case 400:
-            header = "HTTP/1.1 400 Bad Request\r\n\r\n";
-            break;
-        case 401:
-            header = "HTTP/1.1 401 Unauthorized\r\n\r\n";
-            break;
-        case 404:
-            header = "HTTP/1.1 404 Not Found\r\n\r\n";
-            break;
-        case 405:
-            header = "HTTP/1.1 405 Method Not Allowed\r\n\r\n";
-            break;
-        case 500:
-            header = "HTTP/1.1 500 Internal Server Error\r\n\r\n";
-            break;
-        case 505:
-            header = "HTTP/1.1 505 HTTP Version Not Supported\r\n\r\n";
-            break;
-    }
-
-    int send_size = send(sock, header, strlen(header), 0);
-    if(send_size == -1)
-    {
-        printf("[./server/server.c | send_http_error()] send() error: size of header was negative\n");
-        return 1;
-    }
-    else if(send_size != strlen(header))
-    {
-        printf("[./server/server.c | send_http_error()] send() error: size of header doesn't match size of data sent\n");
-        return 1;
-    }
-
-    close(sock);
-
-    return 0;
 }
