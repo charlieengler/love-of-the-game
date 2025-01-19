@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Blackjack</title>
+
+        <script>
+            const placeBet = async () => {
+                const bet = document.getElementById("bet-value").value;
+
+                try {
+                    const res = await fetch("http://localhost:3000/routes/games/blackjack/bet", {
+                        method: "POST",
+                        body: JSON.stringify({
+                            bet: bet,
+                        }),
+                        headers: {
+                            "Content-type": "application/json",
+                        },
+                    });
+
+                    console.log(res);
+                } catch(err) {
+                    console.error(err);
+                }
+            }
+        </script>
+    </head>
+
+    <body style="background-color: black; color: white;">
+        <input id="bet-value" placeholder="Bet" type="number"/>
+        <button onclick="placeBet()">Submit</button>
+    </body>
+</html>

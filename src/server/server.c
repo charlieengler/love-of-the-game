@@ -1,10 +1,12 @@
 #include "../include/server/server.h"
-#include "../include/server/server_errors.h"
+#include "../include/server/utils/server_errors.h"
+
+#include "../include/server/games/games.h"
 
 int errno;
 
-const char *allowed_methods[NUM_ALLOWED_METHODS] = { "GET" };
-const char *disallowed_methods[NUM_DISALLOWED_METHODS] = { "POST", "HEAD", "PUT", "DELETE" };
+const char *allowed_methods[NUM_ALLOWED_METHODS] = { "GET", "POST" };
+const char *disallowed_methods[NUM_DISALLOWED_METHODS] = { "HEAD", "PUT", "DELETE" };
 
 int initialize_server()
 {
@@ -33,7 +35,7 @@ int initialize_server()
     int yes = 1;
     if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1)
     {
-        printf("[./server/server.c | initialize_server()] setsockopt() error\n", strerror(errno));
+        printf("[./server/server.c | initialize_server()] setsockopt() error: %s\n", strerror(errno));
         exit(1);
     }
 
@@ -70,45 +72,50 @@ int run_server(int sockfd)
             continue;
         }
 
-        char buf[RCVBUFSIZE];
+        char* tmp_buf = (char*)malloc(RCVBUFSIZE * sizeof(char));
+        char* buf = (char*)malloc((RCVBUFSIZE + 1) * sizeof(char));
 
-        int read_size;
-        if((read_size = recv(new_fd, buf, sizeof(buf), 0)) <= 0)
+        printf("Receiving %ld bytes from client.\n", recv(new_fd, buf, RCVBUFSIZE, MSG_PEEK | MSG_TRUNC));
+
+        int read_size = 0;
+        int total_read_size = 0;
+        int num_packets = 1;
+        do
+        {
+            read_size = recv(new_fd, tmp_buf, RCVBUFSIZE, 0);
+            
+            buf = (char*)malloc((RCVBUFSIZE * num_packets + 1) * sizeof(char));
+            strcpy(buf, tmp_buf);
+
+            num_packets++;
+            total_read_size += read_size;
+        }
+        while(read_size == RCVBUFSIZE);
+        
+        if(total_read_size <= 0)
         {
             send_http_error(400, new_fd);
 
-            if(read_size == 0)
-            {
+            if(total_read_size == 0)
                 printf("[./server/server.c | run_server()] recv() error: no header received\n");
-            }
             else
-            {
                 printf("[./server/server.c | run_server()] recv() error: %s\n", strerror(errno));
-            }
 
             continue;
         }
 
-        buf[RCVBUFSIZE] = 0;
+        buf[total_read_size] = 0;
 
         int found_allowed_method = 0;
         int found_disallowed_method = 0;
 
         for(int i = 0; i < NUM_ALLOWED_METHODS; i++)
-        {
             if(strstr(buf, allowed_methods[i]) != 0)
-            {
                 found_allowed_method = 1;
-            }
-        }
 
         for(int i = 0; i < NUM_DISALLOWED_METHODS; i++)
-        {
             if(strstr(buf, disallowed_methods[i]) != 0)
-            {
                 found_disallowed_method = 1;
-            }
-        }
 
         if(found_disallowed_method == 1)
         {
@@ -126,6 +133,8 @@ int run_server(int sockfd)
             continue;
         }
 
+        printf("%s\n", buf);
+
         char *raw_path = strchr(buf, '/');
         char trimmed_path[RCVBUFSIZE+1];
         trimmed_path[0] = '.';
@@ -134,7 +143,6 @@ int run_server(int sockfd)
             if(raw_path[i] == ' ')
             {
                 trimmed_path[i+1] = 0;
-
                 break;
             }
 
@@ -160,11 +168,13 @@ int run_server(int sockfd)
             continue;
         }
 
-        char *find_path = trimmed_path;
+        char *find_path = (char*)malloc(((strlen(HTML_BASE_PATH) + strlen(trimmed_path) - 2) + 1) * sizeof(char));
+        strcpy(find_path, HTML_BASE_PATH);
+        strcat(find_path, trimmed_path+2);
+        find_path[(strlen(HTML_BASE_PATH) + strlen(trimmed_path) - 2)] = 0;
+
         if(strcmp(trimmed_path, "./") == 0 || strcmp(trimmed_path, "./index.html") == 0)
-        {
-            find_path = INDEX_FILE;
-        }
+            find_path = HTML_BASE_PATH INDEX_FILE;
 
         if(access(find_path, F_OK) != 0)
         {
@@ -174,13 +184,13 @@ int run_server(int sockfd)
             continue;
         }
 
-        if(strcmp(find_path, INDEX_FILE) != 0)
-        {
-            send_http_error(401, new_fd);
+        // if(strcmp(find_path, INDEX_FILE) != 0)
+        // {
+        //     send_http_error(401, new_fd);
 
-            printf("[./server/server.c | run_server()] Client tried to access unauthorized file\n");
-            continue;
-        }
+        //     printf("[./server/server.c | run_server()] Client tried to access unauthorized file\n");
+        //     continue;
+        // }
 
         char *send_buffer = 0;
         long send_length;
@@ -191,26 +201,26 @@ int run_server(int sockfd)
             fseek(send_file, 0, SEEK_END);
             send_length = ftell(send_file);
             fseek(send_file, 0, SEEK_SET);
-            send_buffer = malloc(send_length + 1);
+            send_buffer = (char*)malloc((send_length + 1) * sizeof(char));
             if(send_buffer)
-            {
                 fread(send_buffer, 1, send_length, send_file);
-            }
 
             fclose(send_file);
 
             send_buffer[send_length] = 0;
         }
+        // TODO: Error here if the send file isn't opened
 
         char *response_header = "HTTP/1.1 200 OK\r\n\r\n";
-        char *response_buffer = malloc((strlen(response_header) + strlen(send_buffer)) * sizeof(char));
+        char *response_buffer = (char*)malloc((strlen(response_header) + strlen(send_buffer) + 1) * sizeof(char));
         strcpy(response_buffer, response_header);
         strcat(response_buffer, send_buffer);
+        response_buffer[strlen(response_header) + strlen(send_buffer)] = 0;
 
         long total_send_size = 0;
         while(total_send_size < strlen(response_buffer))
         {
-            int send_size = send(new_fd, &response_buffer[total_send_size], strlen(response_buffer)-total_send_size, 0);
+            int send_size = send(new_fd, &response_buffer[total_send_size], strlen(response_buffer) - total_send_size, 0);
             if(send_size == -1)
             {
                 send_http_error(500, new_fd);
@@ -227,6 +237,8 @@ int run_server(int sockfd)
 
         printf("Sent %ld bytes to %s:%s\n", total_send_size, ip, port);
 
+        free(buf);
+        free(find_path);
         free(send_buffer);
         free(response_buffer);
     }
