@@ -1,12 +1,3 @@
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
-
 #define RCVBUFSIZE 1024
 #define HTTP_VERSION "1.1"
 #define HTML_BASE_PATH "./src/server/html/"

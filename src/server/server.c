@@ -1,5 +1,15 @@
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "../include/server/server.h"
 #include "../include/server/utils/server_errors.h"
+#include "../include/server/utils/parse_header.h"
 
 #include "../include/server/games/games.h"
 
@@ -104,7 +114,10 @@ int run_server(int sockfd)
             continue;
         }
 
-        buf[total_read_size] = 0;
+        buf[total_read_size] = '\0';
+
+        struct header recv_header = parse_header(buf);
+        print_header(recv_header);
 
         int found_allowed_method = 0;
         int found_disallowed_method = 0;
@@ -132,8 +145,6 @@ int run_server(int sockfd)
             printf("[./server/server.c | run_server()] Unknown HTTP Request in incoming header\n");
             continue;
         }
-
-        printf("%s\n", buf);
 
         char *raw_path = strchr(buf, '/');
         char trimmed_path[RCVBUFSIZE+1];
@@ -184,14 +195,6 @@ int run_server(int sockfd)
             continue;
         }
 
-        // if(strcmp(find_path, INDEX_FILE) != 0)
-        // {
-        //     send_http_error(401, new_fd);
-
-        //     printf("[./server/server.c | run_server()] Client tried to access unauthorized file\n");
-        //     continue;
-        // }
-
         char *send_buffer = 0;
         long send_length;
         FILE *send_file = fopen(find_path, "rb");
@@ -237,6 +240,7 @@ int run_server(int sockfd)
 
         printf("Sent %ld bytes to %s:%s\n", total_send_size, ip, port);
 
+        delete_header(recv_header);
         free(buf);
         free(find_path);
         free(send_buffer);
