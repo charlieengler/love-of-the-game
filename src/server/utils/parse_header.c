@@ -114,6 +114,7 @@ struct header parse_header(char *raw_header)
         strings = new_strings;
     }
 
+    // TODO: Don't use hard coded string indices
     return_header.method = (char*)malloc(strlen(strings[0]) * sizeof(char));
     strcpy(return_header.method, strings[0]);
 

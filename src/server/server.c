@@ -15,9 +15,6 @@
 
 int errno;
 
-const char *allowed_methods[NUM_ALLOWED_METHODS] = { "GET", "POST" };
-const char *disallowed_methods[NUM_DISALLOWED_METHODS] = { "HEAD", "PUT", "DELETE" };
-
 int initialize_server()
 {
     int status;
@@ -119,72 +116,28 @@ int run_server(int sockfd)
         struct header recv_header = parse_header(buf);
         print_header(recv_header);
 
-        int found_allowed_method = 0;
-        int found_disallowed_method = 0;
-
-        for(int i = 0; i < NUM_ALLOWED_METHODS; i++)
-            if(strstr(buf, allowed_methods[i]) != 0)
-                found_allowed_method = 1;
-
-        for(int i = 0; i < NUM_DISALLOWED_METHODS; i++)
-            if(strstr(buf, disallowed_methods[i]) != 0)
-                found_disallowed_method = 1;
-
-        if(found_disallowed_method == 1)
-        {
-            send_http_error(405, new_fd);
-
-            printf("[./server/server.c | run_server()] Disallowed HTTP Method in incoming header\n");
-            continue;
-        }
-
-        if(found_allowed_method == 0 && found_disallowed_method == 0)
+        if(!(strcmp(recv_header.method, "GET") || strcmp(recv_header.method, "POST")))
         {
             send_http_error(400, new_fd);
 
-            printf("[./server/server.c | run_server()] Unknown HTTP Request in incoming header\n");
+            printf("[./server/server.c | run_server()] Undefined HTTP Method in incoming header\n");
             continue;
         }
 
-        char *raw_path = strchr(buf, '/');
-        char trimmed_path[RCVBUFSIZE+1];
-        trimmed_path[0] = '.';
-        for(int i = 0; i < strlen(raw_path); i++)
+        if(recv_header.version != HTTP_VERSION)
         {
-            if(raw_path[i] == ' ')
-            {
-                trimmed_path[i+1] = 0;
-                break;
-            }
+            send_http_error(505, new_fd);
 
-            trimmed_path[i+1] = raw_path[i];
-        }
-
-        char *http_version;
-        if((http_version = strstr(buf, "HTTP/")) != 0)
-        {
-            if(strstr(http_version, HTTP_VERSION) == 0)
-            {
-                send_http_error(505, new_fd);
-
-                printf("[./server/server.c | run_server()] Unknown HTTP Version in incoming header %s\n", http_version);
-                continue;
-            }
-        }
-        else
-        {
-            send_http_error(400, new_fd);
-
-            printf("[./server/server.c | run_server()] Bad HTTP Request in incoming header\n");
+            printf("[./server/server.c | run_server()] Incompatible HTTP Version in incoming header %f\n", recv_header.version);
             continue;
         }
 
-        char *find_path = (char*)malloc(((strlen(HTML_BASE_PATH) + strlen(trimmed_path) - 2) + 1) * sizeof(char));
+        char *find_path = (char*)malloc((strlen(HTML_BASE_PATH) + strlen(recv_header.path) + 1) * sizeof(char));
         strcpy(find_path, HTML_BASE_PATH);
-        strcat(find_path, trimmed_path+2);
-        find_path[(strlen(HTML_BASE_PATH) + strlen(trimmed_path) - 2)] = 0;
+        strcat(find_path, recv_header.path);
+        find_path[strlen(HTML_BASE_PATH) + strlen(recv_header.path)] = 0;
 
-        if(strcmp(trimmed_path, "./") == 0 || strcmp(trimmed_path, "./index.html") == 0)
+        if(strcmp(recv_header.path, "/") == 0 || strcmp(recv_header.path, "/index.html") == 0)
             find_path = HTML_BASE_PATH INDEX_FILE;
 
         if(access(find_path, F_OK) != 0)
@@ -214,6 +167,7 @@ int run_server(int sockfd)
         }
         // TODO: Error here if the send file isn't opened
 
+        // TODO: Better response header
         char *response_header = "HTTP/1.1 200 OK\r\n\r\n";
         char *response_buffer = (char*)malloc((strlen(response_header) + strlen(send_buffer) + 1) * sizeof(char));
         strcpy(response_buffer, response_header);
@@ -240,7 +194,8 @@ int run_server(int sockfd)
 
         printf("Sent %ld bytes to %s:%s\n", total_send_size, ip, port);
 
-        delete_header(recv_header);
+        // TODO: This is not working
+        // delete_header(recv_header);
         free(buf);
         free(find_path);
         free(send_buffer);
