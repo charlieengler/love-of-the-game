@@ -1,7 +1,5 @@
 #define RCVBUFSIZE 1024
 #define HTTP_VERSION 1.1f
-#define HTML_BASE_PATH "./src/server/html"
-#define INDEX_FILE "index.html"
 #define INPUT_PORT "3000"
 
 #define NUM_ALLOWED_METHODS 2

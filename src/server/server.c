@@ -11,6 +11,8 @@
 #include "../include/server/utils/server_errors.h"
 #include "../include/server/utils/parse_header.h"
 
+#include "../include/router.h"
+
 #include "../include/server/games/games.h"
 
 int errno;
@@ -114,15 +116,6 @@ int run_server(int sockfd)
         buf[total_read_size] = '\0';
 
         struct header recv_header = parse_header(buf);
-        print_header(recv_header);
-
-        if(!(strcmp(recv_header.method, "GET") || strcmp(recv_header.method, "POST")))
-        {
-            send_http_error(400, new_fd);
-
-            printf("[./server/server.c | run_server()] Undefined HTTP Method in incoming header\n");
-            continue;
-        }
 
         if(recv_header.version != HTTP_VERSION)
         {
@@ -137,35 +130,26 @@ int run_server(int sockfd)
         strcat(find_path, recv_header.path);
         find_path[strlen(HTML_BASE_PATH) + strlen(recv_header.path)] = 0;
 
-        if(strcmp(recv_header.path, "/") == 0 || strcmp(recv_header.path, "/index.html") == 0)
-            find_path = HTML_BASE_PATH INDEX_FILE;
+        char *send_buffer = NULL;
 
-        if(access(find_path, F_OK) != 0)
+        if(!strcmp(recv_header.method, "GET"))
         {
-            send_http_error(404, new_fd);
+            send_buffer = route_get(recv_header.path, find_path, new_fd);
+        }
+        else if(!strcmp(recv_header.method, "POST"))
+        {
+            send_buffer = route_post(find_path, "TEST DATA");
+        }
+        else
+        {
+            send_http_error(400, new_fd);
 
-            printf("[./server/server.c | run_server()] File %s doesn't exist on server\n", find_path);
+            printf("[./server/server.c | run_server()] Undefined HTTP Method in incoming header\n");
             continue;
         }
 
-        char *send_buffer = 0;
-        long send_length;
-        FILE *send_file = fopen(find_path, "rb");
-
-        if(send_file)
-        {
-            fseek(send_file, 0, SEEK_END);
-            send_length = ftell(send_file);
-            fseek(send_file, 0, SEEK_SET);
-            send_buffer = (char*)malloc((send_length + 1) * sizeof(char));
-            if(send_buffer)
-                fread(send_buffer, 1, send_length, send_file);
-
-            fclose(send_file);
-
-            send_buffer[send_length] = 0;
-        }
-        // TODO: Error here if the send file isn't opened
+        if(send_buffer == NULL)
+            continue;
 
         // TODO: Better response header
         char *response_header = "HTTP/1.1 200 OK\r\n\r\n";

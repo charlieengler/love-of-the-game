@@ -4,24 +4,43 @@
         <title>Blackjack</title>
 
         <script>
-            const placeBet = async () => {
+            const placeBet = () => {
                 const bet = document.getElementById("bet-value").value;
 
-                try {
-                    const res = await fetch("http://localhost:3000/routes/games/blackjack/bet", {
-                        method: "POST",
-                        body: JSON.stringify({
-                            bet: bet,
-                        }),
-                        headers: {
-                            "Content-type": "application/json",
-                        },
-                    });
+                fetch("http://localhost:3000/routes/games/blackjack/bet", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        bet: bet,
+                    }),
+                    headers: {
+                        "Content-type": "application/json",
+                    },
+                }).then(async res => {
+                    const reader = res.body.getReader();
 
-                    console.log(res);
-                } catch(err) {
-                    console.error(err);
-                }
+                    const rawData = [];
+                    let { done, value } = await reader.read();
+
+                    if(value != null)
+                        rawData.push(value);
+
+                    while(!done) {
+                        ({ done, value } = await reader.read());
+
+                        if(value != null)
+                            rawData.push(value);
+                    }
+
+                    return rawData;
+                }).then(chunks => {
+                    for(let i = 0; i < chunks.length; i++) {
+                        const chunkString = new TextDecoder().decode(chunks[i]);
+
+                        console.log(JSON.parse(chunkString));
+                    }
+                }).catch(err => {
+                    console.error("Unable to fetch server data: ", err);
+                });
             }
         </script>
     </head>
