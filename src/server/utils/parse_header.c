@@ -37,12 +37,10 @@
     Priority: u=0
 */
 
-int split_string(char *input, char delimiter)
-{
+int split_string(char *input, char delimiter) {
     char *current_char = input;
     int num_chars = 0;
-    while(*current_char)
-    {
+    while(*current_char) {
         if(*current_char == delimiter || *current_char == 0)
             return num_chars;
 
@@ -53,8 +51,7 @@ int split_string(char *input, char delimiter)
     return -1;
 }
 
-struct header parse_header(char *raw_header)
-{
+struct header parse_header(char *raw_header) {
     struct header return_header;
     return_header.method = "UNDEFINED";
     return_header.path = NULL;
@@ -69,10 +66,8 @@ struct header parse_header(char *raw_header)
     char *current_char = copied_header;
     char *current_line = copied_header;
     int num_lines = 0;
-    while(*current_char)
-    {
-        if(*current_char == '\n')
-        {
+    while(*current_char) {
+        if(*current_char == '\n') {
             *current_char = 0;
 
             char **new_lines = (char**)malloc(((++num_lines)+1) * sizeof(char*));
@@ -88,12 +83,10 @@ struct header parse_header(char *raw_header)
 
     char **strings = (char**)malloc(sizeof(char*));
     int num_strings = 0;
-    for(int i = 0; i < num_lines; i++)
-    {
+    for(int i = 0; i < num_lines; i++) {
         char *line = lines[i];
         int offset = 0;
-        while((offset = split_string(line, ' ')) >= 0)
-        {
+        while((offset = split_string(line, ' ')) >= 0) {
             num_strings++;
 
             line[offset] = 0;
@@ -134,8 +127,7 @@ struct header parse_header(char *raw_header)
     return return_header;
 }
 
-void print_header(struct header input)
-{
+void print_header(struct header input) {
     printf("---- HTTP HEADER ----\n");
 
     printf("    Method: %s\n", input.method);
@@ -144,8 +136,7 @@ void print_header(struct header input)
     printf("    Content Length: %d\n", input.content_length);
 }
 
-void delete_header(struct header input)
-{
+void delete_header(struct header input) {
     free(input.method);
     free(input.path);
 }

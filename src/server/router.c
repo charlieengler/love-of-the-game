@@ -7,13 +7,11 @@
 
 #include "../include/server/utils/server_errors.h"
 
-char *route_get(char *trimmed_path, char *full_path, int new_fd)
-{
+char *route_get(char *trimmed_path, char *full_path, int new_fd) {
     if(strcmp(trimmed_path, "/") == 0 || strcmp(trimmed_path, "/index.html") == 0)
         full_path = HTML_BASE_PATH INDEX_FILE;
 
-    if(access(full_path, F_OK) != 0)
-    {
+    if(access(full_path, F_OK) != 0) {
         send_http_error(404, new_fd);
 
         printf("[./server/server.c | run_server()] File %s doesn't exist on server\n", full_path);
@@ -24,8 +22,7 @@ char *route_get(char *trimmed_path, char *full_path, int new_fd)
     long send_length;
     FILE *send_file = fopen(full_path, "rb");
 
-    if(send_file)
-    {
+    if(send_file) {
         fseek(send_file, 0, SEEK_END);
         send_length = ftell(send_file);
         fseek(send_file, 0, SEEK_SET);
@@ -42,8 +39,7 @@ char *route_get(char *trimmed_path, char *full_path, int new_fd)
     return send_buffer;
 }
 
-char *route_post(char *path, char *data)
-{
+char *route_post(char *path, char *data) {
     int data_len = strlen("{\"test-key\": \"test-data\"}");
     char *return_header = (char*)malloc((data_len + 1) * sizeof(char));
     strcpy(return_header, "{\"test-key\": \"test-data\"}");

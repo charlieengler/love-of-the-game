@@ -28,36 +28,31 @@ int initialize_server()
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
 
-    if((status = getaddrinfo(0, INPUT_PORT, &hints, &serv_info)) != 0)
-    {
+    if((status = getaddrinfo(0, INPUT_PORT, &hints, &serv_info)) != 0) {
         fprintf(stderr, "[./server/server.c | initialize_server()] getaddrinfo() error: %s\n", gai_strerror(status));
         exit(1);
     }
 
     int sockfd;
-    if((sockfd = socket(serv_info->ai_family, serv_info->ai_socktype, serv_info->ai_protocol)) == -1)
-    {
+    if((sockfd = socket(serv_info->ai_family, serv_info->ai_socktype, serv_info->ai_protocol)) == -1) {
         printf("[./server/server.c | initialize_server()] socket() error: %s\n", strerror(errno));
         exit(1);
     }
 
     int yes = 1;
-    if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1)
-    {
+    if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
         printf("[./server/server.c | initialize_server()] setsockopt() error: %s\n", strerror(errno));
         exit(1);
     }
 
     int bind_status;
-    if((bind_status = bind(sockfd, serv_info->ai_addr, serv_info->ai_addrlen)) == -1)
-    {
+    if((bind_status = bind(sockfd, serv_info->ai_addr, serv_info->ai_addrlen)) == -1) {
         printf("[./server/server.c | initialize_server()] bind() error: %s\n", strerror(errno));
         exit(1);
     }
 
     int listen_status;
-    if((listen_status = listen(sockfd, 5)) == -1)
-    {
+    if((listen_status = listen(sockfd, 5)) == -1) {
         printf("[./server/server.c | initialize_server()] listen() error: %s\n", strerror(errno));
         exit(1);
     }
@@ -67,16 +62,13 @@ int initialize_server()
     close(sockfd);
 }
 
-int run_server(int sockfd)
-{
+int run_server(int sockfd) {
     struct sockaddr_storage incoming_addr;
-    for(;;)
-    {
+    for(;;) {
         socklen_t addr_size = sizeof(incoming_addr);
         int new_fd;
         close(new_fd);
-        if((new_fd = accept(sockfd, (struct sockaddr *)&incoming_addr, &addr_size)) == -1)
-        {
+        if((new_fd = accept(sockfd, (struct sockaddr *)&incoming_addr, &addr_size)) == -1) {
             printf("[./server/server.c | initialize_server()] accept() error: %s\n", strerror(errno));
             continue;
         }
@@ -89,8 +81,7 @@ int run_server(int sockfd)
         int read_size = 0;
         int total_read_size = 0;
         int num_packets = 1;
-        do
-        {
+        do {
             read_size = recv(new_fd, tmp_buf, RCVBUFSIZE, 0);
             
             buf = (char*)malloc((RCVBUFSIZE * num_packets + 1) * sizeof(char));
@@ -98,11 +89,9 @@ int run_server(int sockfd)
 
             num_packets++;
             total_read_size += read_size;
-        }
-        while(read_size == RCVBUFSIZE);
+        } while(read_size == RCVBUFSIZE);
         
-        if(total_read_size <= 0)
-        {
+        if(total_read_size <= 0) {
             send_http_error(400, new_fd);
 
             if(total_read_size == 0)
@@ -117,8 +106,7 @@ int run_server(int sockfd)
 
         struct header recv_header = parse_header(buf);
 
-        if(recv_header.version != HTTP_VERSION)
-        {
+        if(recv_header.version != HTTP_VERSION) {
             send_http_error(505, new_fd);
 
             printf("[./server/server.c | run_server()] Incompatible HTTP Version in incoming header %f\n", recv_header.version);
@@ -132,16 +120,11 @@ int run_server(int sockfd)
 
         char *send_buffer = NULL;
 
-        if(!strcmp(recv_header.method, "GET"))
-        {
+        if(!strcmp(recv_header.method, "GET")) {
             send_buffer = route_get(recv_header.path, find_path, new_fd);
-        }
-        else if(!strcmp(recv_header.method, "POST"))
-        {
+        } else if(!strcmp(recv_header.method, "POST")) {
             send_buffer = route_post(find_path, "TEST DATA");
-        }
-        else
-        {
+        } else {
             send_http_error(400, new_fd);
 
             printf("[./server/server.c | run_server()] Undefined HTTP Method in incoming header\n");
@@ -159,11 +142,9 @@ int run_server(int sockfd)
         response_buffer[strlen(response_header) + strlen(send_buffer)] = 0;
 
         long total_send_size = 0;
-        while(total_send_size < strlen(response_buffer))
-        {
+        while(total_send_size < strlen(response_buffer)) {
             int send_size = send(new_fd, &response_buffer[total_send_size], strlen(response_buffer) - total_send_size, 0);
-            if(send_size == -1)
-            {
+            if(send_size == -1) {
                 send_http_error(500, new_fd);
 
                 printf("send() error\n");
