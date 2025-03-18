@@ -123,7 +123,7 @@ int run_server(int sockfd) {
         if(!strcmp(recv_header.method, "GET")) {
             send_buffer = route_get(recv_header.path, find_path, new_fd);
         } else if(!strcmp(recv_header.method, "POST")) {
-            send_buffer = route_post(find_path, "TEST DATA");
+            send_buffer = route_post(find_path, recv_header.content);
         } else {
             send_http_error(400, new_fd);
 
@@ -160,7 +160,7 @@ int run_server(int sockfd) {
         printf("Sent %ld bytes to %s:%s\n", total_send_size, ip, port);
 
         // TODO: This is not working
-        // delete_header(recv_header);
+        // delete_header(&recv_header);
         free(buf);
         free(find_path);
         free(send_buffer);

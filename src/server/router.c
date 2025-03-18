@@ -40,10 +40,10 @@ char *route_get(char *trimmed_path, char *full_path, int new_fd) {
 }
 
 char *route_post(char *path, char *data) {
-    int data_len = strlen("{\"test-key\": \"test-data\"}");
+    const int data_len = strlen(data);
     char *return_header = (char*)malloc((data_len + 1) * sizeof(char));
-    strcpy(return_header, "{\"test-key\": \"test-data\"}");
-    return_header[data_len];
+    strcpy(return_header, data);
+    return_header[data_len] = 0;
 
     return return_header;
 }

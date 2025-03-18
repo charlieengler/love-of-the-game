@@ -4,8 +4,9 @@ struct header
     char *path;
     float version;
     int content_length;
+    char *content;
 };
 
 struct header parse_header(char*);
-void print_header(struct header);
-void delete_header(struct header);
+void print_header(struct header*);
+void delete_header(struct header*);

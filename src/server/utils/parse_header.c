@@ -58,8 +58,10 @@ struct header parse_header(char *raw_header) {
     return_header.version = -1.0f;
     return_header.content_length = -1;
 
-    char *copied_header = (char*)malloc(strlen(raw_header) * sizeof(char));
+    char *copied_header = (char*)malloc(strlen(raw_header + 2) * sizeof(char));
     strcpy(copied_header, raw_header);
+    copied_header[strlen(raw_header)] = '\n';
+    copied_header[strlen(raw_header) + 1] = 0;
 
     char **lines = (char**)malloc(sizeof(char*));
 
@@ -67,7 +69,7 @@ struct header parse_header(char *raw_header) {
     char *current_line = copied_header;
     int num_lines = 0;
     while(*current_char) {
-        if(*current_char == '\n') {
+        if(*current_char == '\n' || *current_char == 0) {
             *current_char = 0;
 
             char **new_lines = (char**)malloc(((++num_lines)+1) * sizeof(char*));
@@ -117,26 +119,33 @@ struct header parse_header(char *raw_header) {
     char *version_string = strings[2] + split_string(strings[2], '/') + 1;
     return_header.version = atof(version_string);
 
-    if(!strcmp(return_header.method, "POST"))
+    if(strcmp(return_header.method, "POST") == 0) {
         return_header.content_length = atoi(strings[29]);
 
+        return_header.content = (char*)malloc(strlen(strings[num_strings-1]) * sizeof(char));
+        strcpy(return_header.content, strings[num_strings-1]);
+    }
+
+    // TODO: Free the strings within lines as well
     free(lines);
+    // TODO: Free the strings within lines as well
     free(strings);
     free(copied_header);
 
     return return_header;
 }
 
-void print_header(struct header input) {
+void print_header(struct header *input) {
     printf("---- HTTP HEADER ----\n");
 
-    printf("    Method: %s\n", input.method);
-    printf("    Path: %s\n", input.path);
-    printf("    HTTP Version: %f\n", input.version);
-    printf("    Content Length: %d\n", input.content_length);
+    printf("    Method: %s\n", input->method);
+    printf("    Path: %s\n", input->path);
+    printf("    HTTP Version: %f\n", input->version);
+    printf("    Content Length: %d\n", input->content_length);
 }
 
-void delete_header(struct header input) {
-    free(input.method);
-    free(input.path);
+void delete_header(struct header *input) {
+    free(input->method);
+    free(input->path);
+    free(input->content);
 }
