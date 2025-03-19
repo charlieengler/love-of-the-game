@@ -5,6 +5,8 @@
 
 #include "../include/router.h"
 
+#include "../include/server/games/games.h"
+
 #include "../include/server/utils/server_errors.h"
 
 char *route_get(char *trimmed_path, char *full_path, int new_fd) {
@@ -40,10 +42,16 @@ char *route_get(char *trimmed_path, char *full_path, int new_fd) {
 }
 
 char *route_post(char *path, char *data) {
-    const int data_len = strlen(data);
-    char *return_header = (char*)malloc((data_len + 1) * sizeof(char));
-    strcpy(return_header, data);
-    return_header[data_len] = 0;
+    char *route = NULL;
+    if((route = strstr(path, "routes/games/")) != NULL) {
+        return route_game(route + strlen("routes/games/"), data);       
+    }
+
+    // TODO: Replace this with a better error message
+    char *unknown_route_header = "{\"error\":\"Unknown Route\"}";
+    char *return_header = (char*)malloc((strlen(unknown_route_header) + 1) * sizeof(char));
+    strcpy(return_header, unknown_route_header);
+    return_header[strlen(unknown_route_header)] = 0;
 
     return return_header;
 }

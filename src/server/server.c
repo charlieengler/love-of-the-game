@@ -13,8 +13,6 @@
 
 #include "../include/router.h"
 
-#include "../include/server/games/games.h"
-
 int errno;
 
 int initialize_server()
@@ -161,9 +159,13 @@ int run_server(int sockfd) {
 
         // TODO: This is not working
         // delete_header(&recv_header);
-        free(buf);
-        free(find_path);
-        free(send_buffer);
-        free(response_buffer);
+        if(buf != NULL)
+            free(buf);
+        if(find_path != NULL)
+            free(find_path);
+        if(send_buffer != NULL)
+            free(send_buffer);
+        if(response_buffer != NULL)
+            free(response_buffer);
     }
 }
