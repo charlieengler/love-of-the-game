@@ -2,11 +2,20 @@
 #include <string.h>
 
 #include "../../include/server/games/games.h"
+#include "../../include/server/database/database.h"
+
+// TODO: Initilialize database for each service that requires it and search disk for previously stored instance of said databases
+struct database_mappings *blackjack_db = NULL;
 
 char *route_blackjack(char *function, char *data) {
+    if(blackjack_db == NULL) {
+        // TODO: Error checking
+        db_initialize(&blackjack_db);
+    }
+
     if(strstr(function, "bet") != NULL) {
         // TODO: Check for success/failure on this function (returns void right now)
-        return blackjack_place_bet(data);
+        return blackjack_place_bet(blackjack_db, data);
     }
 
     // TODO: Return an error that the function couldn't be found

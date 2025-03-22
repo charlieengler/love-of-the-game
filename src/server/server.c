@@ -60,6 +60,8 @@ int initialize_server()
     close(sockfd);
 }
 
+// TODO: There is an error when reloading the page then sending a blackjack bet request
+
 int run_server(int sockfd) {
     struct sockaddr_storage incoming_addr;
     for(;;) {
