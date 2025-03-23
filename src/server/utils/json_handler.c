@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -64,7 +65,21 @@ char *json_find_entry(struct json_object *json, char *key) {
     return NULL;
 }
 
-char *json_to_string(struct json_object *json) {
+struct json_object *json_parse_string(char *input) {
+    struct json_object *return_object = json_initialize_object();
+
+    // TODO: Implement me
+
+    // TODO: Special syntax for a newly parsed json object that needs to be repaired
+    if(return_object->num_keys != return_object->num_vals)
+        // TODO: Error handling on this function
+        json_repair_object(return_object);
+
+    return return_object;
+}
+
+// encode_val determines if quotes should be placed around the value or not, true puts quotes around it, false does not
+char *json_to_string(struct json_object *json, uint8_t encode_val) {
     if(json->num_keys != json->num_vals)
         // TODO: Error handling on this function
         json_repair_object(json);
@@ -83,12 +98,14 @@ char *json_to_string(struct json_object *json) {
 
         *(final_string++) = '"';
         *(final_string++) = ':';
-        *(final_string++) = '"';
+        if(encode_val)
+            *(final_string++) = '"';
 
         strcpy(final_string, json->vals[i]);
         final_string += strlen(json->vals[i]);
 
-        *(final_string++) = '"';
+        if(encode_val)
+            *(final_string++) = '"';
         *(final_string++) = ',';
         *(final_string++) = '\n';
     }

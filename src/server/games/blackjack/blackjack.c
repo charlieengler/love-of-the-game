@@ -18,7 +18,7 @@ char *blackjack_place_bet(struct database_mappings *db, char *data) {
     strcpy(new_entry->key, "charlie-blackjack");
     new_entry->type = (char*)calloc(strlen("json") + 1, sizeof(char));
     strcpy(new_entry->type, "json");
-    new_entry->data_ptr = (void*)json_to_string(entry_json);
+    new_entry->data_ptr = (void*)json_to_string(entry_json, 0);
 
     // TODO: Error checking
     db_insert(db, new_entry);
