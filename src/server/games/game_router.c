@@ -10,7 +10,7 @@ struct database_mappings *blackjack_db = NULL;
 char *route_blackjack(char *function, char *data) {
     if(blackjack_db == NULL) {
         // TODO: Error checking
-        db_initialize(&blackjack_db);
+        db_initialize(&blackjack_db, "blackjack");
     }
 
     if(strstr(function, "bet") != NULL) {
