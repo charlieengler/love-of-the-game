@@ -1,3 +1,5 @@
+#include <errno.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,6 +7,8 @@
 #include "../../include/server/database/database.h"
 // TODO: The contents of the database should be stored in memory, but saved to disk constantly on a separate thread
 // TODO: Database calls should be asynchronous and realistically contained within a new process
+
+int errno;
 
 // Credit: dbj2 by Dan Bernstein
 uint64_t hash(unsigned char *str)
@@ -25,14 +29,131 @@ int db_repair(struct database_mappings *mappings) {
     return 0;
 }
 
-uint64_t db_initialize(struct database_mappings **mappings) {
+uint64_t db_initialize(struct database_mappings **mappings, char *name) {
     *mappings = (struct database_mappings*)malloc(sizeof(struct database_mappings));
 
-    (*mappings)->num_keys = 0;
-    (*mappings)->num_entries = 0;
-    (*mappings)->num_allocated = DB_NUM_DEFAULT_ENTRIES;
-    (*mappings)->keys = (char**)calloc(DB_NUM_DEFAULT_ENTRIES, sizeof(char*));
-    (*mappings)->entries = (struct database_entry**)calloc(DB_NUM_DEFAULT_ENTRIES, sizeof(struct database_entry*));
+    if(strlen(name) <= 0) {
+        printf("db initialize error: db name length <= 0\n");
+        return -1;
+    }
+
+    char *db_filename = (char*)calloc(strlen("./databases/") + strlen(name) + strlen(".db") + 1, sizeof(char));
+    strcpy(db_filename, "./databases/");
+    strcat(db_filename, name);
+    strcat(db_filename, ".db");
+
+    FILE *db_file = fopen(db_filename, "a+");
+
+    if(db_file == NULL) {
+        printf("db initialize error: could not open database file %s\n", db_filename);
+        free(db_filename);
+        return 0;
+    }
+
+    uint64_t num_keys = 0;
+    uint64_t num_entries = 0;
+    uint64_t num_allocated = DB_NUM_DEFAULT_ENTRIES;
+
+    (*mappings)->num_keys = num_keys;
+    (*mappings)->num_entries = num_entries;
+    (*mappings)->num_allocated = num_allocated;
+
+    (*mappings)->db_name = (char*)calloc(strlen(name) + 1, sizeof(char));
+    strcpy((*mappings)->db_name, name);
+
+    (*mappings)->keys = (char**)calloc(num_allocated, sizeof(char*));
+    (*mappings)->entries = (struct database_entry**)calloc(num_allocated, sizeof(struct database_entry*));
+
+    // TODO: Check the format of this data as well
+    if(fscanf(db_file, "%ld", &num_keys) == 1) {
+        // TODO: Error checking for the entries in the db file at some point
+        fscanf(db_file, "%ld", &num_entries);
+        fscanf(db_file, "%ld", &num_allocated);
+
+        (*mappings)->num_keys = num_keys;
+        (*mappings)->num_entries = num_entries;
+        (*mappings)->num_allocated = num_allocated;
+
+        (*mappings)->db_name = (char*)calloc(strlen(name) + 1, sizeof(char));
+        strcpy((*mappings)->db_name, name);
+
+        (*mappings)->keys = (char**)calloc(num_allocated, sizeof(char*));
+        (*mappings)->entries = (struct database_entry**)calloc(num_allocated, sizeof(struct database_entry*));
+
+        for(uint64_t i = 0; i < num_keys; i++) {
+            struct database_entry *new_entry = (struct database_entry*)malloc(sizeof(struct database_entry));
+            new_entry->key = (char*)calloc(DB_MAX_KEY_LEN+1, sizeof(char));
+            new_entry->type = DB_UNDEFINED;
+            new_entry->data_ptr = NULL;
+
+            // TODO: Could introduce a buffer overflow if length of key isn't properly checked elsewhere
+            if(fscanf(db_file, "%s", new_entry->key) != 1) {
+                // TODO: Better error checking that also verifies data
+                printf("db initialize error: null key when loading from file\n");
+                return 0;
+            }
+
+            // TODO: Break this into a helper function
+            fscanf(db_file, "%d", &(new_entry->type));
+
+            // TODO: This is terrible, need to find a better way to parse the data entry in the file
+            while(fgetc(db_file) != '\n')
+                continue;
+
+            switch(new_entry->type) {
+                case DB_STRING:
+                    char c;
+                    // TODO: Could introduce a buffer overflow if the number of chars is greater than
+                    //       max value of uint32_t
+                    uint32_t num_chars = 128;
+                    uint32_t i = 0;
+                    new_entry->data_ptr = (void*)calloc(num_chars+1, sizeof(char));
+                    while((c = fgetc(db_file)) != EOF && c != '\n') {
+                        if(i == num_chars) {
+                            num_chars += 128;
+
+                            char *tmp = calloc(num_chars+1, sizeof(char));
+                            strcpy(tmp, (char*)new_entry->data_ptr);
+
+                            new_entry->data_ptr = (void*)tmp;
+                        }
+
+                        ((char*)new_entry->data_ptr)[i] = c;
+
+                        i++;
+                    }
+
+                    if(i == 0) {
+                        // TODO: Better error checking that also verifies data
+                        printf("db initialize error: null key when loading from file\n");
+                        return 0;
+                    }
+
+                    break;
+
+                case DB_JSON:
+                    // TODO: Implement me
+                    break;
+
+                case DB_INTEGER:
+                    // TODO: Implement me
+                    break;
+
+                case DB_FLOAT:
+                    // TODO: Implement me
+                    break;
+
+                default:
+                    printf("db intialize error: undefined entry type\n");
+                    return 0;
+            }
+
+            // TODO: Error checking
+            db_insert(*mappings, new_entry);
+        }
+    }
+
+    free(db_filename);
 
     // TODO: Returns the number of default entries on success, something else on failure
     return DB_NUM_DEFAULT_ENTRIES;
@@ -46,6 +167,16 @@ int db_free_mappings(struct database_mappings *mappings) {
 }
 
 struct database_entry *db_find(struct database_mappings *mappings, char *key) {
+    if(mappings->num_keys == 0) {
+        printf("db find error: no keys in db\n");
+        return NULL;
+    }
+
+    if(mappings->num_entries == 0) {
+        printf("db find error: no entries in db\n");
+        return NULL;
+    }
+
     unsigned long index = hash(key) % mappings->num_keys;
     uint64_t num_loops = 0;
     while(strcmp(mappings->keys[index], key) != 0) {
@@ -76,7 +207,6 @@ uint64_t db_grow(struct database_mappings *mappings) {
     new_mappings->keys = new_keys;
     new_mappings->entries = new_entries;
 
-    // TODO: Implement me
     for(uint64_t i = 0; i < mappings->num_keys; i++) {
         struct database_entry *old_entry = mappings->entries[i];
         if(strcmp(old_entry->key, mappings->keys[i]) != 0) {
@@ -100,6 +230,7 @@ int db_insert(struct database_mappings *mappings, struct database_entry *new_ent
         db_repair(mappings);
 
     if(mappings->num_keys == mappings->num_allocated) {
+        // TODO: The grow function causes issues
         uint64_t new_size = db_grow(mappings);
         
         if(new_size == 0) {
