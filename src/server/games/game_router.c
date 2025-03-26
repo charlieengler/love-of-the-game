@@ -13,15 +13,16 @@ char *route_blackjack(char *function, char *data) {
         db_initialize(&blackjack_db, "blackjack");
     }
 
-    db_save(blackjack_db);
+    char *return_header = NULL;
 
     if(strstr(function, "bet") != NULL) {
         // TODO: Check for success/failure on this function (returns void right now)
-        return blackjack_place_bet(blackjack_db, data);
+        return_header = blackjack_place_bet(blackjack_db, data);
     }
 
-    // TODO: Return an error that the function couldn't be found
-    char *return_header = NULL;
+    db_save(blackjack_db);
+
+    // TODO: Return an error that the function couldn't be found if the header is still NULL at this point
 
     return return_header;
 }
