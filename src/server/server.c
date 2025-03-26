@@ -64,6 +64,7 @@ int initialize_server()
 
 int run_server(int sockfd) {
     struct sockaddr_storage incoming_addr;
+    uint16_t loops = 0;
     for(;;) {
         socklen_t addr_size = sizeof(incoming_addr);
         int new_fd;
