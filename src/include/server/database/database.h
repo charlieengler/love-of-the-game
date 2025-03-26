@@ -33,3 +33,5 @@ struct database_mappings {
 uint64_t db_initialize(struct database_mappings**, char*);
 struct database_entry *db_find(struct database_mappings *mappings, char *key);
 int db_insert(struct database_mappings *mappings, struct database_entry *new_entry);
+int db_save(struct database_mappings *mappings);
+int db_free_mappings(struct database_mappings *mappings);

@@ -13,6 +13,8 @@ char *route_blackjack(char *function, char *data) {
         db_initialize(&blackjack_db, "blackjack");
     }
 
+    db_save(blackjack_db);
+
     if(strstr(function, "bet") != NULL) {
         // TODO: Check for success/failure on this function (returns void right now)
         return blackjack_place_bet(blackjack_db, data);

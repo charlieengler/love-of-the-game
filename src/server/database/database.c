@@ -43,10 +43,11 @@ uint64_t db_initialize(struct database_mappings **mappings, char *name) {
     strcat(db_filename, ".db");
 
     FILE *db_file = fopen(db_filename, "a+");
+    free(db_filename);
 
     if(db_file == NULL) {
-        printf("db initialize error: could not open database file %s\n", db_filename);
-        free(db_filename);
+        printf("db initialize error: could not open database file\n");
+        fclose(db_file);
         return 0;
     }
 
@@ -90,6 +91,7 @@ uint64_t db_initialize(struct database_mappings **mappings, char *name) {
             if(fscanf(db_file, "%s", new_entry->key) != 1) {
                 // TODO: Better error checking that also verifies data
                 printf("db initialize error: null key when loading from file\n");
+                fclose(db_file);                        
                 return 0;
             }
 
@@ -126,6 +128,7 @@ uint64_t db_initialize(struct database_mappings **mappings, char *name) {
                     if(i == 0) {
                         // TODO: Better error checking that also verifies data
                         printf("db initialize error: null key when loading from file\n");
+                        fclose(db_file);
                         return 0;
                     }
 
@@ -145,6 +148,7 @@ uint64_t db_initialize(struct database_mappings **mappings, char *name) {
 
                 default:
                     printf("db intialize error: undefined entry type\n");
+                    fclose(db_file);
                     return 0;
             }
 
@@ -153,10 +157,75 @@ uint64_t db_initialize(struct database_mappings **mappings, char *name) {
         }
     }
 
-    free(db_filename);
+    fclose(db_file);
 
     // TODO: Returns the number of default entries on success, something else on failure
     return DB_NUM_DEFAULT_ENTRIES;
+}
+
+// TODO: This function should be run on a separate thread
+int db_save(struct database_mappings *mappings) {
+    if(mappings->num_keys != mappings->num_entries)
+        // TODO: Error checking on the following function
+        db_repair(mappings);
+
+    char *db_filename = (char*)calloc(strlen("./databases/") + strlen(mappings->db_name) + strlen(".db") + 1, sizeof(char));
+    strcpy(db_filename, "./databases/");
+    strcat(db_filename, mappings->db_name);
+    strcat(db_filename, ".db");
+
+    FILE *db_file = fopen(db_filename, "r+");
+    free(db_filename);
+
+    if(db_file == NULL) {
+        printf("db save error: could not open database file\n");
+        fclose(db_file);
+        return -1;
+    }
+
+    fprintf(db_file, "%ld\n", mappings->num_keys);
+    fprintf(db_file, "%ld\n", mappings->num_entries);
+    fprintf(db_file, "%ld\n", mappings->num_allocated);
+
+    fprintf(db_file, "%s\n", mappings->db_name);
+
+    for(uint64_t i = 0; i < mappings->num_keys; i++) {
+        fprintf(db_file, "%s\n", mappings->keys[i]);
+
+        struct database_entry *entry = mappings->entries[i];
+
+        fprintf(db_file, "%d\n", entry->type);
+
+        switch(entry->type) {
+            case DB_STRING:
+                fprintf(db_file, "%s\n", (char*)(entry->data_ptr));
+                break;
+            
+            case DB_JSON:
+                // TODO: Implement me
+                break;
+
+            case DB_INTEGER:
+                // TODO: Implement me
+                break;
+
+            case DB_FLOAT:
+                // TODO: Implement me
+                break;
+
+            default:
+                printf("db save error: undefined entry type\n");
+                fclose(db_file);
+                return -1;
+        }
+    }
+
+    fclose(db_file);
+
+    db_free_mappings(mappings);
+
+    // TODO: Returns 0 on success, something else on failure
+    return 0;
 }
 
 int db_free_mappings(struct database_mappings *mappings) {
@@ -167,6 +236,10 @@ int db_free_mappings(struct database_mappings *mappings) {
 }
 
 struct database_entry *db_find(struct database_mappings *mappings, char *key) {
+    if(mappings->num_keys != mappings->num_entries)
+        // TODO: Error checking on the following function
+        db_repair(mappings);
+
     if(mappings->num_keys == 0) {
         printf("db find error: no keys in db\n");
         return NULL;
