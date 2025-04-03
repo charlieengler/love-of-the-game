@@ -1,8 +1,15 @@
 #include <stdio.h>
 
 #include "test_tools.h"
+#include "db_test.h"
 
-int test_database() {
+#include "../src/include/server/database/database.h"
+
+int test_db_name() {
+    printf("Testing database naming\n");
+}
+
+int test_db() {
     // TODO: Set up database and run tests on it
     printf("Testing database\n");
 
