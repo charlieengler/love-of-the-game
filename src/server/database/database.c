@@ -66,7 +66,7 @@ uint64_t db_initialize(struct database_mappings **mappings, char *name) {
     (*mappings)->entries = (struct database_entry**)calloc(num_allocated, sizeof(struct database_entry*));
 
     // TODO: Check the format of this data as well
-    if(fscanf(db_file, "%ld", &num_keys) == 1) {
+    if(fscanf(db_file, "%ld", &num_keys) >= 1) {
         // TODO: Error checking for the entries in the db file at some point
         fscanf(db_file, "%ld", &num_entries);
         fscanf(db_file, "%ld", &num_allocated);
