@@ -34,7 +34,7 @@ uint64_t db_initialize(struct database_mappings **mappings, char *name) {
 
     if(strlen(name) <= 0) {
         printf("db initialize error: db name length <= 0\n");
-        return -1;
+        return 0;
     }
 
     char *db_filename = (char*)calloc(strlen("./databases/") + strlen(name) + strlen(".db") + 1, sizeof(char));
@@ -222,13 +222,13 @@ int db_save(struct database_mappings *mappings) {
 
     fclose(db_file);
 
-    db_free_mappings(mappings);
+    db_close(mappings);
 
     // TODO: Returns 0 on success, something else on failure
     return 0;
 }
 
-int db_free_mappings(struct database_mappings *mappings) {
+int db_close(struct database_mappings *mappings) {
     // TODO: Implement me
 
     // TODO: Returns 0 on success, something else on failure
