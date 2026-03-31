@@ -8,8 +8,6 @@
 #include "../../../include/server/database/database.h"
 
 char *blackjack_place_bet(struct database_mappings *db, char *data) {
-    
-
     // TODO: Error checking
     struct database_entry *found_entry = db_find(db, "charlie");
 
@@ -25,10 +23,9 @@ char *blackjack_place_bet(struct database_mappings *db, char *data) {
 
         // TODO: Unique user ID for each user to store in the database
         json_add_entry(entry_json, "charlie-blackjack-bet", entry_val);
-        
+
         new_entry->key = (char*)calloc(strlen("charlie") + 1, sizeof(char));
         strcpy(new_entry->key, "charlie");
-        // TODO: This should be DB_JSON, but I'm using string for testing
         new_entry->type = DB_JSON;
         new_entry->data_ptr = (void*)json_to_string(entry_json);
 

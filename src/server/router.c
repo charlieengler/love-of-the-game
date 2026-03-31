@@ -10,8 +10,9 @@
 #include "../include/server/utils/server_errors.h"
 
 char *route_get(char *trimmed_path, char *full_path, int new_fd) {
-    if(strcmp(trimmed_path, "/") == 0 || strcmp(trimmed_path, "/index.html") == 0)
+    if(strcmp(trimmed_path, "/") == 0 || strcmp(trimmed_path, "/index.html") == 0) {
         full_path = HTML_BASE_PATH INDEX_FILE;
+    }
 
     if(access(full_path, F_OK) != 0) {
         send_http_error(404, new_fd);

@@ -43,13 +43,15 @@ uint64_t db_initialize(struct database_mappings **mappings, char *name) {
     strcat(db_filename, ".db");
 
     FILE *db_file = fopen(db_filename, "a+");
-    free(db_filename);
 
     if(db_file == NULL) {
-        printf("db initialize error: could not open database file\n");
+        printf("db initialize error: could not open database file: %s\n", db_filename);
+        free(db_filename);
         fclose(db_file);
         return 0;
     }
+
+    free(db_filename);
 
     uint64_t num_keys = 0;
     uint64_t num_entries = 0;
@@ -91,7 +93,7 @@ uint64_t db_initialize(struct database_mappings **mappings, char *name) {
             if(fscanf(db_file, "%s", new_entry->key) != 1) {
                 // TODO: Better error checking that also verifies data
                 printf("db initialize error: null key when loading from file\n");
-                fclose(db_file);                        
+                fclose(db_file);
                 return 0;
             }
 
@@ -178,7 +180,7 @@ int db_save(struct database_mappings *mappings) {
     free(db_filename);
 
     if(db_file == NULL) {
-        printf("db save error: could not open database file\n");
+        printf("db save error: could not open database file: %s\n", db_filename);
         fclose(db_file);
         return -1;
     }

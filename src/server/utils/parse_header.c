@@ -58,7 +58,7 @@ struct header parse_header(char *raw_header) {
     return_header.version = -1.0f;
     return_header.content_length = -1;
 
-    char *copied_header = (char*)malloc(strlen(raw_header + 2) * sizeof(char));
+    char *copied_header = (char*)malloc((strlen(raw_header) + 2) * sizeof(char));
     strcpy(copied_header, raw_header);
     copied_header[strlen(raw_header)] = '\n';
     copied_header[strlen(raw_header) + 1] = 0;

@@ -15,8 +15,7 @@
 
 int errno;
 
-int initialize_server()
-{
+int initialize_server() {
     int status;
     struct addrinfo hints;
     struct addrinfo *serv_info;
@@ -54,7 +53,7 @@ int initialize_server()
         printf("[./server/server.c | initialize_server()] listen() error: %s\n", strerror(errno));
         exit(1);
     }
-    
+
     run_server(sockfd);
 
     close(sockfd);
