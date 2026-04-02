@@ -57,17 +57,17 @@ int initialize_server() {
     run_server(sockfd);
 
     close(sockfd);
+
+    return 0;
 }
 
 // TODO: There is an error when reloading the page then sending a blackjack bet request
 
 int run_server(int sockfd) {
     struct sockaddr_storage incoming_addr;
-    uint16_t loops = 0;
     for(;;) {
         socklen_t addr_size = sizeof(incoming_addr);
         int new_fd;
-        close(new_fd);
         if((new_fd = accept(sockfd, (struct sockaddr *)&incoming_addr, &addr_size)) == -1) {
             printf("[./server/server.c | initialize_server()] accept() error: %s\n", strerror(errno));
             continue;
@@ -142,7 +142,7 @@ int run_server(int sockfd) {
         response_buffer[strlen(response_header) + strlen(send_buffer)] = 0;
 
         long total_send_size = 0;
-        while(total_send_size < strlen(response_buffer)) {
+        while((size_t)total_send_size < strlen(response_buffer)) {
             int send_size = send(new_fd, &response_buffer[total_send_size], strlen(response_buffer) - total_send_size, 0);
             if(send_size == -1) {
                 send_http_error(500, new_fd);

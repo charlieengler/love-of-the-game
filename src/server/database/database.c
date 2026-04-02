@@ -16,7 +16,7 @@ uint64_t hash(unsigned char *str)
     unsigned long final = 5381;
     int c;
 
-    while (c = *str++)
+    while ((c = *str++))
         final = ((final << 5) + final) + c; /* hash * 33 + c */
 
     return final;
@@ -24,6 +24,8 @@ uint64_t hash(unsigned char *str)
 
 int db_repair(struct database_mappings *mappings) {
     // TODO: If there's an orphaned key or entry, try to restore it, or just discard it
+
+    printf("Called repair on %s\n", mappings->db_name);
 
     // TODO: Return 0 on success, something else on failure
     return 0;
@@ -189,13 +191,15 @@ int db_save(struct database_mappings *mappings) {
     strcat(db_filename, ".db");
 
     FILE *db_file = fopen(db_filename, "r+");
-    free(db_filename);
 
     if(db_file == NULL) {
         printf("db save error: could not open database file: %s\n", db_filename);
+        free(db_filename);
         fclose(db_file);
         return -1;
     }
+
+    free(db_filename);
 
     fprintf(db_file, "%ld\n", mappings->num_keys);
     fprintf(db_file, "%ld\n", mappings->num_entries);
@@ -206,7 +210,7 @@ int db_save(struct database_mappings *mappings) {
     for(uint64_t i = 0; i < mappings->num_keys; i++) {
         char *key = mappings->keys[i];
         if(key == NULL) {
-            printf("db save error: found a null key at index: %llu\n", i);
+            printf("db save error: found a null key at index: %lu\n", i);
             continue;
         }
         struct database_entry *entry = db_find(mappings, key);
@@ -250,6 +254,8 @@ int db_save(struct database_mappings *mappings) {
 int db_close(struct database_mappings *mappings) {
     // TODO: Implement me
 
+    printf("db_close called on %s\n", mappings->db_name);
+
     // TODO: Returns 0 on success, something else on failure
     return 0;
 }
@@ -269,7 +275,7 @@ struct database_entry *db_find(struct database_mappings *mappings, char *key) {
         return NULL;
     }
 
-    unsigned long index = hash(key) % mappings->num_keys;
+    unsigned long index = hash((unsigned char*)key) % mappings->num_keys;
     uint64_t num_loops = 0;
     while(strcmp(mappings->keys[index], key) != 0) {
         index++;
@@ -337,7 +343,7 @@ int db_insert(struct database_mappings *mappings, struct database_entry *new_ent
     mappings->num_keys++;
     mappings->num_entries++;
 
-    uint64_t index = hash(new_entry->key) % mappings->num_keys;
+    uint64_t index = hash((unsigned char*)new_entry->key) % mappings->num_keys;
     uint64_t num_loops = 0;
     while(mappings->keys[index]) {
         index++;

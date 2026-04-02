@@ -4,38 +4,34 @@
 
 #include "../../include/server/utils/parse_header.h"
 
-/*
-    GET /games/blackjack.html HTTP/1.1
-    Host: localhost:3000
-    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0
-    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*\/*;q=0.8
-    Accept-Language: en-US,en;q=0.5
-    Accept-Encoding: gzip, deflate, br, zstd
-    Connection: keep-alive
-    Upgrade-Insecure-Requests: 1
-    Sec-Fetch-Dest: document
-    Sec-Fetch-Mode: navigate
-    Sec-Fetch-Site: cross-site
-    Priority: u=0
-*/
+    // GET /games/blackjack.html HTTP/1.1
+    // Host: localhost:3000
+    // User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0
+    // Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*\/*;q=0.8
+    // Accept-Language: en-US,en;q=0.5
+    // Accept-Encoding: gzip, deflate, br, zstd
+    // Connection: keep-alive
+    // Upgrade-Insecure-Requests: 1
+    // Sec-Fetch-Dest: document
+    // Sec-Fetch-Mode: navigate
+    // Sec-Fetch-Site: cross-site
+    // Priority: u=0
 
-/*
-    POST /routes/games/blackjack/bet HTTP/1.1
-    Host: localhost:3000
-    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0
-    Accept: *\/*
-    Accept-Language: en-US,en;q=0.5
-    Accept-Encoding: gzip, deflate, br, zstd
-    Referer: http://localhost:3000/games/blackjack.html
-    Content-type: application/json
-    Content-Length: 12
-    Origin: http://localhost:3000
-    Connection: keep-alive
-    Sec-Fetch-Dest: empty
-    Sec-Fetch-Mode: cors
-    Sec-Fetch-Site: same-origin
-    Priority: u=0
-*/
+    // POST /routes/games/blackjack/bet HTTP/1.1
+    // Host: localhost:3000
+    // User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0
+    // Accept: *\/*
+    // Accept-Language: en-US,en;q=0.5
+    // Accept-Encoding: gzip, deflate, br, zstd
+    // Referer: http://localhost:3000/games/blackjack.html
+    // Content-type: application/json
+    // Content-Length: 12
+    // Origin: http://localhost:3000
+    // Connection: keep-alive
+    // Sec-Fetch-Dest: empty
+    // Sec-Fetch-Mode: cors
+    // Sec-Fetch-Site: same-origin
+    // Priority: u=0
 
 int split_string(char *input, char delimiter) {
     char *current_char = input;

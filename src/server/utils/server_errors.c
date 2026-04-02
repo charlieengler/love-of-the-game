@@ -28,7 +28,7 @@ int send_http_error(int error, int sock) {
     if(send_size == -1) {
         printf("[./server/server.c | send_http_error()] send() error: size of header was negative\n");
         return 1;
-    } else if(send_size != strlen(header)) {
+    } else if((size_t)send_size != strlen(header)) {
         printf("[./server/server.c | send_http_error()] send() error: size of header doesn't match size of data sent\n");
         return 1;
     }

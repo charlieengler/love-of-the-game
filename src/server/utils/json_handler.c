@@ -8,7 +8,7 @@
 
 // TODO: This function should find keys with missing values and either restore the values to defaults, or just discard the keys
 int json_repair_object(struct json_object *json) {
-    printf("JSON Object key and value numbers do not align\n");
+    printf("JSON Object key and value numbers do not align on object %p\n", json);
 
     return 0;
 }
@@ -33,7 +33,7 @@ int json_add_entry(struct json_object *json_obj, char *key, struct json_value *v
         // TODO: Error handling on this function
         json_repair_object(json_obj);
 
-    for(int i = 0; i < json_obj->num_keys - 1; i++) {
+    for(uint64_t i = 0; i < json_obj->num_keys - 1; i++) {
         new_keys[i] = json_obj->keys[i];
         new_vals[i] = json_obj->vals[i];
     }
@@ -44,7 +44,7 @@ int json_add_entry(struct json_object *json_obj, char *key, struct json_value *v
 
     // Length of the key plus opening double quotes, closing double quotes, and the colon between the key and value
     json_obj->string_size += strlen(key) + 3;
-    
+
     switch(val->type) {
         case JSON_STRING:
             // +2 for the quotes
@@ -69,6 +69,10 @@ int json_add_entry(struct json_object *json_obj, char *key, struct json_value *v
             // It seems like 327 should be enough to support a rounded float
             json_obj->string_size += 327;
             break;
+
+        case JSON_UNDEFINED:
+            printf("Undefined json value type when adding entry\n");
+            break;
     }
 
     // Opening and closing double quotes (if applicable), as well as the comma between entries
@@ -86,7 +90,7 @@ struct json_value *json_find_entry(struct json_object *json_obj, char *key) {
         // TODO: Error handling on this function
         json_repair_object(json_obj);
 
-    for(int i = 0; i < json_obj->num_keys; i++)
+    for(uint64_t i = 0; i < json_obj->num_keys; i++)
         if(strcmp(json_obj->keys[i], key) == 0)
             return json_obj->vals[i];
 
@@ -95,6 +99,8 @@ struct json_value *json_find_entry(struct json_object *json_obj, char *key) {
 
 struct json_object *json_parse_string(char *input) {
     struct json_object *return_object = json_initialize_object();
+
+    printf("Parsing string %s to JSON\n", input);
 
     // TODO: Implement me
 
@@ -145,6 +151,10 @@ char *json_encode_val(struct json_value *json_val) {
             sprintf(return_string, "%.16f", json_val->float_val);
 
             break;
+
+        case JSON_UNDEFINED:
+            printf("Attempted to encode undefined JSON value\n");
+            break;
     }
 
     return return_string;
@@ -160,7 +170,7 @@ char *json_to_string(struct json_object *json_obj) {
 
     *(final_string++) = '{';
 
-    for(int i = 0; i < json_obj->num_keys; i++) {
+    for(uint64_t i = 0; i < json_obj->num_keys; i++) {
         *(final_string++) = '"';
 
         strcpy(final_string, json_obj->keys[i]);
