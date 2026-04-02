@@ -1,5 +1,6 @@
 typedef long unsigned int uint64_t;
 
+#define DB_MAX_NAME_LEN 128
 #define DB_MAX_KEY_LEN 128
 #define DB_NUM_DEFAULT_ENTRIES 256
 #define DB_GROW_MULTIPLIER 2

@@ -45,14 +45,15 @@ char *route_get(char *trimmed_path, char *full_path, int new_fd) {
 char *route_post(char *path, char *data) {
     char *route = NULL;
     if((route = strstr(path, "routes/games/")) != NULL) {
-        return route_game(route + strlen("routes/games/"), data);       
+        char *res = route_game(route + strlen("routes/games/"), data);
+
+        return res;
     }
 
     // TODO: Replace this with a better error message
     char *unknown_route_header = "{\"error\":\"Unknown Route\"}";
-    char *return_header = (char*)malloc((strlen(unknown_route_header) + 1) * sizeof(char));
+    char *return_header = (char*)calloc((strlen(unknown_route_header) + 1), sizeof(char));
     strcpy(return_header, unknown_route_header);
-    return_header[strlen(unknown_route_header)] = 0;
 
     return return_header;
 }

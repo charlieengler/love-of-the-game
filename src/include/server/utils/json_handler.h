@@ -27,7 +27,7 @@ struct json_value {
     struct json_object *child_object;
 
     char *str_val;
-    uint64_t int_val; 
+    uint64_t int_val;
     double float_val;
 
     enum json_data_types type;

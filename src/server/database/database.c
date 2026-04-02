@@ -67,18 +67,29 @@ uint64_t db_initialize(struct database_mappings **mappings, char *name) {
     (*mappings)->keys = (char**)calloc(num_allocated, sizeof(char*));
     (*mappings)->entries = (struct database_entry**)calloc(num_allocated, sizeof(struct database_entry*));
 
-    // TODO: Check the format of this data as well
+    // TODO: Check the format of the db file as well
     if(fscanf(db_file, "%ld", &num_keys) >= 1) {
         // TODO: Error checking for the entries in the db file at some point
         fscanf(db_file, "%ld", &num_entries);
         fscanf(db_file, "%ld", &num_allocated);
 
-        (*mappings)->num_keys = num_keys;
-        (*mappings)->num_entries = num_entries;
         (*mappings)->num_allocated = num_allocated;
 
         (*mappings)->db_name = (char*)calloc(strlen(name) + 1, sizeof(char));
         strcpy((*mappings)->db_name, name);
+
+        char *scanned_name = (char*)calloc(DB_MAX_NAME_LEN + 1, sizeof(char));
+        // TODO: Could introduce a buffer overflow if length of name isn't properly checked elsewhere
+        fscanf(db_file, "%s", scanned_name);
+
+        if(strcmp(name, scanned_name)) {
+            printf("db initialize error: names don't match\n");
+            fclose(db_file);
+            free(scanned_name);
+            return 0;
+        }
+
+        free(scanned_name);
 
         (*mappings)->keys = (char**)calloc(num_allocated, sizeof(char*));
         (*mappings)->entries = (struct database_entry**)calloc(num_allocated, sizeof(struct database_entry*));
@@ -149,7 +160,7 @@ uint64_t db_initialize(struct database_mappings **mappings, char *name) {
                     break;
 
                 default:
-                    printf("db intialize error: undefined entry type\n");
+                    printf("db intialize error: undefined entry type: %d\n", new_entry->type);
                     fclose(db_file);
                     return 0;
             }
@@ -167,9 +178,10 @@ uint64_t db_initialize(struct database_mappings **mappings, char *name) {
 
 // TODO: This function should be run on a separate thread
 int db_save(struct database_mappings *mappings) {
-    if(mappings->num_keys != mappings->num_entries)
+    if(mappings->num_keys != mappings->num_entries) {
         // TODO: Error checking on the following function
         db_repair(mappings);
+    }
 
     char *db_filename = (char*)calloc(strlen("./databases/") + strlen(mappings->db_name) + strlen(".db") + 1, sizeof(char));
     strcpy(db_filename, "./databases/");
@@ -192,9 +204,14 @@ int db_save(struct database_mappings *mappings) {
     fprintf(db_file, "%s\n", mappings->db_name);
 
     for(uint64_t i = 0; i < mappings->num_keys; i++) {
-        fprintf(db_file, "%s\n", mappings->keys[i]);
+        char *key = mappings->keys[i];
+        if(key == NULL) {
+            printf("db save error: found a null key at index: %llu\n", i);
+            continue;
+        }
+        struct database_entry *entry = db_find(mappings, key);
 
-        struct database_entry *entry = mappings->entries[i];
+        fprintf(db_file, "%s\n", mappings->keys[i]);
 
         fprintf(db_file, "%d\n", entry->type);
 
@@ -202,7 +219,7 @@ int db_save(struct database_mappings *mappings) {
             case DB_STRING:
                 fprintf(db_file, "%s\n", (char*)(entry->data_ptr));
                 break;
-            
+
             case DB_JSON:
                 // TODO: Implement me
                 break;
@@ -307,7 +324,7 @@ int db_insert(struct database_mappings *mappings, struct database_entry *new_ent
     if(mappings->num_keys == mappings->num_allocated) {
         // TODO: The grow function causes issues
         uint64_t new_size = db_grow(mappings);
-        
+
         if(new_size == 0) {
             printf("db grow error: new_size == 0\n");
             return -1;

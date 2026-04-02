@@ -83,14 +83,14 @@ int run_server(int sockfd) {
         int num_packets = 1;
         do {
             read_size = recv(new_fd, tmp_buf, RCVBUFSIZE, 0);
-            
+
             buf = (char*)malloc((RCVBUFSIZE * num_packets + 1) * sizeof(char));
             strcpy(buf, tmp_buf);
 
             num_packets++;
             total_read_size += read_size;
         } while(read_size == RCVBUFSIZE);
-        
+
         if(total_read_size <= 0) {
             send_http_error(400, new_fd);
 
@@ -153,11 +153,7 @@ int run_server(int sockfd) {
             total_send_size += send_size;
         }
 
-        char ip[NI_MAXHOST];
-        char port[NI_MAXSERV];
-        getnameinfo((struct sockaddr*)&incoming_addr, sizeof(struct sockaddr_storage), ip, sizeof(ip), port, sizeof(port), 0);
-
-        printf("Sent %ld bytes to %s:%s\n", total_send_size, ip, port);
+        printf("Sent %ld bytes\n", total_send_size);
 
         // TODO: This is not working
         // delete_header(&recv_header);

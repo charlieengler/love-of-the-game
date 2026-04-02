@@ -168,7 +168,7 @@ char *json_to_string(struct json_object *json_obj) {
 
         *(final_string++) = '"';
         *(final_string++) = ':';
-        
+ 
         char *encoded_val = json_encode_val(json_obj->vals[i]);
         strcpy(final_string, encoded_val);
         final_string += strlen(encoded_val);

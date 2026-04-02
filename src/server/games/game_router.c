@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "../../include/server/games/games.h"
 #include "../../include/server/database/database.h"
@@ -15,7 +16,10 @@ char *route_blackjack(char *function, char *data) {
 
     char *return_header = NULL;
 
-    if(strstr(function, "bet") != NULL) {
+    if(strstr(function, "join-table") != NULL) {
+        // TODO: Check for success/failure on this function (returns void right now)
+        return_header = blackjack_join_table(blackjack_db, data);
+    } else if(strstr(function, "bet") != NULL) {
         // TODO: Check for success/failure on this function (returns void right now)
         return_header = blackjack_place_bet(blackjack_db, data);
     }
@@ -23,6 +27,12 @@ char *route_blackjack(char *function, char *data) {
     db_save(blackjack_db);
 
     // TODO: Return an error that the function couldn't be found if the header is still NULL at this point
+    if(return_header == NULL) {
+        // TODO: Better return header error
+        const char *header_const = "{\"error\":\"Make me more descriptive\"}";
+        return_header = (char*)calloc(strlen(header_const) + 1, sizeof(char));
+        strcpy(return_header, header_const);
+    }
 
     return return_header;
 }
@@ -31,11 +41,14 @@ char *route_blackjack(char *function, char *data) {
 char *route_game(char *path, char *data) {
     char *route = NULL;
     if((route = strstr(path, "blackjack/")) != NULL) {
-        return route_blackjack(route + strlen("blackjack/"), data);
-    } 
+        char *res = route_blackjack(route + strlen("blackjack/"), data);
 
-    // TODO: Return an error header indicating that the game couldn't be found
-    char *return_header = NULL;
-    
+        return res;
+    }
+
+    const char *header_const = "{\"error\":\"Unknown game\"}";
+    char *return_header = (char*)calloc(strlen(header_const) + 1, sizeof(char));
+    strcpy(return_header, header_const);
+
     return return_header;
 }
