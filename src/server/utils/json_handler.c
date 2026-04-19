@@ -97,12 +97,76 @@ struct json_value *json_find_entry(struct json_object *json_obj, char *key) {
     return NULL;
 }
 
+int json_add_entry_from_string(struct json_object *json_obj, char *raw_string, uint64_t total_len) {
+    char open_string = 0;
+
+    char *name = NULL;
+    char *val = NULL;
+    char *string_start = raw_string;
+    uint64_t current_len = 0;
+    while(current_len < total_len) {
+        switch(*raw_string) {
+            case '"':
+                if(open_string) {
+                    if(!name && !setting) {
+                        name = malloc(sizeof(char) * (current_len + 1));
+                        memcpy(name, string_start, current_len);
+                        name[current_len - 1] = '\0';
+                    } else {
+                        val = malloc(sizeof(char) * (current_len + 1));
+                        memcpy(val, string_start, current_len);
+                        val[current_len - 1] = '\0';
+                    }
+
+                    open_string = 0;
+                } else {
+                    string_start = (raw_string + 1);
+                    current_len = 0;
+                    open_string = 1;
+                }
+                break;
+            default:
+                break;
+        }
+
+        ++current_len;
+        ++raw_string;
+    }
+
+    return 0;
+}
+
 struct json_object *json_parse_string(char *input) {
+    char *cleaned_input = (char*)calloc(strlen(input), sizeof(char));
+    uint64_t cleaned_input_len = 0;
+    while(input) {
+        if(input != '\n') {
+            *cleaned_input = *input;
+            ++cleaned_input_len;
+        }
+
+        input++;
+    }
+
     struct json_object *return_object = json_initialize_object();
 
-    printf("Parsing string %s to JSON\n", input);
+    return_object->string_size = cleaned_input_len;
 
-    // TODO: Implement me
+    uint64_t current_len = 0;
+    while(cleaned_input) {
+        switch(*cleaned_input) {
+            case '{':
+                current_len = 0;
+                break;
+
+            case '}':
+                json_add_entry_from_string(return_object, cleaned_input, current_len);
+                current_len = 0;
+                break;
+        }
+
+        ++cleaned_input;
+    }
 
     // TODO: Special syntax for a newly parsed json object that needs to be repaired
     if(return_object->num_keys != return_object->num_vals)
