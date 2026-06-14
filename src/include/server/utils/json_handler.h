@@ -1,13 +1,13 @@
 typedef unsigned long uint64_t;
 
 enum json_data_types {
+    JSON_UNDEFINED,
     JSON_NESTED,
     // This should be a string that is already formatted in the JSON format
     JSON_FORMATTED_STRING,
     JSON_STRING,
     JSON_INTEGER,
     JSON_FLOAT,
-    JSON_UNDEFINED = -1
 };
 
 struct json_value;
@@ -34,7 +34,7 @@ struct json_value {
 };
 
 struct json_object *json_initialize_object();
-int json_add_entry(struct json_object*, char*, struct json_value*);
-struct json_value *json_find_entry(struct json_object*, char*);
-struct json_object *json_parse_string(char*);
-char *json_to_string(struct json_object*);
+int json_add_entry(struct json_object *, char *, struct json_value *);
+struct json_value *json_find_entry(struct json_object *, char *);
+struct json_object *json_parse_string(char *);
+char *json_to_string(struct json_object *);

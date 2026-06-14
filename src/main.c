@@ -3,11 +3,11 @@
 
 #include "./include/server/server.h"
 
-#include "./tests/db_test.h"
+#include "./tests/tests.h"
 
 int main(int argc, char **argv) {
-    if(argc > 2) {
-        if(argc < 3 || argc > 4) {
+    if (argc > 2) {
+        if (argc < 3 || argc > 4) {
             // TODO: Update me as I add more tests
             printf("Invalid number of arguments!\n");
             printf("Program format is:\n");
@@ -15,15 +15,21 @@ int main(int argc, char **argv) {
             printf("    module:\n");
             printf("        all:    run all tests\n");
             printf("        db:     run database tests\n");
+            printf("        json:   run JSON parser tests\n");
         }
 
-        if(strcmp(argv[2], "db") == 0) {
+        if (strcmp(argv[2], "db") == 0) {
             // TODO: Error checking and stuff
             test_db();
             return 0;
         }
 
-        if(strcmp(argv[2], "all")) {
+        if (strcmp(argv[2], "json") == 0) {
+            test_json();
+            return 0;
+        }
+
+        if (strcmp(argv[2], "all")) {
             printf("testing error: invalid argument\n");
             return -1;
         }
