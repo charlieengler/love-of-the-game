@@ -11,25 +11,25 @@ static int test_json_initialize_object() {
     test_object = json_initialize_object();
 
     if (!test_object) {
-        printf("[TEST ERR] test_json_initialize_object(): new_object is null\n");
+        printf("[TEST FAIL] test_json_initialize_object(): new_object is null\n");
 
         return 1;
     }
 
     if (test_object->num_keys != 0) {
-        printf("[TEST ERR] test_json_initialize_object(): new_object->num_keys != 0 (%ld)\n", test_object->num_keys);
+        printf("[TEST FAIL] test_json_initialize_object(): new_object->num_keys %ld does not equal expected value (0)\n", test_object->num_keys);
 
         return 1;
     }
 
     if (test_object->num_vals != 0) {
-        printf("[TEST ERR] test_json_initialize_object(): new_object->num_vals != 0 (%ld)\n", test_object->num_vals);
+        printf("[TEST FAIL] test_json_initialize_object(): new_object->num_vals %ld does not equal expected value (0)\n", test_object->num_vals);
 
         return 1;
     }
 
     if (test_object->string_size != 2) {
-        printf("[TEST ERR] test_json_initialize_object(): new_object->string_size != 2 (%ld)\n", test_object->string_size);
+        printf("[TEST FAIL] test_json_initialize_object(): new_object->string_size %ld does not equal expected value (2)\n", test_object->string_size);
 
         return 1;
     }
@@ -61,19 +61,19 @@ static int test_json_add_entry() {
         int res = json_add_entry(test_object, entry_key, entry_val);
 
         if (res) {
-            printf("[TEST ERR] test_json_add_entry(): entry num %d was null\n", i);
+            printf("[TEST FAIL] test_json_add_entry(): entry num %d was null\n", i);
 
             return 1;
         }
 
         if (test_object->num_keys != (uint64_t)(i + 1)) {
-            printf("[TEST ERR] test_json_add_entry(): test_object->num_keys %ld does not equal expected value (%d)\n", test_object->num_keys, i + 1);
+            printf("[TEST FAIL] test_json_add_entry(): test_object->num_keys %ld does not equal expected value (%d)\n", test_object->num_keys, i + 1);
 
             return 1;
         }
 
         if (test_object->num_vals != (uint64_t)(i + 1)) {
-            printf("[TEST ERR] test_json_add_entry(): test_object->num_vals %ld does not equal expected value (%d)\n", test_object->num_vals, i + 1);
+            printf("[TEST FAIL] test_json_add_entry(): test_object->num_vals %ld does not equal expected value (%d)\n", test_object->num_vals, i + 1);
 
             return 1;
         }
@@ -83,7 +83,7 @@ static int test_json_add_entry() {
         expected_str_size += 3;
 
         if (test_object->string_size != expected_str_size) {
-            printf("[TEST ERR] test_json_add_entry(): test_object->string_size %ld does not equal expected value (%ld)\n", test_object->string_size, expected_str_size);
+            printf("[TEST FAIL] test_json_add_entry(): test_object->string_size %ld does not equal expected value (%ld)\n", test_object->string_size, expected_str_size);
 
             return 1;
         }
@@ -99,19 +99,19 @@ static int test_json_add_entry() {
         entry_val[4] = '\0';
 
         if (test_object->vals[i]->type != JSON_STRING) {
-            printf("[TEST ERR] test_json_add_entry(): test_object->vals[%d]->type %d does not equal expected value (%d)\n", i, test_object->vals[i]->type, JSON_STRING);
+            printf("[TEST FAIL] test_json_add_entry(): test_object->vals[%d]->type %d does not equal expected value (%d)\n", i, test_object->vals[i]->type, JSON_STRING);
 
             return 1;
         }
 
         if (strcmp(test_object->keys[i], entry_key)) {
-            printf("[TEST ERR] test_json_add_entry(): test_object->keys[%d] %s does not equal expected value (%s)\n", i, test_object->keys[i], entry_key);
+            printf("[TEST FAIL] test_json_add_entry(): test_object->keys[%d] %s does not equal expected value (%s)\n", i, test_object->keys[i], entry_key);
 
             return 1;
         }
 
         if (strcmp(test_object->vals[i]->str_val, entry_val)) {
-            printf("[TEST ERR] test_json_add_entry(): test_object->vals[%d]->str_val %s does not equal expected value (%s)\n", i, test_object->vals[i]->str_val, entry_val);
+            printf("[TEST FAIL] test_json_add_entry(): test_object->vals[%d]->str_val %s does not equal expected value (%s)\n", i, test_object->vals[i]->str_val, entry_val);
 
             return 1;
         }
@@ -159,19 +159,19 @@ static int test_json_find_entry() {
         struct json_value *found_entry = json_find_entry(test_object, entry_key);
 
         if (!found_entry) {
-            printf("[TEST ERR] test_json_find_entry(): could not find entry with key %s\n", entry_key);
+            printf("[TEST FAIL] test_json_find_entry(): could not find entry with key %s\n", entry_key);
 
             return 1;
         }
 
         if (strcmp(found_entry->str_val, entry_val)) {
-            printf("[TEST ERR] test_json_find_entry(): found_entry->str_val %s does not equal expected value (%s)\n", found_entry->str_val, entry_val);
+            printf("[TEST FAIL] test_json_find_entry(): found_entry->str_val %s does not equal expected value (%s)\n", found_entry->str_val, entry_val);
 
             return 1;
         }
 
         if (found_entry->type != JSON_STRING) {
-            printf("[TEST ERR] test_json_find_entry(): found_entry->type %d does not equal expected value (%d)\n", found_entry->type, JSON_STRING);
+            printf("[TEST FAIL] test_json_find_entry(): found_entry->type %d does not equal expected value (%d)\n", found_entry->type, JSON_STRING);
 
             return 1;
         }
@@ -192,7 +192,7 @@ static int test_json_find_entry() {
         struct json_value *found_entry = json_find_entry(test_object, entry_key);
 
         if (found_entry) {
-            printf("[TEST ERR] test_json_find_entry(): found entry which should not exist (%s)\n", entry_key);
+            printf("[TEST FAIL] test_json_find_entry(): found entry which should not exist (%s)\n", entry_key);
 
             return 1;
         }
@@ -211,19 +211,19 @@ static int test_json_parse_string() {
     struct json_object *test_object = json_parse_string(test_string_one);
 
     if (strlen(json_to_string(test_object)) != strlen(test_string_one)) {
-        printf("[TEST ERR] test_json_parse_string(): test_object->string_size %ld does not equal expected value (%ld)\n", test_object->string_size, strlen(test_string_one));
+        printf("[TEST FAIL] test_json_parse_string(): test_object->string_size %ld does not equal expected value (%ld)\n", test_object->string_size, strlen(test_string_one));
 
         return 1;
     }
 
     if (test_object->num_keys != 3) {
-        printf("[TEST ERR] test_json_parse_string(): test_object->num_keys %ld does not equal expected value (%d)\n", test_object->num_keys, 3);
+        printf("[TEST FAIL] test_json_parse_string(): test_object->num_keys %ld does not equal expected value (%d)\n", test_object->num_keys, 3);
 
         return 1;
     }
 
     if (test_object->num_vals != 3) {
-        printf("[TEST ERR] test_json_parse_string(): test_object->num_vals %ld does not equal expected value (%d)\n", test_object->num_vals, 3);
+        printf("[TEST FAIL] test_json_parse_string(): test_object->num_vals %ld does not equal expected value (%d)\n", test_object->num_vals, 3);
 
         return 1;
     }
@@ -238,13 +238,13 @@ static int test_json_parse_string() {
         entry_val[12] = '\0';
 
         if (strcmp(test_object->keys[i], entry_key)) {
-            printf("[TEST ERR] test_json_parse_string(): test_object->keys[%d] %s does not equal expected value (%s)\n", i, test_object->keys[i], entry_key);
+            printf("[TEST FAIL] test_json_parse_string(): test_object->keys[%d] %s does not equal expected value (%s)\n", i, test_object->keys[i], entry_key);
 
             return 1;
         }
 
         if (strcmp(test_object->vals[i]->str_val, entry_val)) {
-            printf("[TEST ERR] test_json_parse_string(): test_object->vals[%d]->str_val %s does not equal expected value (%s)\n", i, test_object->vals[i]->str_val, entry_val);
+            printf("[TEST FAIL] test_json_parse_string(): test_object->vals[%d]->str_val %s does not equal expected value (%s)\n", i, test_object->vals[i]->str_val, entry_val);
 
             return 1;
         }
@@ -281,7 +281,7 @@ static int test_json_to_string() {
     char *new_string = json_to_string(test_object);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST ERR] test_json_to_string(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printf("[TEST FAIL] test_json_to_string(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -290,6 +290,8 @@ static int test_json_to_string() {
 }
 
 int test_json() {
+    printf("Testing JSON handler\n");
+
     int failed_test_counter = 0;
     int num_tests = 0;
 
@@ -308,7 +310,7 @@ int test_json() {
     failed_test_counter += test_json_to_string();
     ++num_tests;
 
-    printf("[TEST COMPLETE] JSON testing %d/%d tests passed\n", num_tests - failed_test_counter, num_tests);
+    printf("[TESTING COMPLETE] JSON testing %d/%d tests passed\n", num_tests - failed_test_counter, num_tests);
 
     return 0;
 }

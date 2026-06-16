@@ -5,12 +5,19 @@ typedef long unsigned int uint64_t;
 #define DB_NUM_DEFAULT_ENTRIES 256
 #define DB_GROW_MULTIPLIER 2
 
+enum db_remove_errors {
+    DB_REMOVE_SUCCESS,
+    DB_REMOVE_NO_KEYS,
+    DB_REMOVE_NO_ENTRIES,
+    DB_REMOVE_NOT_FOUND,
+};
+
 enum entry_data_types {
+    DB_UNDEFINED,
     DB_STRING,
     DB_JSON,
     DB_INTEGER,
     DB_FLOAT,
-    DB_UNDEFINED = -1
 };
 
 struct database_entry {
@@ -31,8 +38,9 @@ struct database_mappings {
     struct database_entry **entries;
 };
 
-uint64_t db_initialize(struct database_mappings**, char*);
+uint64_t db_initialize(struct database_mappings **, char *);
 struct database_entry *db_find(struct database_mappings *mappings, char *key);
 int db_insert(struct database_mappings *mappings, struct database_entry *new_entry);
 int db_save(struct database_mappings *mappings);
+int db_remove(struct database_mappings *mappings, struct database_entry *old_entry);
 int db_close(struct database_mappings *mappings);
