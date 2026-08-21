@@ -42,6 +42,7 @@
             const joinTable = () => {
                 const userID = document.getElementById("user-id").value;
                 const tableID = document.getElementById("table-id").value;
+
                 const data = {
                     userID: userID,
                     tableID: tableID,
@@ -51,9 +52,14 @@
             }
 
             const placeBet = () => {
+                const userID = document.getElementById("user-id").value;
+                const tableID = document.getElementById("table-id").value;
                 const bet = document.getElementById("bet-value").value;
+
                 const data = {
-                    amount: bet,
+                    userID: userID,
+                    tableID: tableID,
+                    bet: bet,
                 };
 
                 submitData("http://localhost:3000/routes/games/blackjack/bet", data);
