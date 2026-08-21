@@ -16,7 +16,6 @@ char *blackjack_join_table(struct database_mappings *db, char *data) {
     struct json_value *table_id_json = json_find_entry(parsed_data, "tableID");
     char *table_id = table_id_json->str_val;
 
-    // TODO: Error checking
     struct database_entry *found_table = db_find(db, table_id);
 
     if (found_table == NULL) {
@@ -44,13 +43,13 @@ char *blackjack_join_table(struct database_mappings *db, char *data) {
     }
 
     if (found_table == NULL) {
+        // TODO: Return a JSON error
         printf("blackjack error: db entry is still null\n");
     }
 
-    printf("Joined table %s as %s - %s\n", table_id, user_id, (char *)found_table->data_ptr);
+    printf("Joined table %s as %s\n", table_id, user_id);
 
-    // TODO: Actual return header
-    return NULL;
+    return data;
 }
 
 char *blackjack_place_bet(struct database_mappings *db, char *data) {
@@ -69,10 +68,10 @@ char *blackjack_place_bet(struct database_mappings *db, char *data) {
     // TODO: Error checking
     blackjack_join_table(db, data);
 
-    // TODO: Error checking
     struct database_entry *found_entry = db_find(db, table_id);
 
     if (found_entry == NULL) {
+        // TODO: Return a JSON error
         printf("blackjack error: db entry is still null\n");
     }
 
@@ -92,6 +91,5 @@ char *blackjack_place_bet(struct database_mappings *db, char *data) {
     free(found_entry->data_ptr);
     found_entry->data_ptr = json_to_string(entry_json);
 
-    // TODO: Actual return header
-    return NULL;
+    return data;
 }

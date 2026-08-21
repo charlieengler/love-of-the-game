@@ -20,12 +20,13 @@
                     if(value != null)
                         rawData.push(value);
 
-                    while(!done) {
-                        ({ done, value } = await reader.read());
-
-                        if(value != null)
-                            rawData.push(value);
-                    }
+                    // TODO: This is causing issues with reading forever
+                    // while(!done) {
+                    //     ({ done, value } = await reader.read());
+                    //
+                    //     if(value != null)
+                    //         rawData.push(value);
+                    // }
 
                     return rawData;
                 }).then(chunks => {

@@ -6,11 +6,7 @@
 
 char *route_blackjack(char *function, char *data) {
     struct database_mappings *blackjack_db = NULL;
-
-    if (blackjack_db == NULL) {
-        // TODO: Error checking
-        db_initialize(&blackjack_db, "blackjack");
-    }
+    db_initialize(&blackjack_db, "blackjack");
 
     char *return_header = NULL;
 
