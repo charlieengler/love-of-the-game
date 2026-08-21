@@ -155,8 +155,7 @@ int run_server(int sockfd) {
 
         printf("Sent %ld bytes\n", total_send_size);
 
-        // TODO: This is not working
-        // delete_header(&recv_header);
+        delete_header(&recv_header);
         if (buf != NULL)
             free(buf);
         if (find_path != NULL)
