@@ -40,8 +40,10 @@
             }
 
             const joinTable = () => {
+                const userID = document.getElementById("user-id").value;
                 const tableID = document.getElementById("table-id").value;
                 const data = {
+                    userID: userID,
                     tableID: tableID,
                 };
 
@@ -60,6 +62,7 @@
     </head>
 
     <body style="background-color: black; color: white;">
+        <input id="user-id" placeholder="User ID"/>
         <input id="table-id" placeholder="Table ID"/>
         <button onclick="joinTable()">Join Table</button>
         <input id="bet-value" placeholder="Bet" type="number"/>
