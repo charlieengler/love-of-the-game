@@ -4,14 +4,10 @@
         <title>Blackjack</title>
 
         <script>
-            const placeBet = () => {
-                const bet = document.getElementById("bet-value").value;
-
-                fetch("http://localhost:3000/routes/games/blackjack/bet", {
+            const submitData = async (path, data) => {
+                fetch(path, {
                     method: "POST",
-                    body: JSON.stringify({
-                        bet: bet,
-                    }),
+                    body: JSON.stringify(data),
                     headers: {
                         "Content-type": "application/json",
                     },
@@ -41,6 +37,24 @@
                 }).catch(err => {
                     console.error("Unable to fetch server data: ", err);
                 });
+            }
+
+            const joinTable = () => {
+                const tableID = document.getElementById("table-id").value;
+                const data = {
+                    tableID: tableID,
+                };
+
+                submitData("http://localhost:3000/routes/games/blackjack/join-table", data);
+            }
+
+            const placeBet = () => {
+                const bet = document.getElementById("bet-value").value;
+                const data = {
+                    amount: bet,
+                };
+
+                submitData("http://localhost:3000/routes/games/blackjack/bet", data);
             }
         </script>
     </head>
