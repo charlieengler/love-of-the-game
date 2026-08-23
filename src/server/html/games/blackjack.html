@@ -5,20 +5,23 @@
 
         <script>
             const submitData = async (path, data) => {
-                fetch(path, {
-                    method: "POST",
-                    body: JSON.stringify(data),
-                    headers: {
-                        "Content-type": "application/json",
-                    },
-                }).then(async res => {
+                try {
+                    const res = await fetch(path, {
+                        method: "POST",
+                        body: JSON.stringify(data),
+                        headers: {
+                            "Content-type": "application/json",
+                        },
+                    });
+
                     const reader = res.body.getReader();
 
                     const rawData = [];
                     let { done, value } = await reader.read();
 
-                    if(value != null)
+                    if(value != null) {
                         rawData.push(value);
+                    }
 
                     // TODO: This is causing issues with reading forever
                     // while(!done) {
@@ -28,34 +31,39 @@
                     //         rawData.push(value);
                     // }
 
-                    return rawData;
-                }).then(chunks => {
-                    for(let i = 0; i < chunks.length; i++) {
-                        const chunkString = new TextDecoder().decode(chunks[i]);
+                    const parsedData = [];
 
-                        console.log(JSON.parse(chunkString));
+                    for(let i = 0; i < rawData.length; i++) {
+                        const chunkString = new TextDecoder().decode(rawData[i]);
+
+                        parsedData.push(JSON.parse(chunkString));
                     }
-                }).catch(err => {
+
+                    return parsedData;
+                } catch(err) {
                     console.error("Unable to fetch server data: ", err);
-                });
+                }
             }
 
-            const joinTable = () => {
-                const userID = document.getElementById("user-id").value;
-                const tableID = document.getElementById("table-id").value;
+            const joinTable = async () => {
+                const userID = document.getElementById("user-id-input").value;
+                const tableID = document.getElementById("table-id-input").value;
 
                 const data = {
                     userID: userID,
                     tableID: tableID,
                 };
 
-                submitData("http://localhost:3000/routes/games/blackjack/join-table", data);
+                const res = (await submitData("http://localhost:3000/routes/games/blackjack/join-table", data))[0];
+
+                document.getElementById("table-id").innerText = res.tableID;
+                document.getElementById("user-id").innerText = res.userID;
             }
 
-            const placeBet = () => {
-                const userID = document.getElementById("user-id").value;
-                const tableID = document.getElementById("table-id").value;
-                const bet = document.getElementById("bet-value").value;
+            const placeBet = async () => {
+                const userID = document.getElementById("user-id-input").value;
+                const tableID = document.getElementById("table-id-input").value;
+                const bet = document.getElementById("bet-value-input").value;
 
                 const data = {
                     userID: userID,
@@ -63,16 +71,40 @@
                     bet: bet,
                 };
 
-                submitData("http://localhost:3000/routes/games/blackjack/bet", data);
+                const res = (await submitData("http://localhost:3000/routes/games/blackjack/bet", data))[0];
+
+                document.getElementById("table-id").innerText = res.tableID;
+                document.getElementById("user-id").innerText = res.userID;
+                document.getElementById("bet-value").innerText = res.bet;
+            }
+
+            const dealCards = async () => {
+                const tableID = document.getElementById("table-id-input").value;
+
+                const data = {
+                    tableID: tableID,
+                };
+
+                await submitData("http://localhost:3000/routes/games/blackjack/deal-cards", data);
             }
         </script>
     </head>
 
     <body style="background-color: black; color: white;">
-        <input id="user-id" placeholder="User ID"/>
-        <input id="table-id" placeholder="Table ID"/>
+        <input id="user-id-input" placeholder="User ID"/>
+        <input id="table-id-input" placeholder="Table ID"/>
         <button onclick="joinTable()">Join Table</button>
-        <input id="bet-value" placeholder="Bet" type="number"/>
+        <input id="bet-value-input" placeholder="Bet" type="number"/>
         <button onclick="placeBet()">Place Bet</button>
+
+        <button onclick="dealCards()">Deal Cards</button>
+
+        <br/>
+
+        <h1 style="display: inline-block;">Table ID:&nbsp;</h1><h1 id="table-id" style="display: inline-block;"></h1>
+        <br/>
+        <h2 style="display: inline-block;">User ID:&nbsp;</h2><h2 id="user-id" style="display: inline-block;"></h2>
+        <br/>
+        <h2 style="display: inline-block">Current Bet:&nbsp;</h2><h2 id="bet-value" style="display: inline-block;"></h2>
     </body>
 </html>
