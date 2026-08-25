@@ -65,14 +65,9 @@ int initialize_server() {
 
 int run_server(int sockfd) {
     struct sockaddr_storage incoming_addr;
-    for (;;) {
-        socklen_t addr_size = sizeof(incoming_addr);
-        int new_fd;
-        if ((new_fd = accept(sockfd, (struct sockaddr *)&incoming_addr, &addr_size)) == -1) {
-            printf("[./server/server.c | initialize_server()] accept() error: %s\n", strerror(errno));
-            continue;
-        }
-
+    socklen_t addr_size = sizeof(incoming_addr);
+    int new_fd;
+    while ((new_fd = accept(sockfd, (struct sockaddr *)&incoming_addr, &addr_size)) >= 0) {
         char *tmp_buf = (char *)malloc(RCVBUFSIZE * sizeof(char));
         char *buf = (char *)malloc((RCVBUFSIZE + 1) * sizeof(char));
 
@@ -120,10 +115,11 @@ int run_server(int sockfd) {
 
         char *send_buffer = NULL;
 
+        char *content_type = NULL;
         if (!strcmp(recv_header.method, "GET")) {
-            send_buffer = route_get(recv_header.path, find_path, new_fd);
+            route_get(recv_header.path, find_path, new_fd, &send_buffer, &content_type);
         } else if (!strcmp(recv_header.method, "POST")) {
-            send_buffer = route_post(find_path, recv_header.content);
+            route_post(find_path, recv_header.content, &send_buffer);
         } else {
             send_http_error(400, new_fd);
 
@@ -135,11 +131,30 @@ int run_server(int sockfd) {
             continue;
 
         // TODO: Better response header
-        char *response_header = "HTTP/1.1 200 OK\r\n\r\n";
-        char *response_buffer = (char *)malloc((strlen(response_header) + strlen(send_buffer) + 1) * sizeof(char));
-        strcpy(response_buffer, response_header);
+        char *response_type = "HTTP/1.1 200 OK\r\n";
+
+        int content_length = strlen(send_buffer);
+        char *response_length = (char *)malloc(241 * sizeof(int) / 100 + 20);
+
+        sprintf(response_length, "Content-Length: %d\r\n\r\n", content_length);
+
+        char *response_buffer = (char *)malloc((strlen(response_type) + strlen(response_length) + strlen(content_type) + strlen(send_buffer) + 1) * sizeof(char));
+
+        strcpy(response_buffer, response_type);
+        if (content_type) {
+            strcat(response_buffer, content_type);
+        }
+        strcat(response_buffer, response_length);
         strcat(response_buffer, send_buffer);
-        response_buffer[strlen(response_header) + strlen(send_buffer)] = 0;
+
+        response_buffer[strlen(response_type) + strlen(response_length) + strlen(content_type) + strlen(send_buffer)] = '\0';
+
+        if (content_type) {
+            free(content_type);
+        }
+        free(response_length);
+        // TODO: This causes an invalid next size for some reason
+        // free(send_buffer);
 
         long total_send_size = 0;
         while ((size_t)total_send_size < strlen(response_buffer)) {
@@ -156,13 +171,12 @@ int run_server(int sockfd) {
         printf("Sent %ld bytes\n", total_send_size);
 
         delete_header(&recv_header);
-        if (buf != NULL)
-            free(buf);
-        if (find_path != NULL)
-            free(find_path);
-        if (send_buffer != NULL)
-            free(send_buffer);
-        if (response_buffer != NULL)
-            free(response_buffer);
+        free(buf);
+        free(find_path);
+        free(response_buffer);
+
+        close(new_fd);
     }
+
+    return 0;
 }

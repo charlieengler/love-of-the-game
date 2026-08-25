@@ -33,7 +33,7 @@
 // Sec-Fetch-Site: same-origin
 // Priority: u=0
 
-int split_string(char *input, char delimiter) {
+static int split_string(char *input, char delimiter) {
     char *current_char = input;
     int num_chars = 0;
     while (*current_char) {
