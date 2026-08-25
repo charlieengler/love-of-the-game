@@ -131,10 +131,10 @@ char *blackjack_deal_cards(struct database_mappings *db, char *data) {
         cards_val->type = JSON_STRING;
 
         json_add_entry(entry_json, "cards", cards_val);
-    }
 
-    free(found_entry->data_ptr);
-    found_entry->data_ptr = json_to_string(entry_json);
+        free(found_entry->data_ptr);
+        found_entry->data_ptr = json_to_string(entry_json);
+    }
 
     return json_to_string(entry_json);
 }

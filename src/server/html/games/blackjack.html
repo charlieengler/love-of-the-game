@@ -79,13 +79,15 @@
             }
 
             const dealCards = async () => {
+                const userID = document.getElementById("user-id-input").value;
                 const tableID = document.getElementById("table-id-input").value;
 
                 const data = {
+                    userID: userID,
                     tableID: tableID,
                 };
 
-                await submitData("http://localhost:3000/routes/games/blackjack/deal-cards", data);
+                const res = (await submitData("http://localhost:3000/routes/games/blackjack/deal-cards", data))[0];
             }
         </script>
     </head>
