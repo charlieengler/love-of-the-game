@@ -68,10 +68,17 @@ struct header parse_header(char *raw_header) {
         if (*current_char == '\n' || *current_char == 0) {
             *current_char = 0;
 
-            char **new_lines = (char **)malloc(((++num_lines) + 1) * sizeof(char *));
-            new_lines = lines;
-            new_lines[num_lines - 1] = current_line;
+            char **new_lines = (char **)malloc((num_lines + 1) * sizeof(char *));
+            for (int i = 0; i < num_lines; ++i) {
+                new_lines[i] = lines[i];
+            }
+
+            new_lines[num_lines] = current_line;
+
+            free(lines);
             lines = new_lines;
+
+            ++num_lines;
 
             current_line = current_char + 1;
         }
@@ -85,24 +92,34 @@ struct header parse_header(char *raw_header) {
         char *line = lines[i];
         int offset = 0;
         while ((offset = split_string(line, ' ')) >= 0) {
-            num_strings++;
-
             line[offset] = 0;
 
-            char **new_strings = (char **)malloc(num_strings * sizeof(char *));
-            new_strings = strings;
-            new_strings[num_strings - 1] = line;
+            char **new_strings = (char **)malloc((num_strings + 1) * sizeof(char *));
+            for (int j = 0; j < num_strings; ++j) {
+                new_strings[j] = strings[j];
+            }
+
+            new_strings[num_strings] = line;
+
+            free(strings);
             strings = new_strings;
+
+            ++num_strings;
 
             line += offset + 1;
         }
 
-        num_strings++;
+        char **new_strings = (char **)malloc((num_strings + 1) * sizeof(char *));
+        for (int j = 0; j < num_strings; ++j) {
+            new_strings[j] = strings[j];
+        }
 
-        char **new_strings = (char **)malloc(num_strings * sizeof(char *));
-        new_strings = strings;
-        new_strings[num_strings - 1] = line;
+        new_strings[num_strings] = line;
+
+        free(strings);
         strings = new_strings;
+
+        ++num_strings;
     }
 
     // TODO: Don't use hard coded string indices
@@ -122,9 +139,9 @@ struct header parse_header(char *raw_header) {
         strcpy(return_header.content, strings[num_strings - 1]);
     }
 
-    // TODO: Free the strings within lines as well
+    // TODO: Free all of the lines as well
     free(lines);
-    // TODO: Free the strings within lines as well
+    // TODO: Free all of the strings as well
     free(strings);
     free(copied_header);
 
