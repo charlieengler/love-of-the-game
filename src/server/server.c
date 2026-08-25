@@ -138,7 +138,13 @@ int run_server(int sockfd) {
 
         sprintf(response_length, "Content-Length: %d\r\n\r\n", content_length);
 
-        char *response_buffer = (char *)malloc((strlen(response_type) + strlen(response_length) + strlen(content_type) + strlen(send_buffer) + 1) * sizeof(char));
+        int response_buffer_length = strlen(response_type) + strlen(response_length) + strlen(send_buffer) + 1;
+
+        if (content_type) {
+            response_buffer_length += strlen(content_type);
+        }
+
+        char *response_buffer = (char *)malloc(response_buffer_length * sizeof(char));
 
         strcpy(response_buffer, response_type);
         if (content_type) {
@@ -147,7 +153,7 @@ int run_server(int sockfd) {
         strcat(response_buffer, response_length);
         strcat(response_buffer, send_buffer);
 
-        response_buffer[strlen(response_type) + strlen(response_length) + strlen(content_type) + strlen(send_buffer)] = '\0';
+        response_buffer[response_buffer_length - 1] = '\0';
 
         if (content_type) {
             free(content_type);

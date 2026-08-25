@@ -151,17 +151,19 @@ int json_add_entry_from_string(struct json_object *json_obj, char *raw_string, u
             open_string = 0;
             break;
         case '}':
+            if (open_string) {
+                ++current_len;
+                ++raw_string;
+                continue;
+            }
+
             json_val = (struct json_value *)malloc(sizeof(struct json_value));
             json_val->str_val = val;
             json_val->type = JSON_STRING;
 
             json_add_entry(json_obj, key, json_val);
 
-            key = NULL;
-            val = NULL;
-            json_val = NULL;
-            current_len = 0;
-            open_string = 0;
+            return 0;
             break;
         default:
             break;
