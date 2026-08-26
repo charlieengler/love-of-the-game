@@ -101,15 +101,13 @@ char *blackjack_place_bet(struct database_mappings *db, char *data) {
     return data;
 }
 
-char *blackjack_deal_cards(struct database_mappings *db, char *data) {
+char *blackjack_deal_card(struct database_mappings *db, char *data) {
     // TODO: Error checking
     struct json_object *data_json = json_parse_string(data);
 
     // TODO: Error checking
     struct json_value *table_id_json = json_find_entry(data_json, "tableID");
     char *table_id = table_id_json->str_val;
-
-    int *shuffled_deck = get_shuffled_deck(0);
 
     // TODO: Error checking
     blackjack_join_table(db, data);
@@ -125,15 +123,44 @@ char *blackjack_deal_cards(struct database_mappings *db, char *data) {
 
     struct json_value *entry_cards_json = json_find_entry(entry_json, "cards");
     if (!entry_cards_json) {
+        int *shuffled_deck = get_shuffled_deck(0);
+
         struct json_value *cards_val = (struct json_value *)malloc(sizeof(struct json_value));
-        cards_val->str_val = get_card_index_string(shuffled_deck, NUM_CARDS + num_jokers);
+        cards_val->str_val = get_card_index_string(shuffled_deck, NUM_CARDS);
         cards_val->type = JSON_STRING;
+
+        free(shuffled_deck);
 
         json_add_entry(entry_json, "cards", cards_val);
 
         free(found_entry->data_ptr);
         found_entry->data_ptr = json_to_string(entry_json);
+
+        entry_cards_json = json_find_entry(entry_json, "cards");
     }
 
-    return json_to_string(entry_json);
+    int num_cards = 0;
+    int *cards_array = parse_card_index_string(entry_cards_json->str_val, &num_cards);
+    int selected_card = cards_array[0];
+
+    free(entry_cards_json->str_val);
+    entry_cards_json->str_val = get_card_index_string(cards_array + 1, num_cards - 1);
+
+    free(cards_array);
+
+    free(found_entry->data_ptr);
+    found_entry->data_ptr = json_to_string(entry_json);
+
+    struct json_object *return_json = json_initialize_object();
+    json_add_entry(return_json, "tableID", table_id_json);
+    json_add_entry(return_json, "userID", json_find_entry(data_json, "userID"));
+
+    struct json_value *return_card_json = (struct json_value *)malloc(sizeof(struct json_value));
+    return_card_json->str_val = (char *)malloc(6 * sizeof(char));
+    sprintf(return_card_json->str_val, "%d", selected_card);
+    return_card_json->type = JSON_STRING;
+
+    json_add_entry(return_json, "cards", return_card_json);
+
+    return json_to_string(return_json);
 }

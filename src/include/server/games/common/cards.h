@@ -63,6 +63,7 @@
 
 int *get_shuffled_deck(char num_jokers);
 char *get_card_string(int card);
-char *get_card_index_string(int *cards, int cardsSize);
+char *get_card_index_string(int *cards, int num_cards);
+int *parse_card_index_string(char *cards_string, int *num_cards);
 
 #endif // CARDS_H

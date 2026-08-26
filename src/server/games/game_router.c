@@ -17,7 +17,7 @@ char *route_blackjack(char *function, char *data) {
         // TODO: Check for success/failure on this function (returns void right now)
         return_header = blackjack_place_bet(blackjack_db, data);
     } else if (strstr(function, "deal-cards") != NULL) {
-        return_header = blackjack_deal_cards(blackjack_db, data);
+        return_header = blackjack_deal_card(blackjack_db, data);
     }
 
     db_save(blackjack_db);

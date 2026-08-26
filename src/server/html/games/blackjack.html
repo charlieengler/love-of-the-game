@@ -93,8 +93,7 @@
 
                 const cards = parseCardIndexString(res.cards);
 
-                console.log(res.cards);
-                console.log(cards);
+                document.getElementById("card-table").innerHTML = '';
 
                 for(let i = 0; i < cards.length; i++) {
                     generateCardGraphic(cards[i]);

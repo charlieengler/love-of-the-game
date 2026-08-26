@@ -8,6 +8,7 @@ enum json_data_types {
     JSON_STRING,
     JSON_INTEGER,
     JSON_FLOAT,
+    // JSON_ARRAY,
 };
 
 struct json_value;
@@ -29,6 +30,9 @@ struct json_value {
     char *str_val;
     uint64_t int_val;
     double float_val;
+
+    // void *array_val;
+    // uint64_t array_size;
 
     enum json_data_types type;
 };

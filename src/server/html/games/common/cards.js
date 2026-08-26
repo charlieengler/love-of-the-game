@@ -1,10 +1,5 @@
 const cards = [
     {
-        name: "Joker",
-        graphic: "🤡"
-    },
-
-    {
         name: "Ace of Diamonds",
         graphic: "A♦️"
     },
@@ -215,6 +210,11 @@ const cards = [
         name: "King of Spades",
         graphic: "K♠️"
     },
+
+    {
+        name: "Joker",
+        graphic: "🤡"
+    },
 ];
 
 const parseCardIndexString = cardsString => {
@@ -231,14 +231,19 @@ const parseCardIndexString = cardsString => {
 
 const generateCardGraphic = card => {
     const cardContainer = document.createElement("div");
+    cardContainer.style = "border:1px solid white; display:inline-block; height:150px; position:relative; width:100px;";
 
-    const cardGraphic = document.createElement("div");
+    let cardGraphic = document.createElement("div");
     cardGraphic.innerText = card.graphic;
+    cardGraphic.style = "left:0; position:absolute; top:0;"
+    cardContainer.appendChild(cardGraphic);
 
     const br = document.createElement("br");
-
-    cardContainer.appendChild(cardGraphic);
     cardContainer.appendChild(br);
+
+    cardGraphic = document.createElement("div");
+    cardGraphic.innerText = card.graphic;
+    cardGraphic.style = "bottom:0; position:absolute; right:0;"
     cardContainer.appendChild(cardGraphic);
 
     const cardTable = document.getElementById("card-table");
