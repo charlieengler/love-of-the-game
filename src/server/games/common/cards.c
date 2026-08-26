@@ -13,7 +13,7 @@ int *get_shuffled_deck(char num_jokers) {
     int *deck = malloc(sizeof(int) * (NUM_CARDS + num_jokers));
 
     for (int i = 0; i < NUM_CARDS; ++i) {
-        deck[i] = i + 1;
+        deck[i] = i;
     }
 
     for (int i = NUM_CARDS; i < NUM_CARDS + num_jokers; ++i) {

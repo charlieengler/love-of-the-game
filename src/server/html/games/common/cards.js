@@ -57,50 +57,164 @@ const cards = [
         graphic: "K♦️"
     },
 
-    "One of Clubs",
-    "Two of Clubs",
-    "Three of Clubs",
-    "Four of Clubs",
-    "Five of Clubs",
-    "Six of Clubs",
-    "Seven of Clubs",
-    "Eight of Clubs",
-    "Nine of Clubs",
-    "Ten of Clubs",
-    "Jack of Clubs",
-    "Queen of Clubs",
-    "King of Clubs",
-    "Ace of Clubs",
+    {
+        name: "Ace of Clubs",
+        graphic: "A♣️"
+    },
+    {
+        name: "Two of Clubs",
+        graphic: "2♣️"
+    },
+    {
+        name: "Three of Clubs",
+        graphic: "3♣️"
+    },
+    {
+        name: "Four of Clubs",
+        graphic: "4♣️"
+    },
+    {
+        name: "Five of Clubs",
+        graphic: "5♣️"
+    },
+    {
+        name: "Six of Clubs",
+        graphic: "6♣️"
+    },
+    {
+        name: "Seven of Clubs",
+        graphic: "7♣️"
+    },
+    {
+        name: "Eight of Clubs",
+        graphic: "8♣️"
+    },
+    {
+        name: "Nine of Clubs",
+        graphic: "9♣️"
+    },
+    {
+        name: "Ten of Clubs",
+        graphic: "10♣️"
+    },
+    {
+        name: "Jack of Clubs",
+        graphic: "J♣️"
+    },
+    {
+        name: "Queen of Clubs",
+        graphic: "Q♣️"
+    },
+    {
+        name: "King of Clubs",
+        graphic: "K♣️"
+    },
 
-    "One of Hearts",
-    "Two of Hearts",
-    "Three of Hearts",
-    "Four of Hearts",
-    "Five of Hearts",
-    "Six of Hearts",
-    "Seven of Hearts",
-    "Eight of Hearts",
-    "Nine of Hearts",
-    "Ten of Hearts",
-    "Jack of Hearts",
-    "Queen of Hearts",
-    "King of Hearts",
-    "Ace of Hearts",
+    {
+        name: "Ace of Hearts",
+        graphic: "A♥️"
+    },
+    {
+        name: "Two of Hearts",
+        graphic: "2♥️"
+    },
+    {
+        name: "Three of Hearts",
+        graphic: "3♥️"
+    },
+    {
+        name: "Four of Hearts",
+        graphic: "4♥️"
+    },
+    {
+        name: "Five of Hearts",
+        graphic: "5♥️"
+    },
+    {
+        name: "Six of Hearts",
+        graphic: "6♥️"
+    },
+    {
+        name: "Seven of Hearts",
+        graphic: "7♥️"
+    },
+    {
+        name: "Eight of Hearts",
+        graphic: "8♥️"
+    },
+    {
+        name: "Nine of Hearts",
+        graphic: "9♥️"
+    },
+    {
+        name: "Ten of Hearts",
+        graphic: "10♥️"
+    },
+    {
+        name: "Jack of Hearts",
+        graphic: "J♥️"
+    },
+    {
+        name: "Queen of Hearts",
+        graphic: "Q♥️"
+    },
+    {
+        name: "King of Hearts",
+        graphic: "K♥️"
+    },
 
-    "One of Spades",
-    "Two of Spades",
-    "Three of Spades",
-    "Four of Spades",
-    "Five of Spades",
-    "Six of Spades",
-    "Seven of Spades",
-    "Eight of Spades",
-    "Nine of Spades",
-    "Ten of Spades",
-    "Jack of Spades",
-    "Queen of Spades",
-    "King of Spades",
-    "Ace of Spades",
+    {
+        name: "Ace of Spades",
+        graphic: "A♠️"
+    },
+    {
+        name: "Two of Spades",
+        graphic: "2♠️"
+    },
+    {
+        name: "Three of Spades",
+        graphic: "3♠️"
+    },
+    {
+        name: "Four of Spades",
+        graphic: "4♠️"
+    },
+    {
+        name: "Five of Spades",
+        graphic: "5♠️"
+    },
+    {
+        name: "Six of Spades",
+        graphic: "6♠️"
+    },
+    {
+        name: "Seven of Spades",
+        graphic: "7♠️"
+    },
+    {
+        name: "Eight of Spades",
+        graphic: "8♠️"
+    },
+    {
+        name: "Nine of Spades",
+        graphic: "9♠️"
+    },
+    {
+        name: "Ten of Spades",
+        graphic: "10♠️"
+    },
+    {
+        name: "Jack of Spades",
+        graphic: "J♠️"
+    },
+    {
+        name: "Queen of Spades",
+        graphic: "Q♠️"
+    },
+    {
+        name: "King of Spades",
+        graphic: "K♠️"
+    },
 ];
 
 const parseCardIndexString = cardsString => {
@@ -116,5 +230,18 @@ const parseCardIndexString = cardsString => {
 }
 
 const generateCardGraphic = card => {
+    const cardContainer = document.createElement("div");
 
+    const cardGraphic = document.createElement("div");
+    cardGraphic.innerText = card.graphic;
+
+    const br = document.createElement("br");
+
+    cardContainer.appendChild(cardGraphic);
+    cardContainer.appendChild(br);
+    cardContainer.appendChild(cardGraphic);
+
+    const cardTable = document.getElementById("card-table");
+
+    cardTable.appendChild(cardContainer);
 }

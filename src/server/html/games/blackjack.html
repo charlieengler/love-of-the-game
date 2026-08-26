@@ -91,7 +91,14 @@
 
                 const res = (await submitData("http://localhost:3000/routes/games/blackjack/deal-cards", data))[0];
 
-                console.log(parseCardIndexString(res.cards));
+                const cards = parseCardIndexString(res.cards);
+
+                console.log(res.cards);
+                console.log(cards);
+
+                for(let i = 0; i < cards.length; i++) {
+                    generateCardGraphic(cards[i]);
+                }
             }
         </script>
     </head>
@@ -112,5 +119,9 @@
         <h2 style="display: inline-block;">User ID:&nbsp;</h2><h2 id="user-id" style="display: inline-block;"></h2>
         <br/>
         <h2 style="display: inline-block">Current Bet:&nbsp;</h2><h2 id="bet-value" style="display: inline-block;"></h2>
+
+        <br/>
+        <br/>
+        <div id="card-table"></div>
     </body>
 </html>

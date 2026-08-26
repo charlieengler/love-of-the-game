@@ -109,8 +109,7 @@ char *blackjack_deal_cards(struct database_mappings *db, char *data) {
     struct json_value *table_id_json = json_find_entry(data_json, "tableID");
     char *table_id = table_id_json->str_val;
 
-    const int num_jokers = 0;
-    int *shuffled_deck = get_shuffled_deck(num_jokers);
+    int *shuffled_deck = get_shuffled_deck(0);
 
     // TODO: Error checking
     blackjack_join_table(db, data);
