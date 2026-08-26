@@ -141,10 +141,15 @@ char *blackjack_deal_card(struct database_mappings *db, char *data) {
 
     int num_cards = 0;
     int *cards_array = parse_card_index_string(entry_cards_json->str_val, &num_cards);
+
     int selected_card = cards_array[0];
 
     free(entry_cards_json->str_val);
-    entry_cards_json->str_val = get_card_index_string(cards_array + 1, num_cards - 1);
+    if (num_cards > 1) {
+        entry_cards_json->str_val = get_card_index_string(&cards_array[1], num_cards - 1);
+    } else {
+        entry_cards_json->str_val = get_card_index_string(get_shuffled_deck(0), NUM_CARDS);
+    }
 
     free(cards_array);
 

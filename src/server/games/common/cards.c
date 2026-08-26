@@ -83,13 +83,15 @@ char *get_card_index_string(int *cards, int num_cards) {
 int *parse_card_index_string(char *cards_string, int *num_cards) {
     int *cards_array = (int *)malloc(NUM_CARDS * sizeof(int));
 
+    *num_cards = 0;
+
     char *current_index_string = cards_string;
     while (*cards_string) {
         switch (*cards_string) {
         case ',':
             *cards_string = '\0';
 
-            cards_array[*num_cards + 1] = atoi(current_index_string);
+            cards_array[*num_cards] = atoi(current_index_string);
 
             current_index_string = cards_string + 1;
 
@@ -101,6 +103,8 @@ int *parse_card_index_string(char *cards_string, int *num_cards) {
 
         ++cards_string;
     }
+
+    cards_array[*num_cards] = atoi(current_index_string);
 
     (*num_cards)++;
 

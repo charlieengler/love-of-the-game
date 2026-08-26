@@ -109,7 +109,7 @@ uint64_t db_initialize(struct database_mappings **mappings, char *name) {
             }
 
             // TODO: Break this into a helper function
-            fscanf(db_file, "%d", &(new_entry->type));
+            fscanf(db_file, "%d", (int *)&(new_entry->type));
 
             // TODO: This is terrible, need to find a better way to parse the data entry in the file
             while (fgetc(db_file) != '\n')
