@@ -1,20 +1,61 @@
 const cards = [
-    "Joker",
+    {
+        name: "Joker",
+        graphic: "🤡"
+    },
 
-    "One of Diamonds",
-    "Two of Diamonds",
-    "Three of Diamonds",
-    "Four of Diamonds",
-    "Five of Diamonds",
-    "Six of Diamonds",
-    "Seven of Diamonds",
-    "Eight of Diamonds",
-    "Nine of Diamonds",
-    "Ten of Diamonds",
-    "Jack of Diamonds",
-    "Queen of Diamonds",
-    "King of Diamonds",
-    "Ace of Diamonds",
+    {
+        name: "Ace of Diamonds",
+        graphic: "A♦️"
+    },
+    {
+        name: "Two of Diamonds",
+        graphic: "2♦️"
+    },
+    {
+        name: "Three of Diamonds",
+        graphic: "3♦️"
+    },
+    {
+        name: "Four of Diamonds",
+        graphic: "4♦️"
+    },
+    {
+        name: "Five of Diamonds",
+        graphic: "5♦️"
+    },
+    {
+        name: "Six of Diamonds",
+        graphic: "6♦️"
+    },
+    {
+        name: "Seven of Diamonds",
+        graphic: "7♦️"
+    },
+    {
+        name: "Eight of Diamonds",
+        graphic: "8♦️"
+    },
+    {
+        name: "Nine of Diamonds",
+        graphic: "9♦️"
+    },
+    {
+        name: "Ten of Diamonds",
+        graphic: "10♦️"
+    },
+    {
+        name: "Jack of Diamonds",
+        graphic: "J♦️"
+    },
+    {
+        name: "Queen of Diamonds",
+        graphic: "Q♦️"
+    },
+    {
+        name: "King of Diamonds",
+        graphic: "K♦️"
+    },
 
     "One of Clubs",
     "Two of Clubs",
@@ -72,4 +113,8 @@ const parseCardIndexString = cardsString => {
     }
 
     return cardsArray;
+}
+
+const generateCardGraphic = card => {
+
 }

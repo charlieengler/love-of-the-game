@@ -5,7 +5,7 @@
 
 #include "../../../include/server/games/common/cards.h"
 
-const char *card_names[] = {"One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King", "Ace", "Joker"};
+const char *card_names[] = {"Ace", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King", "Joker"};
 
 const char *suit_names[] = {"Diamonds", "Clubs", "Hearts", "Spades"};
 
@@ -51,7 +51,7 @@ char *get_card_string(int card) {
         return ret_str;
     }
 
-    const char *card_name = card_names[(card - 1) % 14];
+    const char *card_name = card_names[(card - 1) % 13];
     const char *of = " of ";
     const char *card_suit = suit_names[(card - 1) % 4];
 
