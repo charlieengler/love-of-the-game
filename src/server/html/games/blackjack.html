@@ -80,7 +80,7 @@
                 document.getElementById("bet-value").innerText = res.bet;
             }
 
-            const dealCards = async () => {
+            const startHand = async () => {
                 const userID = document.getElementById("user-id-input").value;
                 const tableID = document.getElementById("table-id-input").value;
 
@@ -89,14 +89,29 @@
                     tableID: tableID,
                 };
 
-                const res = (await submitData("http://localhost:3000/routes/games/blackjack/deal-cards", data))[0];
+                const res = (await submitData("http://localhost:3000/routes/games/blackjack/start-hand", data))[0];
 
-                const cards = parseCardIndexString(res.cards);
+                const users = res.users.split(',');
+                const dealerCards = parseCardIndexString(res.dealerCards);
+                const userCards = parseCardIndexString(res.userCards);
 
-                document.getElementById("card-table").innerHTML = '';
+                document.getElementById("dealer-card-table").innerHTML = '';
+                document.getElementById("user-card-table").innerHTML = '';
 
-                for(let i = 0; i < cards.length; i++) {
-                    generateCardGraphic(cards[i]);
+                for(let i = 0; i < users.length; i++) {
+                    const newHand = document.createElement("div");
+                    newHand.id = "player-" + users[i] + "-cards";
+                    document.getElementById("user-card-table").appendChild(newHand);
+                }
+
+                generateCardGraphic(dealerCards[0], "dealer-card-table");
+
+                for(let i = 0; i < userCards.length; i += 2) {
+                    generateCardGraphic(userCards[i], "player-" + users[Math.floor(i/2)] + "-cards");
+                }
+
+                for(let i = 1; i < userCards.length; i += 2) {
+                    generateCardGraphic(userCards[i], "player-" + users[Math.floor(i/2)] + "-cards");
                 }
             }
         </script>
@@ -109,7 +124,7 @@
         <input id="bet-value-input" placeholder="Bet" type="number"/>
         <button onclick="placeBet()">Place Bet</button>
 
-        <button onclick="dealCards()">Deal Cards</button>
+        <button onclick="startHand()">Start Hand</button>
 
         <br/>
 
@@ -121,6 +136,7 @@
 
         <br/>
         <br/>
-        <div id="card-table"></div>
+        <div id="dealer-card-table"></div>
+        <div id="user-card-table"></div>
     </body>
 </html>

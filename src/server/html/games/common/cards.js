@@ -229,7 +229,7 @@ const parseCardIndexString = cardsString => {
     return cardsArray;
 }
 
-const generateCardGraphic = card => {
+const generateCardGraphic = (card, slot) => {
     const cardContainer = document.createElement("div");
     cardContainer.style = "border:1px solid white; display:inline-block; height:150px; position:relative; width:100px;";
 
@@ -246,7 +246,7 @@ const generateCardGraphic = card => {
     cardGraphic.style = "bottom:0; position:absolute; right:0;"
     cardContainer.appendChild(cardGraphic);
 
-    const cardTable = document.getElementById("card-table");
+    const cardSlot = document.getElementById(slot);
 
-    cardTable.appendChild(cardContainer);
+    cardSlot.appendChild(cardContainer);
 }

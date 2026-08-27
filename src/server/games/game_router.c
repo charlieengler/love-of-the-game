@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -17,8 +16,8 @@ char *route_blackjack(char *function, char *data) {
     } else if (strstr(function, "bet") != NULL) {
         // TODO: Check for success/failure on this function (returns void right now)
         return_header = blackjack_place_bet(blackjack_db, data);
-    } else if (strstr(function, "deal-cards") != NULL) {
-        return_header = blackjack_deal_card(blackjack_db, data);
+    } else if (strstr(function, "start-hand") != NULL) {
+        return_header = blackjack_progress_hand(blackjack_db, data);
     }
 
     db_save(blackjack_db);
