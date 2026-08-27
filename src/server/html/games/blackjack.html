@@ -113,6 +113,17 @@
                 for(let i = 1; i < userCards.length; i += 2) {
                     generateCardGraphic(userCards[i], "player-" + users[Math.floor(i/2)] + "-cards");
                 }
+
+                document.getElementById("hit-button").disabled = false;
+                document.getElementById("stand-button").disabled = false;
+            }
+
+            const hit = async () => {
+
+            }
+
+            const stand = async () => {
+
             }
         </script>
     </head>
@@ -125,6 +136,9 @@
         <button onclick="placeBet()">Place Bet</button>
 
         <button onclick="startHand()">Start Hand</button>
+
+        <button disabled id="hit-button" onclick="hit()">Hit</button>
+        <button disabled id="stand-button" onclick="stand()">Stand</button>
 
         <br/>
 
