@@ -80,20 +80,11 @@
                 document.getElementById("bet-value").innerText = res.bet;
             }
 
-            const startHand = async () => {
-                const userID = document.getElementById("user-id-input").value;
-                const tableID = document.getElementById("table-id-input").value;
-
-                const data = {
-                    userID: userID,
-                    tableID: tableID,
-                };
-
-                const res = (await submitData("http://localhost:3000/routes/games/blackjack/start-hand", data))[0];
-
-                const users = res.users.split(',');
-                const dealerCards = parseCardIndexString(res.dealerCards);
-                const userCards = parseCardIndexString(res.userCards);
+            const redealCards = data => {
+                const users = data.users.split(',');
+                const dealerCards = parseCardIndexString(data.dealerCards);
+                const userCards = parseCardIndexString(data.userCards);
+                const userCardCounts = data.userCardCounts.split(',');
 
                 document.getElementById("dealer-card-table").innerHTML = '';
                 document.getElementById("user-card-table").innerHTML = '';
@@ -104,26 +95,69 @@
                     document.getElementById("user-card-table").appendChild(newHand);
                 }
 
-                generateCardGraphic(dealerCards[0], "dealer-card-table");
-
-                for(let i = 0; i < userCards.length; i += 2) {
-                    generateCardGraphic(userCards[i], "player-" + users[Math.floor(i/2)] + "-cards");
+                for(let i = 0; i < dealerCards.length; i++) {
+                    generateCardGraphic(dealerCards[i], "dealer-card-table");
                 }
 
-                for(let i = 1; i < userCards.length; i += 2) {
-                    generateCardGraphic(userCards[i], "player-" + users[Math.floor(i/2)] + "-cards");
+                let k = 0;
+                for(let i = 0; i < users.length; i++) {
+                    for(let j = 0; j < userCardCounts[i]; j++) {
+                        generateCardGraphic(userCards[k], "player-" + users[i] + "-cards");
+
+                        k++;
+                    }
                 }
+            }
+
+            const progressHand = async () => {
+                const userID = document.getElementById("user-id-input").value;
+                const tableID = document.getElementById("table-id-input").value;
+
+                const data = {
+                    userID: userID,
+                    tableID: tableID,
+                };
+
+                const res = (await submitData("http://localhost:3000/routes/games/blackjack/progress-hand", data))[0];
+
+                console.log(res);
+
+                redealCards(res);
 
                 document.getElementById("hit-button").disabled = false;
                 document.getElementById("stand-button").disabled = false;
             }
 
             const hit = async () => {
+                const userID = document.getElementById("user-id-input").value;
+                const tableID = document.getElementById("table-id-input").value;
 
+                const data = {
+                    userID: userID,
+                    tableID: tableID,
+                };
+
+                const res = (await submitData("http://localhost:3000/routes/games/blackjack/hit", data))[0];
+
+                console.log(res);
+
+                redealCards(res);
             }
 
             const stand = async () => {
+                const userID = document.getElementById("user-id-input").value;
+                const tableID = document.getElementById("table-id-input").value;
 
+                const data = {
+                    userID: userID,
+                    tableID: tableID,
+                };
+
+                const res = (await submitData("http://localhost:3000/routes/games/blackjack/stand", data))[0];
+
+                console.log(res);
+
+                redealCards(res);
             }
         </script>
     </head>
@@ -135,7 +169,7 @@
         <input id="bet-value-input" placeholder="Bet" type="number"/>
         <button onclick="placeBet()">Place Bet</button>
 
-        <button onclick="startHand()">Start Hand</button>
+        <button onclick="progressHand()">Progress Hand</button>
 
         <button disabled id="hit-button" onclick="hit()">Hit</button>
         <button disabled id="stand-button" onclick="stand()">Stand</button>

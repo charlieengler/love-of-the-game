@@ -35,16 +35,21 @@ int route_get(char *trimmed_path, char *full_path, int new_fd, char **send_buffe
         return 404;
     }
 
-    long send_length;
+    long send_length = 0;
     FILE *send_file = fopen(full_path, "rb");
 
     if (send_file) {
         fseek(send_file, 0, SEEK_END);
+
         send_length = ftell(send_file);
+
         fseek(send_file, 0, SEEK_SET);
+
         // TODO: Malloc error checking
-        *send_buffer = (char *)malloc((send_length + 5) * sizeof(char));
-        fread(*send_buffer, 1, send_length, send_file);
+        *send_buffer = (char *)malloc((send_length + strlen("\r\n\r\n") + 1) * sizeof(char));
+        fread(*send_buffer, sizeof(char), send_length, send_file);
+
+        (*send_buffer)[send_length] = '\0';
 
         fclose(send_file);
 

@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "./internal.h"
+
 #include "../../../include/server/games/blackjack/blackjack.h"
 
 #include "../../../include/server/database/database.h"

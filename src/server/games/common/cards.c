@@ -85,15 +85,18 @@ int *parse_card_index_string(char *cards_string, int *num_cards) {
 
     *num_cards = 0;
 
-    char *current_index_string = cards_string;
-    while (*cards_string) {
-        switch (*cards_string) {
+    char *cards_string_copy = (char *)malloc(strlen(cards_string) * sizeof(char));
+    char *start = cards_string_copy;
+    strcpy(cards_string_copy, cards_string);
+    char *current_index_string = cards_string_copy;
+    while (*cards_string_copy) {
+        switch (*cards_string_copy) {
         case ',':
-            *cards_string = '\0';
+            *cards_string_copy = '\0';
 
             cards_array[*num_cards] = atoi(current_index_string);
 
-            current_index_string = cards_string + 1;
+            current_index_string = cards_string_copy + 1;
 
             (*num_cards)++;
             break;
@@ -101,12 +104,14 @@ int *parse_card_index_string(char *cards_string, int *num_cards) {
             break;
         }
 
-        ++cards_string;
+        ++cards_string_copy;
     }
 
     cards_array[*num_cards] = atoi(current_index_string);
 
     (*num_cards)++;
+
+    free(start);
 
     return cards_array;
 }

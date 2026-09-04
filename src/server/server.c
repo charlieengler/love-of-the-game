@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <math.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,6 +87,8 @@ int run_server(int sockfd) {
             total_read_size += read_size;
         } while (read_size == RCVBUFSIZE);
 
+        free(tmp_buf);
+
         if (total_read_size <= 0) {
             send_http_error(400, new_fd);
 
@@ -127,16 +130,19 @@ int run_server(int sockfd) {
             continue;
         }
 
-        if (send_buffer == NULL)
+        if (send_buffer == NULL) {
+            printf("Send buffer was null in server\n");
             continue;
+        }
 
         // TODO: Better response header
         char *response_type = "HTTP/1.1 200 OK\r\n";
 
         int content_length = strlen(send_buffer);
-        char *response_length = (char *)malloc(241 * sizeof(int) / 100 + 20);
+        char *response_length = (char *)malloc((strlen("Content-Length: \r\n\r\n") + (content_length == 0 ? 1 : (int)(log10(content_length) + 1)) + 1) * sizeof(char));
 
         sprintf(response_length, "Content-Length: %d\r\n\r\n", content_length);
+        response_length[strlen(response_length)] = '\0';
 
         int response_buffer_length = strlen(response_type) + strlen(response_length) + strlen(send_buffer) + 1;
 

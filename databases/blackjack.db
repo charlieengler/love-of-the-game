@@ -4,4 +4,4 @@
 blackjack
 abcdef
 1
-{"users":"charlie","bets":"100"}
+{"users":"charlie,other","bets":"100,200"}

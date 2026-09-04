@@ -2,13 +2,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "./internal.h"
+
 #include "../../../include/server/games/blackjack/blackjack.h"
 #include "../../../include/server/games/common/cards.h"
 
 #include "../../../include/server/database/database.h"
 #include "../../../include/server/utils/json_handler.h"
 
-char *blackjack_progress_hand(struct database_mappings *db, char *data) {
+// TODO: Dealing cards during hitting and dealer play is not removing them from the db string
+
+// TODO: Proper bet handling and payouts
+char *blackjack_progress_hand(struct database_mappings *db, char *data, int user_action) {
     // TODO: Error checking
     struct json_object *parsed_data = json_parse_string(data);
 
@@ -26,12 +31,12 @@ char *blackjack_progress_hand(struct database_mappings *db, char *data) {
 
     struct json_object *entry_json = json_parse_string((char *)found_entry->data_ptr);
 
-    int hand_progress = 0;
+    int hand_progress = -1;
     struct json_value *hand_progress_json = json_find_entry(entry_json, "hand_progress");
     if (!hand_progress_json) {
         hand_progress_json = (struct json_value *)malloc(sizeof(struct json_value));
-        hand_progress_json->str_val = (char *)malloc(2 * sizeof(char));
-        strcpy(hand_progress_json->str_val, "0");
+        hand_progress_json->str_val = (char *)malloc(3 * sizeof(char));
+        strcpy(hand_progress_json->str_val, "-1\0");
         hand_progress_json->type = JSON_STRING;
 
         json_add_entry(entry_json, "hand_progress", hand_progress_json);
@@ -41,11 +46,6 @@ char *blackjack_progress_hand(struct database_mappings *db, char *data) {
     } else {
         hand_progress = atoi(hand_progress_json->str_val);
     }
-
-    sprintf(hand_progress_json->str_val, "%d", hand_progress + 1);
-
-    free(found_entry->data_ptr);
-    found_entry->data_ptr = json_to_string(entry_json);
 
     int num_users = 1;
     struct json_value *users_json = json_find_entry(entry_json, "users");
@@ -86,7 +86,7 @@ char *blackjack_progress_hand(struct database_mappings *db, char *data) {
     free(users_string_start);
 
     char *return_data = data;
-    if (hand_progress == 0) {
+    if (hand_progress == -1) {
         int *user_cards = (int *)malloc(2 * num_users * sizeof(int));
         for (int i = 0; i < num_users * 2; i += 2) {
             int new_card = blackjack_deal_card(db, data);
@@ -115,13 +115,32 @@ char *blackjack_progress_hand(struct database_mappings *db, char *data) {
 
         json_add_entry(return_json, "userCards", user_cards_json);
 
-        struct json_value *dealer_cards_json = (struct json_value *)malloc(sizeof(struct json_value));
-        dealer_cards_json->str_val = get_card_index_string(&dealer_cards[1], 1);
-        dealer_cards_json->type = JSON_STRING;
+        struct json_value *user_card_counts = (struct json_value *)malloc(sizeof(struct json_value));
+        user_card_counts->str_val = (char *)malloc((num_users * 3 + 1) * sizeof(char));
+        user_card_counts->type = JSON_STRING;
 
-        json_add_entry(return_json, "dealerCards", dealer_cards_json);
+        char card_count[3] = {0};
+        sprintf(card_count, "%d", 2);
+        strcpy(user_card_counts->str_val, card_count);
+
+        for (int i = 1; i < num_users; ++i) {
+            sprintf(card_count, ",%d", 2);
+            strcat(user_card_counts->str_val, card_count);
+        }
+
+        user_card_counts->str_val[num_users * 3] = '\0';
+
+        json_add_entry(return_json, "userCardCounts", user_card_counts);
+
+        struct json_value *dealer_cards_json_ret = (struct json_value *)malloc(sizeof(struct json_value));
+        dealer_cards_json_ret->str_val = get_card_index_string(&dealer_cards[1], 1);
+        dealer_cards_json_ret->type = JSON_STRING;
+
+        json_add_entry(return_json, "dealerCards", dealer_cards_json_ret);
 
         return_data = json_to_string(return_json);
+
+        free(return_json);
 
         entry_json = json_parse_string((char *)found_entry->data_ptr);
 
@@ -137,9 +156,267 @@ char *blackjack_progress_hand(struct database_mappings *db, char *data) {
             json_add_entry(entry_json, user_hand_key, user_hand_json);
         }
 
+        struct json_value *dealer_cards_json_save = (struct json_value *)malloc(sizeof(struct json_value));
+        dealer_cards_json_save->str_val = get_card_index_string(dealer_cards, 2);
+        dealer_cards_json_save->type = JSON_STRING;
+
+        json_add_entry(entry_json, "dealer-hand", dealer_cards_json_save);
+
         free(found_entry->data_ptr);
         found_entry->data_ptr = json_to_string(entry_json);
+    } else if (hand_progress >= 0 && hand_progress < num_users) {
+        // Turn for each player
+
+        // TODO: Error checking
+        struct json_value *user_id_json = json_find_entry(parsed_data, "userID");
+        char *user_id = user_id_json->str_val;
+
+        if (!strcmp(user_id, users[hand_progress])) {
+            // TODO: Error stating that it's wrong user's turn
+            printf("User ID did not match!\n");
+
+            goto out;
+        }
+
+        char *user_hand_key = (char *)malloc((strlen(user_id) + strlen("-hand") + 1) * sizeof(char));
+        strcpy(user_hand_key, user_id);
+        strcat(user_hand_key, "-hand\0");
+        struct json_value *user_hand_json = json_find_entry(entry_json, user_hand_key);
+        free(user_hand_key);
+
+        int num_user_cards;
+        int *user_hand = parse_card_index_string(user_hand_json->str_val, &num_user_cards);
+
+        int progress_hand = 1;
+        if (user_action == USER_HIT) {
+            int new_card = blackjack_deal_card(db, data);
+
+            int *new_hand = (int *)malloc((num_user_cards + 1) * sizeof(int));
+            for (int i = 0; i < num_user_cards; ++i) {
+                new_hand[i] = user_hand[i];
+            }
+
+            free(user_hand);
+
+            new_hand[num_user_cards] = new_card;
+
+            user_hand = new_hand;
+
+            ++num_user_cards;
+
+            if (blackjack_tally_hand(user_hand, num_user_cards) < 17) {
+                progress_hand = 0;
+            }
+
+            free(user_hand_json->str_val);
+
+            user_hand_json->str_val = get_card_index_string(user_hand, num_user_cards);
+
+            free(found_entry->data_ptr);
+            found_entry->data_ptr = json_to_string(entry_json);
+        } else if (user_action == USER_STAND) {
+            // TODO: Stand behavior (if any)
+        } else {
+            printf("Invalid user action when progressing blackjack hand\n");
+            progress_hand = 0;
+        }
+
+        struct json_object *return_json = json_initialize_object();
+
+        json_add_entry(return_json, "users", users_json);
+
+        int total_user_cards = 0;
+        int *user_hand_counts = (int *)malloc(num_users * sizeof(int));
+        int **user_hands = (int **)malloc(num_users * sizeof(int *));
+        for (int i = 0; i < num_users; ++i) {
+            char *user_hand_key = (char *)malloc((strlen(users[i]) + strlen("-hand") + 1) * sizeof(char));
+            strcpy(user_hand_key, users[i]);
+            strcat(user_hand_key, "-hand\0");
+
+            struct json_value *user_hand_json = json_find_entry(entry_json, user_hand_key);
+
+            free(user_hand_key);
+
+            int num_cards_in_hand = 0;
+            int *user_hand = parse_card_index_string(user_hand_json->str_val, &num_cards_in_hand);
+
+            user_hand_counts[i] = num_cards_in_hand;
+            total_user_cards += num_cards_in_hand;
+
+            user_hands[i] = (int *)malloc(num_cards_in_hand * sizeof(int));
+            for (int j = 0; j < num_cards_in_hand; ++j) {
+                user_hands[i][j] = user_hand[j];
+            }
+        }
+
+        int *user_cards = malloc(total_user_cards * sizeof(int));
+        int k = 0;
+        for (int i = 0; i < num_users; ++i) {
+            for (int j = 0; j < user_hand_counts[i]; ++j) {
+                user_cards[k] = user_hands[i][j];
+
+                ++k;
+            }
+        }
+
+        struct json_value *user_cards_json = (struct json_value *)malloc(sizeof(struct json_value));
+        user_cards_json->str_val = get_card_index_string(user_cards, total_user_cards);
+        user_cards_json->type = JSON_STRING;
+
+        json_add_entry(return_json, "userCards", user_cards_json);
+
+        struct json_value *user_card_counts = (struct json_value *)malloc(sizeof(struct json_value));
+        user_card_counts->str_val = (char *)malloc((num_users * 3 + 1) * sizeof(char));
+        user_card_counts->type = JSON_STRING;
+
+        char card_count[3] = {0};
+        sprintf(card_count, "%d", user_hand_counts[0]);
+        strcpy(user_card_counts->str_val, card_count);
+
+        for (int i = 1; i < num_users; ++i) {
+            sprintf(card_count, ",%d", user_hand_counts[i]);
+            strcat(user_card_counts->str_val, card_count);
+        }
+
+        user_card_counts->str_val[num_users * 3] = '\0';
+
+        json_add_entry(return_json, "userCardCounts", user_card_counts);
+
+        struct json_value *dealer_hand_json = json_find_entry(entry_json, "dealer-hand");
+        int num_dealer_cards;
+        int *dealer_cards = (int *)malloc(2 * sizeof(int));
+        dealer_cards = parse_card_index_string(dealer_hand_json->str_val, &num_dealer_cards);
+
+        struct json_value *dealer_cards_json_ret = (struct json_value *)malloc(sizeof(struct json_value));
+        dealer_cards_json_ret->str_val = get_card_index_string(&dealer_cards[1], 1);
+        dealer_cards_json_ret->type = JSON_STRING;
+
+        json_add_entry(return_json, "dealerCards", dealer_cards_json_ret);
+
+        return_data = json_to_string(return_json);
+
+        free(return_json);
+
+        if (!progress_hand) {
+            goto out;
+        }
+    } else if (hand_progress == num_users) {
+        // Dealer's turn
+        int total_user_cards = 0;
+        int *user_hand_counts = (int *)malloc(num_users * sizeof(int));
+        int **user_hands = (int **)malloc(num_users * sizeof(int *));
+        for (int i = 0; i < num_users; ++i) {
+            char *user_hand_key = (char *)malloc((strlen(users[i]) + strlen("-hand") + 1) * sizeof(char));
+            strcpy(user_hand_key, users[i]);
+            strcat(user_hand_key, "-hand\0");
+
+            struct json_value *user_hand_json = json_find_entry(entry_json, user_hand_key);
+
+            free(user_hand_key);
+
+            int num_cards_in_hand = 0;
+            int *user_hand = parse_card_index_string(user_hand_json->str_val, &num_cards_in_hand);
+
+            user_hand_counts[i] = num_cards_in_hand;
+            total_user_cards += num_cards_in_hand;
+
+            user_hands[i] = (int *)malloc(num_cards_in_hand * sizeof(int));
+            for (int j = 0; j < num_cards_in_hand; ++j) {
+                user_hands[i][j] = user_hand[j];
+            }
+        }
+
+        struct json_value *dealer_hand_json = json_find_entry(entry_json, "dealer-hand");
+
+        int dealer_hand_count = 0;
+        int *dealer_hand = parse_card_index_string(dealer_hand_json->str_val, &dealer_hand_count);
+
+        int dealer_sum = blackjack_tally_hand(dealer_hand, dealer_hand_count);
+
+        while (dealer_sum < 17) {
+            // TODO: When dealing the cards here, it isn't removed from the list of cards in the saved DB
+            int new_card = blackjack_deal_card(db, data);
+
+            int *new_hand = (int *)malloc((dealer_hand_count + 1) * sizeof(int));
+            for (int i = 0; i < dealer_hand_count; ++i) {
+                new_hand[i] = dealer_hand[i];
+            }
+
+            free(dealer_hand);
+
+            new_hand[dealer_hand_count] = new_card;
+
+            dealer_hand = new_hand;
+
+            ++dealer_hand_count;
+
+            dealer_sum = blackjack_tally_hand(dealer_hand, dealer_hand_count);
+        }
+
+        struct json_value *dealer_cards_json = json_find_entry(entry_json, "dealer-hand");
+
+        free(dealer_cards_json->str_val);
+
+        dealer_cards_json->str_val = get_card_index_string(dealer_hand, dealer_hand_count);
+
+        free(found_entry->data_ptr);
+        found_entry->data_ptr = json_to_string(entry_json);
+
+        struct json_object *return_json = json_initialize_object();
+
+        json_add_entry(return_json, "users", users_json);
+
+        int *user_cards = malloc(total_user_cards * sizeof(int));
+        int k = 0;
+        for (int i = 0; i < num_users; ++i) {
+            for (int j = 0; j < user_hand_counts[i]; ++j) {
+                user_cards[k] = user_hands[i][j];
+
+                ++k;
+            }
+        }
+
+        struct json_value *user_cards_json = (struct json_value *)malloc(sizeof(struct json_value));
+        user_cards_json->str_val = get_card_index_string(user_cards, total_user_cards);
+        user_cards_json->type = JSON_STRING;
+
+        json_add_entry(return_json, "userCards", user_cards_json);
+
+        struct json_value *user_card_counts = (struct json_value *)malloc(sizeof(struct json_value));
+        user_card_counts->str_val = (char *)malloc((num_users * 3 + 1) * sizeof(char));
+        user_card_counts->type = JSON_STRING;
+
+        char card_count[3] = {0};
+        sprintf(card_count, "%d", user_hand_counts[0]);
+        strcpy(user_card_counts->str_val, card_count);
+
+        for (int i = 1; i < num_users; ++i) {
+            sprintf(card_count, ",%d", user_hand_counts[i]);
+            strcat(user_card_counts->str_val, card_count);
+        }
+
+        user_card_counts->str_val[num_users * 3] = '\0';
+
+        json_add_entry(return_json, "userCardCounts", user_card_counts);
+
+        json_add_entry(return_json, "dealerCards", dealer_cards_json);
+
+        return_data = json_to_string(return_json);
+
+        free(return_json);
+    } else {
+        // Hand is over
+        // TODO: Implement me
     }
 
+    hand_progress_json = json_find_entry(entry_json, "hand_progress");
+
+    // TODO: Only add one to the hand_progress on a non-erroneous hand
+    sprintf(hand_progress_json->str_val, "%d", hand_progress + 1);
+
+    free(found_entry->data_ptr);
+    found_entry->data_ptr = json_to_string(entry_json);
+
+out:
     return return_data;
 }
