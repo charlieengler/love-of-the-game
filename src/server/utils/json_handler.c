@@ -90,6 +90,27 @@ int json_add_entry(struct json_object *json_obj, char *key, struct json_value *v
     return 0;
 }
 
+// If an entry already exists, just return the result of json_find_entry. Otherwise, create it
+struct json_value *json_add_string_entry(struct json_object *json_obj, char *key, char *init_val) {
+    struct json_value *entry = json_find_entry(json_obj, key);
+
+    if (entry) {
+        return entry;
+    }
+
+    unsigned long init_val_len = strlen(init_val);
+
+    entry = (struct json_value *)malloc(sizeof(struct json_value));
+    entry->type = JSON_STRING;
+    entry->str_val = (char *)malloc(init_val_len + 1);
+    strcpy(entry->str_val, init_val);
+    entry->str_val[init_val_len] = '\0';
+
+    json_add_entry(json_obj, key, entry);
+
+    return entry;
+}
+
 struct json_value *json_find_entry(struct json_object *json_obj, char *key) {
     if (json_obj->num_keys != json_obj->num_vals)
         // TODO: Error handling on this function

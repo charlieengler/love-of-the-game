@@ -39,6 +39,7 @@ struct json_value {
 
 struct json_object *json_initialize_object();
 int json_add_entry(struct json_object *, char *, struct json_value *);
+struct json_value *json_add_string_entry(struct json_object *json_obj, char *key, char *init_val);
 struct json_value *json_find_entry(struct json_object *, char *);
 struct json_object *json_parse_string(char *);
 char *json_to_string(struct json_object *);
