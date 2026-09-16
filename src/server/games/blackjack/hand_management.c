@@ -10,8 +10,6 @@
 #include "../../../include/server/database/database.h"
 #include "../../../include/server/utils/json_handler.h"
 
-// TODO: Dealing cards during hitting and dealer play is not removing them from the db string
-
 char *generate_card_count_str(int num_users, int *user_hand_counts) {
     char *card_count_str = (char *)malloc((num_users * 3 + 1) * sizeof(char));
     char card_count[3] = {0};
@@ -98,21 +96,21 @@ char *blackjack_progress_hand(struct database_mappings *db, char *data, int user
     if (hand_progress == -1) {
         int *user_cards = (int *)malloc(2 * num_users * sizeof(int));
         for (int i = 0; i < num_users * 2; i += 2) {
-            int new_card = blackjack_deal_card(db, data);
+            int new_card = blackjack_deal_card(db, entry_json, data);
 
             user_cards[i] = new_card;
         }
 
         int *dealer_cards = (int *)malloc(2 * sizeof(int));
-        dealer_cards[0] = blackjack_deal_card(db, data);
+        dealer_cards[0] = blackjack_deal_card(db, entry_json, data);
 
         for (int i = 1; i < num_users * 2; i += 2) {
-            int new_card = blackjack_deal_card(db, data);
+            int new_card = blackjack_deal_card(db, entry_json, data);
 
             user_cards[i] = new_card;
         }
 
-        dealer_cards[1] = blackjack_deal_card(db, data);
+        dealer_cards[1] = blackjack_deal_card(db, entry_json, data);
 
         struct json_object *return_json = json_initialize_object();
 
@@ -185,7 +183,7 @@ char *blackjack_progress_hand(struct database_mappings *db, char *data, int user
 
         int progress_hand = 1;
         if (user_action == USER_HIT) {
-            int new_card = blackjack_deal_card(db, data);
+            int new_card = blackjack_deal_card(db, entry_json, data);
 
             int *new_hand = (int *)malloc((num_user_cards + 1) * sizeof(int));
             for (int i = 0; i < num_user_cards; ++i) {
@@ -311,8 +309,7 @@ char *blackjack_progress_hand(struct database_mappings *db, char *data, int user
         int dealer_sum = blackjack_tally_hand(dealer_hand, dealer_hand_count);
 
         while (dealer_sum < 17) {
-            // TODO: When dealing the cards here, it isn't removed from the list of cards in the saved DB
-            int new_card = blackjack_deal_card(db, data);
+            int new_card = blackjack_deal_card(db, entry_json, data);
 
             int *new_hand = (int *)malloc((dealer_hand_count + 1) * sizeof(int));
             for (int i = 0; i < dealer_hand_count; ++i) {
@@ -373,12 +370,11 @@ char *blackjack_progress_hand(struct database_mappings *db, char *data, int user
 
     hand_progress_json = json_find_entry(entry_json, "hand_progress");
 
-    // TODO: Only add one to the hand_progress on a non-erroneous hand
     sprintf(hand_progress_json->str_val, "%d", hand_progress + 1);
 
+out:
     free(found_entry->data_ptr);
     found_entry->data_ptr = json_to_string(entry_json);
 
-out:
     return return_data;
 }

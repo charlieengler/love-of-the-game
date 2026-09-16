@@ -213,7 +213,7 @@ int db_save(struct database_mappings *mappings) {
             continue;
         }
 
-        struct database_entry *entry = db_find(mappings, key);
+        struct database_entry *entry = mappings->entries[i];
 
         fprintf(db_file, "%s\n", mappings->keys[i]);
 

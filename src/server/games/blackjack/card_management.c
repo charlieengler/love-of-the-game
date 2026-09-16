@@ -12,7 +12,7 @@
 
 const int card_values[13] = {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10};
 
-int blackjack_deal_card(struct database_mappings *db, char *data) {
+int blackjack_deal_card(struct database_mappings *db, struct json_object *entry_json, char *data) {
     // TODO: Error checking
     struct json_object *data_json = json_parse_string(data);
 
@@ -29,8 +29,6 @@ int blackjack_deal_card(struct database_mappings *db, char *data) {
         // TODO: Return a JSON error
         printf("blackjack error: db entry is still null\n");
     }
-
-    struct json_object *entry_json = json_parse_string((char *)found_entry->data_ptr);
 
     struct json_value *entry_cards_json = json_find_entry(entry_json, "cards");
     if (!entry_cards_json) {
@@ -66,8 +64,6 @@ int blackjack_deal_card(struct database_mappings *db, char *data) {
 
     free(found_entry->data_ptr);
     found_entry->data_ptr = json_to_string(entry_json);
-
-    db_save(db);
 
     return selected_card;
 }
