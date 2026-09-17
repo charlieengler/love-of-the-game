@@ -41,6 +41,8 @@ struct json_object *json_initialize_object();
 int json_add_entry(struct json_object *, char *, struct json_value *);
 struct json_value *json_add_string_entry(struct json_object *json_obj, char *key, char *init_val);
 struct json_value *json_find_entry(struct json_object *, char *);
+int json_remove_entry(struct json_object *json_obj, char *key);
 struct json_object *json_parse_string(char *);
 char *json_to_string(struct json_object *);
 int json_destroy_object(struct json_object *json);
+int json_destroy_value(struct json_value *json_val);

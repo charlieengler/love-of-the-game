@@ -2,12 +2,27 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "./internal.h"
+#include "internal.h"
 
 #include "../../../include/server/games/blackjack/blackjack.h"
 
 #include "../../../include/server/database/database.h"
 #include "../../../include/server/utils/json_handler.h"
+#include "../../../include/server/utils/strings.h"
+
+int user_exists(char *existing_users, char *user) {
+    int num_users = 0;
+
+    char **users = csv_to_string_array(existing_users, &num_users);
+
+    for (int i = 0; i < num_users; ++i) {
+        if (!strcmp(user, users[i])) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
 
 char *blackjack_join_table(struct database_mappings *db, char *data) {
     // TODO: Error checking
@@ -45,6 +60,9 @@ char *blackjack_join_table(struct database_mappings *db, char *data) {
         db_insert(db, new_table);
 
         found_table = db_find(db, table_id);
+
+        // TODO: Error checking
+        add_blank_bet(db, data);
     }
 
     if (found_table == NULL) {
@@ -52,8 +70,35 @@ char *blackjack_join_table(struct database_mappings *db, char *data) {
         printf("blackjack error: db entry is still null\n");
     }
 
-    // TODO: Add the ability to join an existing table
+    struct json_object *entry_json = json_parse_string((char *)found_table->data_ptr);
 
+    // TODO: Error checking on both of these
+    struct json_value *existing_users_json = json_find_entry(entry_json, "users");
+    char *existing_users = existing_users_json->str_val;
+
+    if (user_exists(existing_users, user_id)) {
+        goto out;
+    }
+
+    char *new_existing_users = (char *)malloc((strlen(existing_users) + strlen(user_id) + 2) * sizeof(char));
+
+    strcpy(new_existing_users, existing_users);
+    strcat(new_existing_users, ",");
+    strcat(new_existing_users, user_id);
+    new_existing_users[strlen(existing_users) + strlen(user_id) + 1] = '\0';
+
+    printf("%s\n", new_existing_users);
+
+    free(existing_users);
+    existing_users_json->str_val = new_existing_users;
+
+    free(found_table->data_ptr);
+    found_table->data_ptr = json_to_string(entry_json);
+
+    // TODO: Error checking
+    add_blank_bet(db, data);
+
+out:
     printf("Joined table %s as %s\n", table_id, user_id);
 
     return data;

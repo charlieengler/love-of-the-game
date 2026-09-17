@@ -1,9 +1,9 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
 #include "../../../include/server/games/common/cards.h"
+#include "../../../include/server/utils/strings.h"
 
 const char *card_names[] = {"Ace", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King", "Joker"};
 
@@ -63,55 +63,6 @@ char *get_card_string(int card) {
     return ret_str;
 }
 
-char *get_card_index_string(int *cards, int num_cards) {
-    char *ret_str = calloc(num_cards * 3, sizeof(char));
-    char num_buf[3];
+char *get_card_index_string(int *cards, int num_cards) { return int_array_to_csv(cards, num_cards); }
 
-    sprintf(num_buf, "%d", cards[0]);
-
-    strcpy(ret_str, num_buf);
-
-    for (int i = 1; i < num_cards; ++i) {
-        sprintf(num_buf, ",%d", cards[i]);
-
-        strcat(ret_str, num_buf);
-    }
-
-    return ret_str;
-}
-
-int *parse_card_index_string(char *cards_string, int *num_cards) {
-    int *cards_array = (int *)malloc(NUM_CARDS * sizeof(int));
-
-    *num_cards = 0;
-
-    char *cards_string_copy = (char *)malloc(strlen(cards_string) * sizeof(char));
-    char *start = cards_string_copy;
-    strcpy(cards_string_copy, cards_string);
-    char *current_index_string = cards_string_copy;
-    while (*cards_string_copy) {
-        switch (*cards_string_copy) {
-        case ',':
-            *cards_string_copy = '\0';
-
-            cards_array[*num_cards] = atoi(current_index_string);
-
-            current_index_string = cards_string_copy + 1;
-
-            (*num_cards)++;
-            break;
-        default:
-            break;
-        }
-
-        ++cards_string_copy;
-    }
-
-    cards_array[*num_cards] = atoi(current_index_string);
-
-    (*num_cards)++;
-
-    free(start);
-
-    return cards_array;
-}
+int *parse_card_index_string(char *cards_string, int *num_cards) { return csv_to_int_array(cards_string, num_cards); }

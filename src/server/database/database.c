@@ -316,22 +316,22 @@ struct database_entry *db_find(struct database_mappings *mappings, char *key) {
     return mappings->entries[index];
 }
 
-uint64_t db_grow(struct database_mappings *mappings) {
-    uint64_t new_size = mappings->num_allocated * DB_GROW_MULTIPLIER;
+uint64_t db_grow(struct database_mappings **mappings) {
+    uint64_t new_size = (*mappings)->num_allocated * DB_GROW_MULTIPLIER;
     char **new_keys = (char **)calloc(new_size, sizeof(char *));
     struct database_entry **new_entries = (struct database_entry **)calloc(new_size, sizeof(struct database_entry *));
 
     struct database_mappings *new_mappings = (struct database_mappings *)malloc(sizeof(struct database_mappings));
 
-    new_mappings->num_keys = mappings->num_keys;
-    new_mappings->num_entries = mappings->num_entries;
+    new_mappings->num_keys = (*mappings)->num_keys;
+    new_mappings->num_entries = (*mappings)->num_entries;
     new_mappings->num_allocated = new_size;
     new_mappings->keys = new_keys;
     new_mappings->entries = new_entries;
 
-    for (uint64_t i = 0; i < mappings->num_keys; i++) {
-        struct database_entry *old_entry = mappings->entries[i];
-        if (strcmp(old_entry->key, mappings->keys[i]) != 0) {
+    for (uint64_t i = 0; i < (*mappings)->num_keys; i++) {
+        struct database_entry *old_entry = (*mappings)->entries[i];
+        if (strcmp(old_entry->key, (*mappings)->keys[i]) != 0) {
             printf("db grow error: key and entry do not match\n");
             return 0;
         }
@@ -339,8 +339,8 @@ uint64_t db_grow(struct database_mappings *mappings) {
         db_insert(new_mappings, old_entry);
     }
 
-    free(mappings);
-    mappings = new_mappings;
+    free(*mappings);
+    *mappings = new_mappings;
 
     // TODO: Return the new number of possible mappings on success, 0 on failure
     return new_size;
@@ -354,7 +354,7 @@ int db_insert(struct database_mappings *mappings, struct database_entry *new_ent
 
     if (mappings->num_keys == mappings->num_allocated) {
         // TODO: The grow function causes issues
-        uint64_t new_size = db_grow(mappings);
+        uint64_t new_size = db_grow(&mappings);
 
         if (new_size == 0) {
             printf("db grow error: new_size == 0\n");

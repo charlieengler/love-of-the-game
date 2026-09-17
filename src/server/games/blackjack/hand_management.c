@@ -9,6 +9,7 @@
 
 #include "../../../include/server/database/database.h"
 #include "../../../include/server/utils/json_handler.h"
+#include "../../../include/server/utils/strings.h"
 
 char *generate_card_count_str(int num_users, int *user_hand_counts) {
     char *card_count_str = (char *)malloc((num_users * 3 + 1) * sizeof(char));
@@ -24,6 +25,35 @@ char *generate_card_count_str(int num_users, int *user_hand_counts) {
     card_count_str[num_users * 3] = '\0';
 
     return card_count_str;
+}
+
+int **get_user_hands(struct json_object *entry_json, int num_users, char **users, int **user_hand_counts, int *total_user_cards) {
+    *total_user_cards = 0;
+    *user_hand_counts = (int *)malloc(num_users * sizeof(int));
+    int **user_hands = (int **)malloc(num_users * sizeof(int *));
+    for (int i = 0; i < num_users; ++i) {
+        char *user_hand_key = (char *)malloc((strlen(users[i]) + strlen("-hand") + 1) * sizeof(char));
+        strcpy(user_hand_key, users[i]);
+        strcat(user_hand_key, "-hand\0");
+
+        struct json_value *user_hand_json = json_find_entry(entry_json, user_hand_key);
+
+        free(user_hand_key);
+
+        int num_cards_in_hand = 0;
+        int *user_hand = parse_card_index_string(user_hand_json->str_val, &num_cards_in_hand);
+
+        (*user_hand_counts)[i] = num_cards_in_hand;
+
+        *total_user_cards += num_cards_in_hand;
+
+        user_hands[i] = (int *)malloc(num_cards_in_hand * sizeof(int));
+        for (int j = 0; j < num_cards_in_hand; ++j) {
+            user_hands[i][j] = user_hand[j];
+        }
+    }
+
+    return user_hands;
 }
 
 // TODO: Proper bet handling and payouts
@@ -47,7 +77,7 @@ char *blackjack_progress_hand(struct database_mappings *db, char *data, int user
 
     int hand_progress = -1;
     // TODO: Error checking
-    struct json_value *hand_progress_json = json_add_string_entry(entry_json, "hand_progress", "-1");
+    struct json_value *hand_progress_json = json_add_string_entry(entry_json, "hand-progress", "-1");
 
     free(found_entry->data_ptr);
     found_entry->data_ptr = json_to_string(entry_json);
@@ -278,28 +308,8 @@ char *blackjack_progress_hand(struct database_mappings *db, char *data, int user
     } else if (hand_progress == num_users) {
         // Dealer's turn
         int total_user_cards = 0;
-        int *user_hand_counts = (int *)malloc(num_users * sizeof(int));
-        int **user_hands = (int **)malloc(num_users * sizeof(int *));
-        for (int i = 0; i < num_users; ++i) {
-            char *user_hand_key = (char *)malloc((strlen(users[i]) + strlen("-hand") + 1) * sizeof(char));
-            strcpy(user_hand_key, users[i]);
-            strcat(user_hand_key, "-hand\0");
-
-            struct json_value *user_hand_json = json_find_entry(entry_json, user_hand_key);
-
-            free(user_hand_key);
-
-            int num_cards_in_hand = 0;
-            int *user_hand = parse_card_index_string(user_hand_json->str_val, &num_cards_in_hand);
-
-            user_hand_counts[i] = num_cards_in_hand;
-            total_user_cards += num_cards_in_hand;
-
-            user_hands[i] = (int *)malloc(num_cards_in_hand * sizeof(int));
-            for (int j = 0; j < num_cards_in_hand; ++j) {
-                user_hands[i][j] = user_hand[j];
-            }
-        }
+        int *user_hand_counts = NULL;
+        int **user_hands = get_user_hands(entry_json, num_users, users, &user_hand_counts, &total_user_cards);
 
         struct json_value *dealer_hand_json = json_find_entry(entry_json, "dealer-hand");
 
@@ -365,10 +375,67 @@ char *blackjack_progress_hand(struct database_mappings *db, char *data, int user
         free(return_json);
     } else {
         // Hand is over
-        // TODO: Implement me
+
+        char *bets_string = json_find_entry(entry_json, "bets")->str_val;
+        int num_bets = 0;
+        int *bets = csv_to_int_array(bets_string, &num_bets);
+
+        if (num_bets != num_users) {
+            // TODO: Failure state here
+            printf("Number of bets didn't equal number of users when progressing hand in blackjack\n");
+        }
+
+        int dealer_hand_count = 0;
+        int *dealer_hand = parse_card_index_string(json_find_entry(entry_json, "dealer-hand")->str_val, &dealer_hand_count);
+        int dealer_value = blackjack_tally_hand(dealer_hand, dealer_hand_count);
+        if (dealer_value > 21) {
+            dealer_value = 0;
+        }
+
+        int total_user_cards = 0;
+        // TODO: Free me
+        int *user_hand_counts = NULL;
+        // TODO: Free me
+        int **user_hands = get_user_hands(entry_json, num_users, users, &user_hand_counts, &total_user_cards);
+
+        for (int i = 0; i < num_bets; ++i) {
+            int user_value = blackjack_tally_hand(user_hands[i], user_hand_counts[i]);
+            if (user_value > 21) {
+                user_value = 0;
+            }
+
+            // TODO: Store user cash somewhere
+            if (user_value > dealer_value) {
+                printf("%s receives %d\n", users[i], bets[i] * 2);
+            } else if (user_value < dealer_value) {
+                printf("%s loses %d\n", users[i], bets[i]);
+            } else {
+                if (!user_value) {
+                    printf("%s loses %d\n", users[i], bets[i]);
+                } else {
+                    printf("%s keeps %d\n", users[i], bets[i]);
+                }
+            }
+        }
+
+        json_remove_entry(entry_json, "hand-progress");
+        json_remove_entry(entry_json, "cards");
+        json_remove_entry(entry_json, "dealer-hand");
+
+        for (int i = 0; i < num_users; ++i) {
+            char *user_hand_key = (char *)malloc((strlen(users[i]) + strlen("-hand") + 1) * sizeof(char));
+            strcpy(user_hand_key, users[i]);
+            strcat(user_hand_key, "-hand\0");
+
+            json_remove_entry(entry_json, user_hand_key);
+
+            free(user_hand_key);
+        }
+
+        goto out;
     }
 
-    hand_progress_json = json_find_entry(entry_json, "hand_progress");
+    hand_progress_json = json_find_entry(entry_json, "hand-progress");
 
     sprintf(hand_progress_json->str_val, "%d", hand_progress + 1);
 

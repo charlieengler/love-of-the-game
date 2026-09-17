@@ -123,6 +123,34 @@ struct json_value *json_find_entry(struct json_object *json_obj, char *key) {
     return NULL;
 }
 
+int json_remove_entry(struct json_object *json_obj, char *key) {
+    if (json_obj->num_keys != json_obj->num_vals) {
+        // TODO: Error handling on this function
+        json_repair_object(json_obj);
+    }
+
+    for (uint64_t i = 0; i < json_obj->num_keys; ++i) {
+        if (strcmp(json_obj->keys[i], key) == 0) {
+            free(json_obj->keys[i]);
+
+            // TODO: Error handling
+            json_destroy_value(json_obj->vals[i]);
+
+            for (uint64_t j = i; j < json_obj->num_keys - 1; ++j) {
+                json_obj->keys[j] = json_obj->keys[j + 1];
+                json_obj->vals[j] = json_obj->vals[j + 1];
+            }
+
+            json_obj->num_keys--;
+            json_obj->num_vals--;
+
+            return 0;
+        }
+    }
+
+    return -1;
+}
+
 int json_add_entry_from_string(struct json_object *json_obj, char *raw_string, uint64_t total_len) {
     char open_string = 0;
 
@@ -338,5 +366,30 @@ int json_destroy_object(struct json_object *json) {
     // TODO: Free the final json object pointer as this should be allocated
 
     // TODO: Return 0 on success, something else on failure
+    return 0;
+}
+
+int json_destroy_value(struct json_value *json_val) {
+    switch (json_val->type) {
+    case JSON_UNDEFINED:
+        // TODO: Implement me
+    case JSON_NESTED:
+        // TODO: Implement me
+    case JSON_FORMATTED_STRING:
+        // TODO: Implement me
+    case JSON_STRING:
+        free(json_val->str_val);
+        break;
+    case JSON_INTEGER:
+        // TODO: Implement me
+    case JSON_FLOAT:
+        // TODO: Implement me
+    default:
+        printf("Unknown JSON value type when destroying json_value\n");
+        break;
+    }
+
+    free(json_val);
+
     return 0;
 }
