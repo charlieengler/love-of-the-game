@@ -84,43 +84,12 @@ char *blackjack_progress_hand(struct database_mappings *db, char *data, int user
 
     hand_progress = atoi(hand_progress_json->str_val);
 
-    int num_users = 1;
+    // TODO: Error checking on these
     struct json_value *users_json = json_find_entry(entry_json, "users");
-    char *users_string = (char *)malloc(strlen(users_json->str_val) * sizeof(char));
-    strcpy(users_string, users_json->str_val);
-    char *users_string_start = users_string;
-    while (*users_string) {
-        if (*users_string == ',') {
-            ++num_users;
-        }
+    char *users_string = users_json->str_val;
 
-        ++users_string;
-    }
-
-    char **users = (char **)malloc(num_users * sizeof(char *));
-    char *current_user = users_string_start;
-    users_string = users_string_start;
-    int i = 0;
-    while (*users_string) {
-        if (*users_string == ',') {
-            *users_string = '\0';
-
-            users[i] = (char *)malloc(strlen(current_user) * sizeof(char));
-            strcpy(users[i], current_user);
-
-            current_user = users_string + 1;
-
-            ++i;
-        }
-
-        ++users_string;
-    }
-
-    users[i] = (char *)malloc((strlen(current_user) + 1) * sizeof(char));
-    strcpy(users[i], current_user);
-    users[i][strlen(current_user)] = '\0';
-
-    free(users_string_start);
+    int num_users = 0;
+    char **users = csv_to_string_array(users_string, &num_users);
 
     char *return_data = data;
     if (hand_progress == -1) {

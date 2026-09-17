@@ -146,3 +146,25 @@ char *int_array_to_csv(int *array, int num_entries) {
 
     return csv;
 }
+
+char *char_array_to_csv(char **array, int num_entries) {
+    int total_size = 0;
+
+    for (int i = 0; i < num_entries; ++i) {
+        total_size += strlen(array[i]) + 1;
+    }
+
+    ++total_size;
+
+    char *csv = (char *)malloc(total_size * sizeof(char));
+
+    strcpy(csv, array[0]);
+
+    for (int i = 1; i < num_entries; ++i) {
+        strcat(csv, array[i]);
+    }
+
+    csv[total_size - 1] = '\0';
+
+    return csv;
+}
