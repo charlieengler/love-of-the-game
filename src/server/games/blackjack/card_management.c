@@ -5,6 +5,7 @@
 #include "./internal.h"
 
 #include "../../../include/server/games/blackjack/blackjack.h"
+
 #include "../../../include/server/games/common/cards.h"
 
 #include "../../../include/server/database/database.h"
@@ -12,7 +13,7 @@
 
 const int card_values[13] = {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10};
 
-int blackjack_deal_card(struct database_mappings *db, struct json_object *entry_json, char *data) {
+int deal_card(struct database_mappings *db, struct json_object *entry_json, char *data) {
     // TODO: Error checking
     struct json_object *data_json = json_parse_string(data);
 
@@ -68,7 +69,7 @@ int blackjack_deal_card(struct database_mappings *db, struct json_object *entry_
     return selected_card;
 }
 
-int blackjack_tally_hand(int *hand, int hand_count) {
+int tally_hand(int *hand, int hand_count) {
     int sum = 0;
     int soft = 0;
 
