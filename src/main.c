@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
         }
 
         if (strcmp(argv[2], "json") == 0) {
-            test_json();
+            test_new_json();
             return 0;
         }
 

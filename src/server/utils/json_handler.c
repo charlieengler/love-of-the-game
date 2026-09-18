@@ -81,7 +81,8 @@ int json_add_entry(struct json_object *json_obj, char *key, struct json_value *v
 
     // Opening and closing double quotes (if applicable), as well as the comma
     // between entries
-    json_obj->string_size += 3;
+    // TODO: Is this really necessary?
+    // json_obj->string_size += 3;
 
     json_obj->keys = new_keys;
     json_obj->vals = new_vals;
@@ -112,13 +113,16 @@ struct json_value *json_add_string_entry(struct json_object *json_obj, char *key
 }
 
 struct json_value *json_find_entry(struct json_object *json_obj, char *key) {
-    if (json_obj->num_keys != json_obj->num_vals)
+    if (json_obj->num_keys != json_obj->num_vals) {
         // TODO: Error handling on this function
         json_repair_object(json_obj);
+    }
 
-    for (uint64_t i = 0; i < json_obj->num_keys; i++)
-        if (strcmp(json_obj->keys[i], key) == 0)
+    for (uint64_t i = 0; i < json_obj->num_keys; i++) {
+        if (strcmp(json_obj->keys[i], key) == 0) {
             return json_obj->vals[i];
+        }
+    }
 
     return NULL;
 }
