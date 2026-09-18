@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/server/utils/new_json_handler.h"
+#include "../include/server/utils/json_api.h"
+#include "../include/server/utils/json_parser.h"
 
 #include "tests.h"
 
@@ -350,7 +351,7 @@ static int test_json_value_to_string_7() {
     return 0;
 }
 
-int test_new_json() {
+int test_json_parser() {
     printf("Testing JSON handler\n");
 
     int failed_test_counter = 0;

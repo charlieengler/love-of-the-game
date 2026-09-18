@@ -18,7 +18,8 @@ int main(int argc, char **argv) {
         }
 
         if (strcmp(argv[2], "json") == 0) {
-            test_new_json();
+            test_json_api();
+            test_json_parser();
             return 0;
         }
 
@@ -27,7 +28,8 @@ int main(int argc, char **argv) {
         }
 
         test_db();
-        test_json();
+        test_json_api();
+        test_json_parser();
     } else {
         initialize_server();
     }
@@ -42,7 +44,7 @@ bad_args:
     printf("    module:\n");
     printf("        all:    run all tests\n");
     printf("        db:     run database tests\n");
-    printf("        json:   run JSON parser tests\n");
+    printf("        json:   run JSON tests\n");
 
     return -1;
 }

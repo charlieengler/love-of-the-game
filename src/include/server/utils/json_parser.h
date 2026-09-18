@@ -3,17 +3,7 @@
 
 typedef unsigned long uint64_t;
 
-enum json_value_types {
-    JSON_UNDEFINED,
-    JSON_STRING,
-    // This should be a string that is already formatted in the JSON format
-    JSON_NUMBER,
-    JSON_OBJECT,
-    JSON_ARRAY,
-    JSON_TRUE,
-    JSON_FALSE,
-    JSON_NULL
-};
+enum json_value_types { JSON_UNDEFINED, JSON_STRING, JSON_NUMBER, JSON_OBJECT, JSON_ARRAY, JSON_TRUE, JSON_FALSE, JSON_NULL };
 
 enum json_number_types { JSON_UNDEFINED_NUMBER, JSON_INTEGER, JSON_FRACTION, JSON_EXPONENTIAL };
 
@@ -41,7 +31,7 @@ struct json_array {
 // TODO: Sanitize data before it reaches this struct to ensure it doesn't exceed the scope of long long
 struct json_number {
     long long integer;
-    long double fraction;
+    long long fraction;
     long long exponent;
 
     enum json_number_types type;

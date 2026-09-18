@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../include/server/utils/new_json_handler.h"
+#include "../../include/server/utils/json_parser.h"
 
 // TODO: This should be a hash map at some point, abstract and reuse the logic from the database
 int json_object_add_value(struct json_object **json_obj, char *key, struct json_value *value) {
