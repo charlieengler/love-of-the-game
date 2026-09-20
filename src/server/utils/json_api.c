@@ -8,27 +8,25 @@
 #include "../../include/server/utils/numbers.h"
 
 int append_str(char **target, char *addition, long *current_size, long *allocated_size) {
-    char *output = *target;
-
     long addition_size = strlen(addition);
     long difference = *allocated_size - *current_size;
 
     if (addition_size > difference - 1) {
         *allocated_size += difference * 1.5;
 
-        output = (char *)malloc(*allocated_size * sizeof(char));
-        strcpy(output, *target);
+        char *new_str = (char *)malloc(*allocated_size * sizeof(char));
+        strcpy(new_str, *target);
+
+        free(*target);
+
+        *target = new_str;
     }
 
-    strcat(output, addition);
+    strcat(*target, addition);
 
-    *current_size += difference;
-
-    output[*current_size] = '\0';
+    *current_size += addition_size;
 
     ++(*current_size);
-
-    *target = output;
 
     // TODO: Error codes for various failures
     return 0;
@@ -86,44 +84,196 @@ fail:
     return NULL;
 }
 
-// TODO: Objects, arrays, true, false, and null to string
-
-char *json_value_to_string(struct json_value *json_val) {
+char *json_object_to_string(struct json_object *json_obj) {
     long total_length = 0;
     long alloc_size = 100;
-    char *str = (char *)malloc(alloc_size * sizeof(char *));
+    char *str = (char *)malloc(alloc_size * sizeof(char));
+    strcpy(str, "{");
+    ++total_length;
+    str[total_length] = '\0';
+    ++total_length;
 
-    switch (json_val->type) {
-    case JSON_STRING:
-        char *output = json_string_to_string((char *)json_val->data);
+    if (json_obj->num_entries == 0) {
+        strcat(str, "}");
+
+        str[2] = '\0';
+
+        return str;
+    }
+
+    char *key = json_obj->keys[0];
+
+    append_str(&str, "\"", &total_length, &alloc_size);
+    append_str(&str, key, &total_length, &alloc_size);
+    append_str(&str, "\":", &total_length, &alloc_size);
+
+    // TODO: Uncomment me when implemented
+    // struct json_value *json_val = json_object_get_value(json_obj, key);
+
+    struct json_value *json_val = json_obj->values[0];
+
+    char *output = json_value_to_string(json_val);
+
+    if (!output) {
+        // TODO: Error message with reason for failure
+        goto fail;
+    }
+
+    append_str(&str, output, &total_length, &alloc_size);
+
+    // TODO: Figure out why this causes memory errors
+    // free(output);
+
+    for (unsigned long i = 1; i < json_obj->num_entries; ++i) {
+        char *key = json_obj->keys[i];
+
+        append_str(&str, ",\"", &total_length, &alloc_size);
+        append_str(&str, key, &total_length, &alloc_size);
+        append_str(&str, "\":", &total_length, &alloc_size);
+
+        // TODO: Uncomment me when implemented
+        // struct json_value *json_val = json_object_get_value(json_obj, key);
+
+        struct json_value *json_val = json_obj->values[i];
+
+        output = json_value_to_string(json_val);
 
         if (!output) {
             // TODO: Error message with reason for failure
             goto fail;
         }
 
-        // TODO: Check for errors
+        append_str(&str, output, &total_length, &alloc_size);
+
+        // TODO: Figure out why this causes memory errors
+        // free(output);
+    }
+
+    append_str(&str, "}", &total_length, &alloc_size);
+
+    return str;
+
+fail:
+    free(str);
+    return NULL;
+}
+
+char *json_array_to_string(struct json_array *json_arr) {
+    long total_length = 0;
+    long alloc_size = 100;
+    char *str = (char *)malloc(alloc_size * sizeof(char));
+    strcpy(str, "[");
+    ++total_length;
+
+    if (json_arr->length == 0) {
+        strcat(str, "]");
+
+        str[2] = '\0';
+
+        return str;
+    }
+
+    struct json_value *json_val = json_arr->values[0];
+
+    char *output = json_value_to_string(json_val);
+
+    if (!output) {
+        // TODO: Error message with reason for failure
+        goto fail;
+    }
+
+    append_str(&str, output, &total_length, &alloc_size);
+
+    free(output);
+
+    for (unsigned long i = 1; i < json_arr->length; ++i) {
+        struct json_value *json_val = json_arr->values[i];
+
+        output = json_value_to_string(json_val);
+
+        if (!output) {
+            // TODO: Error message with reason for failure
+            goto fail;
+        }
+
         append_str(&str, output, &total_length, &alloc_size);
 
         free(output);
+    }
+
+    append_str(&str, "}", &total_length, &alloc_size);
+
+    return str;
+
+fail:
+    free(str);
+    return str;
+}
+
+char *json_true_to_string() {
+    char *str = (char *)malloc((strlen("true") + 1) * sizeof(char));
+
+    strcpy(str, "true");
+
+    str[strlen("true")] = '\0';
+
+    return str;
+}
+
+char *json_false_to_string() {
+    char *str = (char *)malloc((strlen("false") + 1) * sizeof(char));
+
+    strcpy(str, "false");
+
+    str[strlen("false")] = '\0';
+
+    return str;
+}
+
+char *json_null_to_string() {
+    char *str = (char *)malloc((strlen("null") + 1) * sizeof(char));
+
+    strcpy(str, "null");
+
+    str[strlen("null")] = '\0';
+
+    return str;
+}
+
+char *json_value_to_string(struct json_value *json_val) {
+    long total_length = 0;
+    long alloc_size = 100;
+    char *str = (char *)malloc(alloc_size * sizeof(char *));
+
+    // TODO: Destroy the JSON related structs as they are added to the string, or destroy the whole value at the end of the function call
+    char *output = NULL;
+    switch (json_val->type) {
+    case JSON_STRING:
+        output = json_string_to_string((char *)json_val->data);
         break;
 
     case JSON_NUMBER:
+        output = json_number_to_string((struct json_number *)json_val->data);
         break;
 
     case JSON_OBJECT:
+        output = json_object_to_string((struct json_object *)json_val->data);
         break;
 
     case JSON_ARRAY:
+        output = json_object_to_string((struct json_object *)json_val->data);
         break;
 
     case JSON_TRUE:
+        output = json_true_to_string();
         break;
 
     case JSON_FALSE:
+        output = json_false_to_string();
         break;
 
     case JSON_NULL:
+        output = json_null_to_string();
         break;
 
     case JSON_UNDEFINED:
@@ -131,6 +281,16 @@ char *json_value_to_string(struct json_value *json_val) {
         // TODO: Error message with reason for failure
         goto fail;
     }
+
+    if (!output) {
+        // TODO: Error message with reason for failure
+        goto fail;
+    }
+
+    // TODO: Check for errors
+    append_str(&str, output, &total_length, &alloc_size);
+
+    free(output);
 
     return str;
 
