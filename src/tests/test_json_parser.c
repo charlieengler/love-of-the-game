@@ -9,14 +9,17 @@
 
 static int test_json_value_to_string_1() {
     char *test_string = "{\"0\":\"1\",\"1\":\"2\",\"2\":\"3\"}";
+    char *str_start = test_string;
 
     struct json_value *test_val = string_to_json_value(&test_string);
 
-    // if (strlen(json_value_to_string(test_val)) != strlen(test_string_one)) {
-    //     printf("[TEST FAIL] test_json_value_to_string_1(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string_one);
-    //
-    //     return 1;
-    // }
+    test_string = str_start;
+
+    if (strcmp(json_value_to_string(test_val), test_string)) {
+        printf("[TEST FAIL] test_json_value_to_string_1(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
+
+        return 1;
+    }
 
     for (int i = 0; i < 3; ++i) {
         char *entry_key = (char *)calloc(13, sizeof(char));
@@ -56,14 +59,17 @@ static int test_json_value_to_string_1() {
 
 static int test_json_value_to_string_2() {
     char *test_string = "{\"0\":1,\"1\":2,\"2\":3}";
+    char *str_start = test_string;
 
     struct json_value *test_val = string_to_json_value(&test_string);
 
-    // if (strlen(json_value_to_string(test_val)) != strlen(test_string_one)) {
-    //     printf("[TEST FAIL] test_json_value_to_string_2(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string_one);
-    //
-    //     return 1;
-    // }
+    test_string = str_start;
+
+    if (strcmp(json_value_to_string(test_val), test_string)) {
+        printf("[TEST FAIL] test_json_value_to_string_2(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
+
+        return 1;
+    }
 
     for (int i = 0; i < 3; ++i) {
         char *entry_key = (char *)calloc(13, sizeof(char));
@@ -106,14 +112,17 @@ static int test_json_value_to_string_2() {
 
 static int test_json_value_to_string_3() {
     char *test_string = "{\"0\":{\"1\":2},\"1\":{\"2\":3},\"2\":{\"3\":4}}";
+    char *str_start = test_string;
 
     struct json_value *test_val = string_to_json_value(&test_string);
 
-    // if (strlen(json_value_to_string(test_val)) != strlen(test_string_one)) {
-    //     printf("[TEST FAIL] test_json_value_to_string_3(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string_one);
-    //
-    //     return 1;
-    // }
+    test_string = str_start;
+
+    if (strcmp(json_value_to_string(test_val), test_string)) {
+        printf("[TEST FAIL] test_json_value_to_string_3(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
+
+        return 1;
+    }
 
     for (int i = 0; i < 3; ++i) {
         char *entry_key = (char *)calloc(13, sizeof(char));
@@ -179,14 +188,17 @@ static int test_json_value_to_string_3() {
 
 static int test_json_value_to_string_4() {
     char *test_string = "{\"0\":[0,1,2],\"1\":[0,1,2],\"2\":[0,1,2]}";
+    char *str_start = test_string;
 
     struct json_value *test_val = string_to_json_value(&test_string);
 
-    // if (strlen(json_value_to_string(test_val)) != strlen(test_string_one)) {
-    //     printf("[TEST FAIL] test_json_value_to_string_4(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string_one);
-    //
-    //     return 1;
-    // }
+    test_string = str_start;
+
+    if (strcmp(json_value_to_string(test_val), test_string)) {
+        printf("[TEST FAIL] test_json_value_to_string_4(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
+
+        return 1;
+    }
 
     for (int i = 0; i < 3; ++i) {
         char *entry_key = (char *)calloc(13, sizeof(char));
@@ -239,14 +251,17 @@ static int test_json_value_to_string_4() {
 
 static int test_json_value_to_string_5() {
     char *test_string = "{\"0\":true,\"1\":true,\"2\":true}";
+    char *str_start = test_string;
 
     struct json_value *test_val = string_to_json_value(&test_string);
 
-    // if (strlen(json_value_to_string(test_val)) != strlen(test_string_one)) {
-    //     printf("[TEST FAIL] test_json_value_to_string_5(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string_one);
-    //
-    //     return 1;
-    // }
+    test_string = str_start;
+
+    if (strcmp(json_value_to_string(test_val), test_string)) {
+        printf("[TEST FAIL] test_json_value_to_string_5(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
+
+        return 1;
+    }
 
     for (int i = 0; i < 3; ++i) {
         char *entry_key = (char *)calloc(13, sizeof(char));
@@ -277,14 +292,17 @@ static int test_json_value_to_string_5() {
 
 static int test_json_value_to_string_6() {
     char *test_string = "{\"0\":false,\"1\":false,\"2\":false}";
+    char *str_start = test_string;
 
     struct json_value *test_val = string_to_json_value(&test_string);
 
-    // if (strlen(json_value_to_string(test_val)) != strlen(test_string_one)) {
-    //     printf("[TEST FAIL] test_json_value_to_string_6(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string_one);
-    //
-    //     return 1;
-    // }
+    test_string = str_start;
+
+    if (strcmp(json_value_to_string(test_val), test_string)) {
+        printf("[TEST FAIL] test_json_value_to_string_6(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
+
+        return 1;
+    }
 
     for (int i = 0; i < 3; ++i) {
         char *entry_key = (char *)calloc(13, sizeof(char));
@@ -315,14 +333,17 @@ static int test_json_value_to_string_6() {
 
 static int test_json_value_to_string_7() {
     char *test_string = "{\"0\":null,\"1\":null,\"2\":null}";
+    char *str_start = test_string;
 
     struct json_value *test_val = string_to_json_value(&test_string);
 
-    // if (strlen(json_value_to_string(test_val)) != strlen(test_string_one)) {
-    //     printf("[TEST FAIL] test_json_value_to_string_7(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string_one);
-    //
-    //     return 1;
-    // }
+    test_string = str_start;
+
+    if (strcmp(json_value_to_string(test_val), test_string)) {
+        printf("[TEST FAIL] test_json_value_to_string_7(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
+
+        return 1;
+    }
 
     for (int i = 0; i < 3; ++i) {
         char *entry_key = (char *)calloc(13, sizeof(char));
