@@ -352,7 +352,7 @@ static int test_json_value_to_string_7() {
 }
 
 int test_json_parser() {
-    printf("Testing JSON handler\n");
+    printf("Testing JSON parser\n");
 
     int failed_test_counter = 0;
     int num_tests = 0;
@@ -378,7 +378,7 @@ int test_json_parser() {
     failed_test_counter += test_json_value_to_string_7();
     ++num_tests;
 
-    printf("[TESTING COMPLETE] JSON testing %d/%d tests passed\n", num_tests - failed_test_counter, num_tests);
+    printf("[TESTING COMPLETE] JSON parser testing %d/%d tests passed\n", num_tests - failed_test_counter, num_tests);
 
     return 0;
 }

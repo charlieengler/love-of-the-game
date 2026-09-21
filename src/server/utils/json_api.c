@@ -55,7 +55,7 @@ char *json_number_to_string(struct json_number *json_num) {
     int fraction_places = int_num_places(json_num->fraction);
     int exponent_places = int_num_places(json_num->exponent);
 
-    char *output = (char *)calloc((int_places + fraction_places + exponent_places + 1), sizeof(char));
+    char *output = (char *)calloc((int_places + fraction_places + exponent_places + 3), sizeof(char));
 
     switch (json_num->type) {
     case JSON_INTEGER:
@@ -67,13 +67,13 @@ char *json_number_to_string(struct json_number *json_num) {
     case JSON_FRACTION:
         sprintf(output, "%lld.%lld", json_num->integer, json_num->fraction);
 
-        output[int_places + fraction_places] = '\0';
+        output[int_places + fraction_places + 1] = '\0';
         break;
 
     case JSON_EXPONENTIAL:
         sprintf(output, "%lld.%llde%lld", json_num->integer, json_num->fraction, json_num->exponent);
 
-        output[int_places + fraction_places + exponent_places] = '\0';
+        output[int_places + fraction_places + exponent_places + 2] = '\0';
         break;
 
     case JSON_UNDEFINED_NUMBER:
@@ -158,15 +158,10 @@ char *json_array_to_string(struct json_array *json_arr) {
     int total_length = 0;
     int alloc_size = 100;
     char *str = (char *)calloc(alloc_size, sizeof(char));
-    strcpy(str, "[");
-    ++total_length;
+    append_str(&str, "[", &total_length, &alloc_size);
 
     if (json_arr->length == 0) {
-        strcat(str, "]");
-
-        str[2] = '\0';
-
-        return str;
+        goto out;
     }
 
     struct json_value *json_val = json_arr->values[0];
@@ -192,18 +187,20 @@ char *json_array_to_string(struct json_array *json_arr) {
             goto fail;
         }
 
+        append_str(&str, ",", &total_length, &alloc_size);
         append_str(&str, output, &total_length, &alloc_size);
 
         free(output);
     }
 
-    append_str(&str, "}", &total_length, &alloc_size);
+out:
+    append_str(&str, "]", &total_length, &alloc_size);
 
     return str;
 
 fail:
     free(str);
-    return str;
+    return NULL;
 }
 
 char *json_true_to_string() {
@@ -257,7 +254,7 @@ char *json_value_to_string(struct json_value *json_val) {
         break;
 
     case JSON_ARRAY:
-        output = json_object_to_string((struct json_object *)json_val->data);
+        output = json_array_to_string((struct json_array *)json_val->data);
         break;
 
     case JSON_TRUE:
@@ -293,4 +290,104 @@ char *json_value_to_string(struct json_value *json_val) {
 fail:
     free(str);
     return NULL;
+}
+
+int destroy_json_string(char *str) {
+    int output = 0;
+
+    // TODO: Check for errors
+    free(str);
+
+    return output;
+}
+
+int destroy_json_number(struct json_number *json_num) {
+    int output = 0;
+
+    // TODO: Check for errors
+    free(json_num);
+
+    return output;
+}
+
+int destroy_json_object(struct json_object *json_obj) {
+    int output = 0;
+
+    for (int i = 0; i < json_obj->num_entries; ++i) {
+        // TODO: Uncomment me when implemented
+        // struct json_value *child_value = json_object_get_value(json_obj, json_obj->keys[i]);
+        // TODO: Error checking
+        free(json_obj->keys[i]);
+
+        output = destroy_json_value(json_obj->values[i]);
+    }
+
+    for (int i = json_obj->num_entries; i < json_obj->num_allocated; ++i) {
+        // TODO: Error checking
+        free(json_obj->keys[i]);
+        // TODO: Error checking
+        free(json_obj->values[i]);
+    }
+
+    // TODO: Error checking
+    free(json_obj->keys);
+    // TODO: Error checking
+    free(json_obj->values);
+
+    // TODO: Error checking
+    free(json_obj);
+
+    return output;
+}
+
+int destroy_json_array(struct json_array *json_arr) {
+    int output = 0;
+
+    for (int i = 0; i < json_arr->length; ++i) {
+        output = destroy_json_value(json_arr->values[i]);
+    }
+
+    // TODO: Error checking
+    free(json_arr->values);
+
+    // TODO: Error checking
+    free(json_arr);
+
+    return output;
+}
+
+int destroy_json_value(struct json_value *json_val) {
+    int output = 0;
+    switch (json_val->type) {
+    case JSON_STRING:
+        output = destroy_json_string((char *)json_val->data);
+        break;
+
+    case JSON_NUMBER:
+        output = destroy_json_number((struct json_number *)json_val->data);
+        break;
+
+    case JSON_OBJECT:
+        output = destroy_json_object((struct json_object *)json_val->data);
+        break;
+
+    case JSON_ARRAY:
+        output = destroy_json_array((struct json_array *)json_val->data);
+        break;
+
+    case JSON_TRUE:
+    case JSON_FALSE:
+    case JSON_NULL:
+        goto out;
+
+    case JSON_UNDEFINED:
+    default:
+        // TODO: Error message with reason for failure
+        goto out;
+    }
+
+out:
+    free(json_val);
+
+    return output;
 }
