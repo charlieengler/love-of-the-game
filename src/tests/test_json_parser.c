@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include "../include/server/utils/json_api.h"
-#include "../include/server/utils/json_parser.h"
 
 #include "tests.h"
 

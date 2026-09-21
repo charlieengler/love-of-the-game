@@ -1,52 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../include/server/utils/json_parser.h"
-
-// TODO: This should be a hash map at some point, abstract and reuse the logic from the database
-int json_object_add_value(struct json_object **json_obj, char *key, struct json_value *value) {
-    // TODO: Error codes for issues when adding the value
-
-    char **new_keys = (char **)malloc(((*json_obj)->num_allocated + 1) * sizeof(char *));
-    memcpy(new_keys, (*json_obj)->keys, (*json_obj)->num_allocated * sizeof(char *));
-
-    free((*json_obj)->keys);
-
-    (*json_obj)->keys = new_keys;
-
-    (*json_obj)->keys[(*json_obj)->num_allocated] = key;
-
-    struct json_value **new_values = (struct json_value **)malloc(((*json_obj)->num_allocated + 1) * sizeof(struct json_value *));
-    memcpy(new_values, (*json_obj)->values, (*json_obj)->num_allocated * sizeof(char *));
-
-    free((*json_obj)->values);
-
-    (*json_obj)->values = new_values;
-
-    (*json_obj)->values[(*json_obj)->num_allocated] = value;
-
-    ++((*json_obj)->num_allocated);
-    ++((*json_obj)->num_entries);
-
-    return 0;
-}
-
-int json_array_add_value(struct json_array **json_arr, struct json_value *value) {
-    // TODO: Error codes for issues when adding the value
-
-    struct json_value **new_values = (struct json_value **)malloc(((*json_arr)->length + 1) * sizeof(struct json_value *));
-    memcpy(new_values, (*json_arr)->values, (*json_arr)->length * sizeof(char *));
-
-    free((*json_arr)->values);
-
-    (*json_arr)->values = new_values;
-
-    (*json_arr)->values[(*json_arr)->length] = value;
-
-    ++((*json_arr)->length);
-
-    return 0;
-}
+#include "../../include/server/utils/json_api.h"
 
 int string_to_json_true(char **input) {
     if (!strncmp(*input, "true", 4)) {

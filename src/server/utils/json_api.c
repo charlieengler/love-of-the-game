@@ -4,7 +4,6 @@
 #include <string.h>
 
 #include "../../include/server/utils/json_api.h"
-#include "../../include/server/utils/json_parser.h"
 
 #include "../../include/server/utils/numbers.h"
 
@@ -389,6 +388,78 @@ out:
     return output;
 }
 
+struct json_value *create_string_json_value(char *str) {
+    struct json_value *json_val = (struct json_value *)malloc(sizeof(struct json_value));
+
+    json_val->type = JSON_STRING;
+    json_val->data = str;
+
+    return json_val;
+}
+
+struct json_value *create_number_json_value(long long integer, long long fraction, long long exponent, enum json_number_types type) {
+    struct json_value *json_val = (struct json_value *)malloc(sizeof(struct json_value));
+
+    json_val->type = JSON_NUMBER;
+
+    struct json_number *json_num = (struct json_number *)malloc(sizeof(struct json_number));
+
+    json_num->type = type;
+    json_num->integer = integer;
+    json_num->fraction = fraction;
+    json_num->exponent = exponent;
+
+    json_val->data = json_num;
+
+    return json_val;
+}
+
+struct json_value *create_object_json_value() {
+    struct json_value *json_val = (struct json_value *)malloc(sizeof(struct json_value));
+
+    json_val->type = JSON_OBJECT;
+
+    struct json_object *json_obj = (struct json_object *)malloc(sizeof(struct json_object));
+
+    json_obj->keys = NULL;
+    json_obj->values = NULL;
+
+    json_obj->num_entries = 0;
+    json_obj->num_allocated = 0;
+
+    json_val->data = json_obj;
+
+    return json_val;
+}
+
+// TODO: Hash map the object entries at some point
+int json_object_add_value(struct json_object **json_obj, char *key, struct json_value *json_val) {
+    // TODO: Error codes for issues when adding the value
+
+    char **new_keys = (char **)malloc(((*json_obj)->num_allocated + 1) * sizeof(char *));
+    memcpy(new_keys, (*json_obj)->keys, (*json_obj)->num_allocated * sizeof(char *));
+
+    free((*json_obj)->keys);
+
+    (*json_obj)->keys = new_keys;
+
+    (*json_obj)->keys[(*json_obj)->num_allocated] = key;
+
+    struct json_value **new_values = (struct json_value **)malloc(((*json_obj)->num_allocated + 1) * sizeof(struct json_value *));
+    memcpy(new_values, (*json_obj)->values, (*json_obj)->num_allocated * sizeof(char *));
+
+    free((*json_obj)->values);
+
+    (*json_obj)->values = new_values;
+
+    (*json_obj)->values[(*json_obj)->num_allocated] = json_val;
+
+    ++((*json_obj)->num_allocated);
+    ++((*json_obj)->num_entries);
+
+    return 0;
+}
+
 struct json_value *json_object_get_value(struct json_object *json_obj, char *key) {
     // TODO: Update me when a hash map is used instead
     for (int i = 0; i < json_obj->num_entries; ++i) {
@@ -399,4 +470,64 @@ struct json_value *json_object_get_value(struct json_object *json_obj, char *key
 
     // TODO: Print an error
     return NULL;
+}
+
+struct json_value *create_array_json_value() {
+    struct json_value *json_val = (struct json_value *)malloc(sizeof(struct json_value));
+
+    json_val->type = JSON_ARRAY;
+
+    struct json_array *json_arr = (struct json_array *)malloc(sizeof(struct json_array));
+
+    json_arr->values = NULL;
+
+    json_arr->length = 0;
+
+    json_val->data = json_arr;
+
+    return json_val;
+}
+
+int json_array_add_value(struct json_array **json_arr, struct json_value *json_val) {
+    // TODO: Error codes for issues when adding the value
+
+    struct json_value **new_values = (struct json_value **)malloc(((*json_arr)->length + 1) * sizeof(struct json_value *));
+    memcpy(new_values, (*json_arr)->values, (*json_arr)->length * sizeof(char *));
+
+    free((*json_arr)->values);
+
+    (*json_arr)->values = new_values;
+
+    (*json_arr)->values[(*json_arr)->length] = json_val;
+
+    ++((*json_arr)->length);
+
+    return 0;
+}
+
+struct json_value *create_true_json_value() {
+    struct json_value *json_val = (struct json_value *)malloc(sizeof(struct json_value));
+
+    json_val->type = JSON_TRUE;
+    json_val->data = NULL;
+
+    return json_val;
+}
+
+struct json_value *create_false_json_value() {
+    struct json_value *json_val = (struct json_value *)malloc(sizeof(struct json_value));
+
+    json_val->type = JSON_FALSE;
+    json_val->data = NULL;
+
+    return json_val;
+}
+
+struct json_value *create_null_json_value() {
+    struct json_value *json_val = (struct json_value *)malloc(sizeof(struct json_value));
+
+    json_val->type = JSON_NULL;
+    json_val->data = NULL;
+
+    return json_val;
 }
