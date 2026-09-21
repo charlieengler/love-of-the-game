@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -104,10 +105,8 @@ char *json_object_to_string(struct json_object *json_obj) {
     append_str(&str, key, &total_length, &alloc_size);
     append_str(&str, "\":", &total_length, &alloc_size);
 
-    // TODO: Uncomment me when implemented
-    // struct json_value *json_val = json_object_get_value(json_obj, key);
-
-    struct json_value *json_val = json_obj->values[0];
+    // TODO: Error checking
+    struct json_value *json_val = json_object_get_value(json_obj, key);
 
     char *output = json_value_to_string(json_val);
 
@@ -120,17 +119,15 @@ char *json_object_to_string(struct json_object *json_obj) {
 
     free(output);
 
-    for (unsigned long i = 1; i < json_obj->num_entries; ++i) {
+    for (int i = 1; i < json_obj->num_entries; ++i) {
         char *key = json_obj->keys[i];
 
         append_str(&str, ",\"", &total_length, &alloc_size);
         append_str(&str, key, &total_length, &alloc_size);
         append_str(&str, "\":", &total_length, &alloc_size);
 
-        // TODO: Uncomment me when implemented
-        // struct json_value *json_val = json_object_get_value(json_obj, key);
-
-        struct json_value *json_val = json_obj->values[i];
+        // TODO: Error checking
+        struct json_value *json_val = json_object_get_value(json_obj, key);
 
         output = json_value_to_string(json_val);
 
@@ -177,7 +174,7 @@ char *json_array_to_string(struct json_array *json_arr) {
 
     free(output);
 
-    for (unsigned long i = 1; i < json_arr->length; ++i) {
+    for (int i = 1; i < json_arr->length; ++i) {
         struct json_value *json_val = json_arr->values[i];
 
         output = json_value_to_string(json_val);
@@ -314,12 +311,12 @@ int destroy_json_object(struct json_object *json_obj) {
     int output = 0;
 
     for (int i = 0; i < json_obj->num_entries; ++i) {
-        // TODO: Uncomment me when implemented
-        // struct json_value *child_value = json_object_get_value(json_obj, json_obj->keys[i]);
         // TODO: Error checking
+        struct json_value *child_value = json_object_get_value(json_obj, json_obj->keys[i]);
+
         free(json_obj->keys[i]);
 
-        output = destroy_json_value(json_obj->values[i]);
+        output = destroy_json_value(child_value);
     }
 
     for (int i = json_obj->num_entries; i < json_obj->num_allocated; ++i) {
@@ -390,4 +387,16 @@ out:
     free(json_val);
 
     return output;
+}
+
+struct json_value *json_object_get_value(struct json_object *json_obj, char *key) {
+    // TODO: Update me when a hash map is used instead
+    for (int i = 0; i < json_obj->num_entries; ++i) {
+        if (!strcmp(json_obj->keys[i], key)) {
+            return json_obj->values[i];
+        }
+    }
+
+    // TODO: Print an error
+    return NULL;
 }

@@ -18,14 +18,14 @@ struct json_object {
     char **keys;
     struct json_value **values;
 
-    uint64_t num_allocated;
-    uint64_t num_entries;
+    int num_allocated;
+    int num_entries;
 };
 
 struct json_array {
     struct json_value **values;
 
-    uint64_t length;
+    int length;
 };
 
 // TODO: Sanitize data before it reaches this struct to ensure it doesn't exceed the scope of long long
