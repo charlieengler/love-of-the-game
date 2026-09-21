@@ -6,10 +6,12 @@
 #include "tests.h"
 
 static int test_json_value_to_string() {
-    // TODO: More than just one test string
     char *test_string_one = "{\"0\":\"1\",\"1\":\"2\",\"2\":\"3\"}";
+    char *str_start = test_string_one;
 
     struct json_value *json_val = string_to_json_value(&test_string_one);
+
+    test_string_one = str_start;
 
     char *new_string = json_value_to_string(json_val);
 

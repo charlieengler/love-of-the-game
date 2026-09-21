@@ -7,14 +7,14 @@
 
 #include "../../include/server/utils/numbers.h"
 
-int append_str(char **target, char *addition, long *current_size, long *allocated_size) {
-    long addition_size = strlen(addition);
-    long difference = *allocated_size - *current_size;
+int append_str(char **target, char *addition, int *current_size, int *allocated_size) {
+    int addition_size = strlen(addition);
+    int difference = *allocated_size - *current_size;
 
     if (addition_size > difference - 1) {
         *allocated_size += difference * 1.5;
 
-        char *new_str = (char *)malloc(*allocated_size * sizeof(char));
+        char *new_str = (char *)calloc(*allocated_size, sizeof(char));
         strcpy(new_str, *target);
 
         free(*target);
@@ -22,11 +22,15 @@ int append_str(char **target, char *addition, long *current_size, long *allocate
         *target = new_str;
     }
 
+    // TODO: If the string is supposed to be empty (current_size == 0), then this relies on nothing being resident in memory
+    //       before appending. This means that reused memory after free is called causes issues with the memory being full
+    //       of garbage if using malloc alone when creating the new strings. Therefore, calloc is used, but this is not as
+    //       performant. It may be worth finding a happy medium, maybe by only zeroing out the first byte of malloc'd memory,
+    //       or maybe modifying this function to zero out the first byte automatically if current_size == 0. Neither seems
+    //       particularly clean
     strcat(*target, addition);
 
     *current_size += addition_size;
-
-    ++(*current_size);
 
     // TODO: Error codes for various failures
     return 0;
@@ -34,7 +38,7 @@ int append_str(char **target, char *addition, long *current_size, long *allocate
 
 char *json_string_to_string(char *json_str) {
     // TODO: Escape characters that need to be
-    char *output = (char *)malloc((strlen(json_str) + 3) * sizeof(char));
+    char *output = (char *)calloc((strlen(json_str) + 3), sizeof(char));
     strcpy(output, "\"");
     strcat(output, json_str);
     strcat(output, "\"");
@@ -51,7 +55,7 @@ char *json_number_to_string(struct json_number *json_num) {
     int fraction_places = int_num_places(json_num->fraction);
     int exponent_places = int_num_places(json_num->exponent);
 
-    char *output = (char *)malloc((int_places + fraction_places + exponent_places + 1) * sizeof(char));
+    char *output = (char *)calloc((int_places + fraction_places + exponent_places + 1), sizeof(char));
 
     switch (json_num->type) {
     case JSON_INTEGER:
@@ -85,20 +89,13 @@ fail:
 }
 
 char *json_object_to_string(struct json_object *json_obj) {
-    long total_length = 0;
-    long alloc_size = 100;
-    char *str = (char *)malloc(alloc_size * sizeof(char));
-    strcpy(str, "{");
-    ++total_length;
-    str[total_length] = '\0';
-    ++total_length;
+    int total_length = 0;
+    int alloc_size = 100;
+    char *str = (char *)calloc(alloc_size, sizeof(char));
+    append_str(&str, "{", &total_length, &alloc_size);
 
     if (json_obj->num_entries == 0) {
-        strcat(str, "}");
-
-        str[2] = '\0';
-
-        return str;
+        goto out;
     }
 
     char *key = json_obj->keys[0];
@@ -121,8 +118,7 @@ char *json_object_to_string(struct json_object *json_obj) {
 
     append_str(&str, output, &total_length, &alloc_size);
 
-    // TODO: Figure out why this causes memory errors
-    // free(output);
+    free(output);
 
     for (unsigned long i = 1; i < json_obj->num_entries; ++i) {
         char *key = json_obj->keys[i];
@@ -145,10 +141,10 @@ char *json_object_to_string(struct json_object *json_obj) {
 
         append_str(&str, output, &total_length, &alloc_size);
 
-        // TODO: Figure out why this causes memory errors
-        // free(output);
+        free(output);
     }
 
+out:
     append_str(&str, "}", &total_length, &alloc_size);
 
     return str;
@@ -159,9 +155,9 @@ fail:
 }
 
 char *json_array_to_string(struct json_array *json_arr) {
-    long total_length = 0;
-    long alloc_size = 100;
-    char *str = (char *)malloc(alloc_size * sizeof(char));
+    int total_length = 0;
+    int alloc_size = 100;
+    char *str = (char *)calloc(alloc_size, sizeof(char));
     strcpy(str, "[");
     ++total_length;
 
@@ -211,7 +207,7 @@ fail:
 }
 
 char *json_true_to_string() {
-    char *str = (char *)malloc((strlen("true") + 1) * sizeof(char));
+    char *str = (char *)calloc((strlen("true") + 1), sizeof(char));
 
     strcpy(str, "true");
 
@@ -221,7 +217,7 @@ char *json_true_to_string() {
 }
 
 char *json_false_to_string() {
-    char *str = (char *)malloc((strlen("false") + 1) * sizeof(char));
+    char *str = (char *)calloc((strlen("false") + 1), sizeof(char));
 
     strcpy(str, "false");
 
@@ -231,7 +227,7 @@ char *json_false_to_string() {
 }
 
 char *json_null_to_string() {
-    char *str = (char *)malloc((strlen("null") + 1) * sizeof(char));
+    char *str = (char *)calloc((strlen("null") + 1), sizeof(char));
 
     strcpy(str, "null");
 
@@ -241,9 +237,9 @@ char *json_null_to_string() {
 }
 
 char *json_value_to_string(struct json_value *json_val) {
-    long total_length = 0;
-    long alloc_size = 100;
-    char *str = (char *)malloc(alloc_size * sizeof(char *));
+    int total_length = 0;
+    int alloc_size = 100;
+    char *str = (char *)calloc(alloc_size, sizeof(char *));
 
     // TODO: Destroy the JSON related structs as they are added to the string, or destroy the whole value at the end of the function call
     char *output = NULL;
