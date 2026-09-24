@@ -1,130 +1,109 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "internal.h"
 
 #include "../../../include/server/games/blackjack/blackjack.h"
 
-#include "../../../include/server/database/database.h"
-#include "../../../include/server/utils/json_handler.h"
-#include "../../../include/server/utils/strings.h"
+#include "../../../include/server/utils/json_api.h"
 
-int add_blank_bet(struct database_mappings *db, char *data) {
-    // TODO: Error checking
-    struct json_object *data_json = json_parse_string(data);
-
-    // TODO: Error checking
-    struct json_value *table_id_json = json_find_entry(data_json, "tableID");
-    char *table_id = table_id_json->str_val;
-
-    // TODO: Error checking
-    blackjack_join_table(db, data);
-
-    struct database_entry *found_entry = db_find(db, table_id);
-
-    if (found_entry == NULL) {
-        // TODO: Return a JSON error
-        printf("blackjack error: db entry is still null\n");
+char *blackjack_place_bet(struct json_value *db_json, char *req) {
+    if (db_json->type != JSON_OBJECT) {
+        // TODO: Fail
     }
 
-    struct json_object *entry_json = json_parse_string((char *)found_entry->data_ptr);
-
-    // TODO: Correlate bets to users and add support for more than one bet
-    struct json_value *entry_bets_json = json_find_entry(entry_json, "bets");
-    if (!entry_bets_json) {
-        entry_bets_json = (struct json_value *)malloc(sizeof(struct json_value));
-        entry_bets_json->str_val = (char *)malloc(sizeof(char));
-        entry_bets_json->str_val[0] = '\0';
-        entry_bets_json->type = JSON_STRING;
-
-        json_add_entry(entry_json, "bets", entry_bets_json);
-    }
-
-    char *new_bets = (char *)malloc(strlen(entry_bets_json->str_val) + strlen("0") + 2);
-    strcpy(new_bets, entry_bets_json->str_val);
-    if (strlen(entry_bets_json->str_val)) {
-        strcat(new_bets, ",");
-    }
-    strcat(new_bets, "0");
-
-    new_bets[strlen(entry_bets_json->str_val) + strlen("0") + 1] = '\0';
-
-    free(entry_bets_json->str_val);
-
-    entry_bets_json->str_val = new_bets;
-
-    free(found_entry->data_ptr);
-    found_entry->data_ptr = json_to_string(entry_json);
-
-    return 0;
-}
-
-char *blackjack_place_bet(struct database_mappings *db, char *data) {
+    char *req_start = req;
     // TODO: Error checking
-    struct json_object *data_json = json_parse_string(data);
+    struct json_value *req_json = string_to_json_value(&req);
+    req = req_start;
+
+    // TODO: Macro with callback for verifying JSON object type
+    if (req_json->type != JSON_OBJECT) {
+        // TODO: Fail
+    }
 
     // TODO: Error checking
-    struct json_value *table_id_json = json_find_entry(data_json, "tableID");
-    char *table_id = table_id_json->str_val;
+    struct json_value *table_id_json = json_object_get_value((struct json_object *)(req_json->data), "tableID");
+    if (table_id_json->type != JSON_STRING) {
+        // TODO: Fail
+    }
+    char *table_id = (char *)(table_id_json->data);
 
     // TODO: Error checking
-    struct json_value *user_id_json = json_find_entry(data_json, "userID");
-    char *user_id = user_id_json->str_val;
-
-    // TODO: Should be a number value once that is implemented
-    struct json_value *bet_json = json_find_entry(data_json, "bet");
-    char *bet = bet_json->str_val;
+    struct json_value *user_id_json = json_object_get_value((struct json_object *)(req_json->data), "userID");
+    if (user_id_json->type != JSON_STRING) {
+        // TODO: Fail
+    }
+    char *user_id = (char *)(user_id_json->data);
 
     // TODO: Error checking
-    blackjack_join_table(db, data);
+    struct json_value *bet_json = json_object_get_value((struct json_object *)(req_json->data), "bet");
+    if (bet_json->type != JSON_NUMBER) {
+        // TODO: Fail
+    }
+    int bet = (int)(((struct json_number *)(bet_json->data))->integer);
 
-    struct database_entry *found_entry = db_find(db, table_id);
+    struct json_value *table_json = json_object_get_value((struct json_object *)(db_json->data), table_id);
+    struct json_object *table_object;
 
-    if (found_entry == NULL) {
-        // TODO: Return a JSON error
-        printf("blackjack error: db entry is still null\n");
+    if (!table_json) {
+        // TODO: Error checking
+        blackjack_join_table(db_json, req);
     }
 
-    struct json_object *entry_json = json_parse_string((char *)found_entry->data_ptr);
-
-    struct json_value *entry_users_json = json_find_entry(entry_json, "users");
-    char *entry_users = entry_users_json->str_val;
-
-    int num_users = 0;
-    char **users = csv_to_string_array(entry_users, &num_users);
-
-    // TODO: Correlate bets to users and add support for more than one bet
-    struct json_value *entry_bets_json = json_find_entry(entry_json, "bets");
-    if (!entry_bets_json) {
-        printf("Entry bets JSON was null when placing bet\n");
-
-        return data;
+    if (table_json->type != JSON_OBJECT) {
+        // TODO: Fail
     }
 
-    int num_bets = 0;
-    int *bets = csv_to_int_array(entry_bets_json->str_val, &num_bets);
+    table_object = (struct json_object *)(table_json->data);
 
-    if (num_bets != num_users) {
-        printf("Number of bets didn't equal number of users when placing bet\n");
-
-        return data;
+    // TODO: Error checking
+    struct json_value *users_json = json_object_get_value(table_object, "users");
+    if (users_json->type != JSON_ARRAY) {
+        // TODO: Fail
     }
 
-    for (int i = 0; i < num_users; ++i) {
-        if (!strcmp(user_id, users[i])) {
-            bets[i] = atoi(bet);
+    struct json_array *users_array = (struct json_array *)(users_json->data);
 
+    struct json_value *found_user_json = NULL;
+    for (int i = 0; i < users_array->length; ++i) {
+        struct json_value *tmp_user_json = users_array->values[i];
+        if (tmp_user_json->type != JSON_OBJECT) {
+            // TODO: Fail
+        }
+
+        // TODO: Error checking
+        struct json_value *tmp_user_id_json = json_object_get_value((struct json_object *)(tmp_user_json->data), "id");
+        if (tmp_user_id_json->type != JSON_STRING) {
+            // TODO: Fail
+        }
+
+        char *tmp_user_id = (char *)tmp_user_id_json->data;
+
+        if (!strcmp(user_id, tmp_user_id)) {
+            found_user_json = tmp_user_json;
             break;
         }
     }
 
-    free(entry_bets_json->str_val);
+    if (!found_user_json) {
+        // TODO: Error checking
+        blackjack_join_table(db_json, req);
+    }
 
-    entry_bets_json->str_val = int_array_to_csv(bets, num_bets);
+    if (found_user_json->type != JSON_OBJECT) {
+        // TODO: Fail
+    }
 
-    free(found_entry->data_ptr);
-    found_entry->data_ptr = json_to_string(entry_json);
+    // TODO: Error checking
+    struct json_value *user_bet_json = json_object_get_value((struct json_object *)(found_user_json->data), "bet");
+    if (user_bet_json->type != JSON_NUMBER) {
+        // TODO: Fail
+    }
 
-    return data;
+    ((struct json_number *)(user_bet_json->data))->integer = bet;
+
+    // TODO: Better res
+    char *res = req;
+    return res;
 }

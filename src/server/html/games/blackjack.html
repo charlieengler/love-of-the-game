@@ -1,190 +1,192 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Blackjack</title>
 
-        <script src="./common/cards.js" type="text/javascript"></script>
+<head>
+    <title>Blackjack</title>
 
-        <script>
-            const submitData = async (path, data) => {
-                try {
-                    const res = await fetch(path, {
-                        method: "POST",
-                        body: JSON.stringify(data),
-                        headers: {
-                            "Content-type": "application/json",
-                        },
-                    });
+    <script src="./common/cards.js" type="text/javascript"></script>
 
-                    const reader = res.body.getReader();
+    <script>
+        const submitData = async (path, data) => {
+            try {
+                const res = await fetch(path, {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                    headers: {
+                        "Content-type": "application/json",
+                    },
+                });
 
-                    const rawData = [];
-                    let { done, value } = await reader.read();
+                const reader = res.body.getReader();
 
-                    if(value != null) {
-                        rawData.push(value);
-                    }
+                const rawData = [];
+                let {done, value} = await reader.read();
 
-                    // TODO: This is causing issues with reading forever
-                    // while(!done) {
-                    //     ({ done, value } = await reader.read());
-                    //
-                    //     if(value != null)
-                    //         rawData.push(value);
-                    // }
-
-                    const parsedData = [];
-
-                    for(let i = 0; i < rawData.length; i++) {
-                        const chunkString = new TextDecoder().decode(rawData[i]);
-
-                        parsedData.push(JSON.parse(chunkString));
-                    }
-
-                    return parsedData;
-                } catch(err) {
-                    console.error("Unable to fetch server data: ", err);
-                }
-            }
-
-            const joinTable = async () => {
-                const userID = document.getElementById("user-id-input").value;
-                const tableID = document.getElementById("table-id-input").value;
-
-                const data = {
-                    userID: userID,
-                    tableID: tableID,
-                };
-
-                const res = (await submitData("http://localhost:3000/routes/games/blackjack/join-table", data))[0];
-
-                document.getElementById("table-id").innerText = res.tableID;
-                document.getElementById("user-id").innerText = res.userID;
-            }
-
-            const placeBet = async () => {
-                const userID = document.getElementById("user-id-input").value;
-                const tableID = document.getElementById("table-id-input").value;
-                const bet = document.getElementById("bet-value-input").value;
-
-                const data = {
-                    userID: userID,
-                    tableID: tableID,
-                    bet: bet,
-                };
-
-                const res = (await submitData("http://localhost:3000/routes/games/blackjack/bet", data))[0];
-
-                document.getElementById("table-id").innerText = res.tableID;
-                document.getElementById("user-id").innerText = res.userID;
-                document.getElementById("bet-value").innerText = res.bet;
-            }
-
-            const redealCards = data => {
-                const users = data.users.split(',');
-                const dealerCards = parseCardIndexString(data.dealerCards);
-                const userCards = parseCardIndexString(data.userCards);
-                const userCardCounts = data.userCardCounts.split(',');
-
-                document.getElementById("dealer-card-table").innerHTML = '';
-                document.getElementById("user-card-table").innerHTML = '';
-
-                for(let i = 0; i < users.length; i++) {
-                    const newHand = document.createElement("div");
-                    newHand.id = "player-" + users[i] + "-cards";
-                    document.getElementById("user-card-table").appendChild(newHand);
+                if (value != null) {
+                    rawData.push(value);
                 }
 
-                for(let i = 0; i < dealerCards.length; i++) {
-                    generateCardGraphic(dealerCards[i], "dealer-card-table");
+                // TODO: This is causing issues with reading forever
+                // while(!done) {
+                //     ({ done, value } = await reader.read());
+                //
+                //     if(value != null)
+                //         rawData.push(value);
+                // }
+
+                const parsedData = [];
+
+                for (let i = 0; i < rawData.length; i++) {
+                    const chunkString = new TextDecoder().decode(rawData[i]);
+
+                    parsedData.push(JSON.parse(chunkString));
                 }
 
-                let k = 0;
-                for(let i = 0; i < users.length; i++) {
-                    for(let j = 0; j < userCardCounts[i]; j++) {
-                        generateCardGraphic(userCards[k], "player-" + users[i] + "-cards");
+                return parsedData;
+            } catch (err) {
+                console.error("Unable to fetch server data: ", err);
+            }
+        }
 
-                        k++;
-                    }
+        const joinTable = async () => {
+            const userID = document.getElementById("user-id-input").value;
+            const tableID = document.getElementById("table-id-input").value;
+
+            const data = {
+                userID: userID,
+                tableID: tableID,
+            };
+
+            const res = (await submitData("http://localhost:3000/routes/games/blackjack/join-table", data))[0];
+
+            document.getElementById("table-id").innerText = res.tableID;
+            document.getElementById("user-id").innerText = res.userID;
+        }
+
+        const placeBet = async () => {
+            const userID = document.getElementById("user-id-input").value;
+            const tableID = document.getElementById("table-id-input").value;
+            const bet = document.getElementById("bet-value-input").value;
+
+            const data = {
+                userID: userID,
+                tableID: tableID,
+                bet: Number(bet),
+            };
+
+            const res = (await submitData("http://localhost:3000/routes/games/blackjack/bet", data))[0];
+
+            document.getElementById("table-id").innerText = res.tableID;
+            document.getElementById("user-id").innerText = res.userID;
+            document.getElementById("bet-value").innerText = res.bet;
+        }
+
+        const redealCards = data => {
+            const users = data.users;
+            const dealerCards = data.dealerCards;
+
+            document.getElementById("dealer-card-table").innerHTML = '';
+            document.getElementById("user-card-table").innerHTML = '';
+
+            for (let i = 0; i < users.length; i++) {
+                const newHandLabel = document.createElement("div");
+
+                newHandLabel.innerText = users[i].id + "'s Hand:";
+
+                document.getElementById("user-card-table").appendChild(newHandLabel);
+
+                const newHand = document.createElement("div");
+
+                newHand.id = "player-" + users[i].id + "-cards";
+
+                document.getElementById("user-card-table").appendChild(newHand);
+            }
+
+            for (let i = 0; i < dealerCards.length; i++) {
+                generateCardGraphic(dealerCards[i], "dealer-card-table");
+            }
+
+            let k = 0;
+            for (let i = 0; i < users.length; i++) {
+                for (let j = 0; j < users[i].hand.length; j++) {
+                    generateCardGraphic(users[i].hand[j], "player-" + users[i].id + "-cards");
+
+                    k++;
                 }
             }
+        }
 
-            const progressHand = async () => {
-                const userID = document.getElementById("user-id-input").value;
-                const tableID = document.getElementById("table-id-input").value;
+        const progressHand = async () => {
+            const userID = document.getElementById("user-id-input").value;
+            const tableID = document.getElementById("table-id-input").value;
 
-                const data = {
-                    userID: userID,
-                    tableID: tableID,
-                };
+            const data = {
+                userID: userID,
+                tableID: tableID,
+            };
 
-                const res = (await submitData("http://localhost:3000/routes/games/blackjack/progress-hand", data))[0];
+            const res = (await submitData("http://localhost:3000/routes/games/blackjack/progress-hand", data))[0];
 
-                console.log(res);
+            redealCards(res);
+        }
 
-                redealCards(res);
+        const hit = async () => {
+            const userID = document.getElementById("user-id-input").value;
+            const tableID = document.getElementById("table-id-input").value;
 
-                document.getElementById("hit-button").disabled = false;
-                document.getElementById("stand-button").disabled = false;
-            }
+            const data = {
+                userID: userID,
+                tableID: tableID,
+            };
 
-            const hit = async () => {
-                const userID = document.getElementById("user-id-input").value;
-                const tableID = document.getElementById("table-id-input").value;
+            const res = (await submitData("http://localhost:3000/routes/games/blackjack/hit", data))[0];
 
-                const data = {
-                    userID: userID,
-                    tableID: tableID,
-                };
+            redealCards(res);
+        }
 
-                const res = (await submitData("http://localhost:3000/routes/games/blackjack/hit", data))[0];
+        const stand = async () => {
+            const userID = document.getElementById("user-id-input").value;
+            const tableID = document.getElementById("table-id-input").value;
 
-                console.log(res);
+            const data = {
+                userID: userID,
+                tableID: tableID,
+            };
 
-                redealCards(res);
-            }
+            const res = (await submitData("http://localhost:3000/routes/games/blackjack/stand", data))[0];
 
-            const stand = async () => {
-                const userID = document.getElementById("user-id-input").value;
-                const tableID = document.getElementById("table-id-input").value;
+            redealCards(res);
+        }
+    </script>
+</head>
 
-                const data = {
-                    userID: userID,
-                    tableID: tableID,
-                };
+<body style="background-color: black; color: white;">
+    <input id="user-id-input" placeholder="User ID" />
+    <input id="table-id-input" placeholder="Table ID" />
+    <button onclick="joinTable()">Join Table</button>
+    <input id="bet-value-input" placeholder="Bet" type="number" />
+    <button onclick="placeBet()">Place Bet</button>
 
-                const res = (await submitData("http://localhost:3000/routes/games/blackjack/stand", data))[0];
+    <button onclick="progressHand()">Progress Hand</button>
 
-                console.log(res);
+    <button id="hit-button" onclick="hit()">Hit</button>
+    <button id="stand-button" onclick="stand()">Stand</button>
 
-                redealCards(res);
-            }
-        </script>
-    </head>
+    <br />
 
-    <body style="background-color: black; color: white;">
-        <input id="user-id-input" placeholder="User ID"/>
-        <input id="table-id-input" placeholder="Table ID"/>
-        <button onclick="joinTable()">Join Table</button>
-        <input id="bet-value-input" placeholder="Bet" type="number"/>
-        <button onclick="placeBet()">Place Bet</button>
+    <h1 style="display: inline-block;">Table ID:&nbsp;</h1>
+    <h1 id="table-id" style="display: inline-block;"></h1>
+    <br />
+    <h2 style="display: inline-block;">User ID:&nbsp;</h2>
+    <h2 id="user-id" style="display: inline-block;"></h2>
+    <br />
+    <h2 style="display: inline-block">Current Bet:&nbsp;</h2>
+    <h2 id="bet-value" style="display: inline-block;"></h2>
 
-        <button onclick="progressHand()">Progress Hand</button>
+    <br />
+    <br />
+    <div id="dealer-card-table"></div>
+    <div id="user-card-table"></div>
+</body>
 
-        <button disabled id="hit-button" onclick="hit()">Hit</button>
-        <button disabled id="stand-button" onclick="stand()">Stand</button>
-
-        <br/>
-
-        <h1 style="display: inline-block;">Table ID:&nbsp;</h1><h1 id="table-id" style="display: inline-block;"></h1>
-        <br/>
-        <h2 style="display: inline-block;">User ID:&nbsp;</h2><h2 id="user-id" style="display: inline-block;"></h2>
-        <br/>
-        <h2 style="display: inline-block">Current Bet:&nbsp;</h2><h2 id="bet-value" style="display: inline-block;"></h2>
-
-        <br/>
-        <br/>
-        <div id="dealer-card-table"></div>
-        <div id="user-card-table"></div>
-    </body>
 </html>

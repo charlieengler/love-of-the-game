@@ -9,6 +9,7 @@ struct json_array;
 
 char *json_value_to_string(struct json_value *json_val);
 int destroy_json_value(struct json_value *json_val);
+int destroy_json_object(struct json_object *json_obj);
 
 struct json_value *create_string_json_value(char *str);
 
@@ -16,9 +17,12 @@ struct json_value *create_number_json_value(long long integer, long long fractio
 
 struct json_value *create_object_json_value();
 int json_object_add_value(struct json_object **json_obj, char *key, struct json_value *json_val);
+struct json_value *json_object_get_value(struct json_object *json_obj, char *key);
+int json_object_remove_value(struct json_object **json_obj, char *key);
 
 struct json_value *create_array_json_value();
 int json_array_add_value(struct json_array **json_arr, struct json_value *json_val);
+struct json_value *json_array_pop_value(struct json_array *json_arr);
 
 struct json_value *create_true_json_value();
 

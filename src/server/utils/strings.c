@@ -168,3 +168,34 @@ char *char_array_to_csv(char **array, int num_entries) {
 
     return csv;
 }
+
+int append_str(char **target, char *addition, int *current_size, int *allocated_size) {
+    int addition_size = strlen(addition);
+    int difference = *allocated_size - *current_size;
+
+    // TODO: This growth seems to cause issues
+    if (addition_size > difference - 1) {
+        *allocated_size += difference * 100;
+
+        char *new_str = (char *)calloc(*allocated_size, sizeof(char));
+        // TODO: Change this to a memcpy?
+        strcpy(new_str, *target);
+
+        free(*target);
+
+        *target = new_str;
+    }
+
+    // TODO: If the string is supposed to be empty (current_size == 0), then this relies on nothing being resident in memory
+    //       before appending. This means that reused memory after free is called causes issues with the memory being full
+    //       of garbage if using malloc alone when creating the new strings. Therefore, calloc is used, but this is not as
+    //       performant. It may be worth finding a happy medium, maybe by only zeroing out the first byte of malloc'd memory,
+    //       or maybe modifying this function to zero out the first byte automatically if current_size == 0. Neither seems
+    //       particularly clean
+    strcat(*target, addition);
+
+    *current_size += addition_size;
+
+    // TODO: Error codes for various failures
+    return 0;
+}

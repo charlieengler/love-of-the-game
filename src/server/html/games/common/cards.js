@@ -217,24 +217,12 @@ const cards = [
     },
 ];
 
-const parseCardIndexString = cardsString => {
-    const cardsArray = [];
-
-    const splitString = cardsString.split(",");
-
-    for(let i = 0; i < splitString.length; i++) {
-        cardsArray.push(cards[Number(splitString[i])]);
-    }
-
-    return cardsArray;
-}
-
 const generateCardGraphic = (card, slot) => {
     const cardContainer = document.createElement("div");
     cardContainer.style = "border:1px solid white; display:inline-block; height:150px; position:relative; width:100px;";
 
     let cardGraphic = document.createElement("div");
-    cardGraphic.innerText = card.graphic;
+    cardGraphic.innerText = cards[card].graphic;
     cardGraphic.style = "left:0; position:absolute; top:0;"
     cardContainer.appendChild(cardGraphic);
 
@@ -242,7 +230,7 @@ const generateCardGraphic = (card, slot) => {
     cardContainer.appendChild(br);
 
     cardGraphic = document.createElement("div");
-    cardGraphic.innerText = card.graphic;
+    cardGraphic.innerText = cards[card].graphic;
     cardGraphic.style = "bottom:0; position:absolute; right:0;"
     cardContainer.appendChild(cardGraphic);
 

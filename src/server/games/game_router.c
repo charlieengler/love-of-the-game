@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -7,16 +8,13 @@
 #include "./blackjack/internal.h"
 
 char *route_blackjack(char *function, char *data) {
-    struct database_mappings *blackjack_db = NULL;
-    db_initialize(&blackjack_db, "blackjack");
+    struct json_value *blackjack_db = db_initialize("blackjack");
 
     char *return_header = NULL;
 
     if (strstr(function, "join-table") != NULL) {
-        // TODO: Check for success/failure on this function (returns void right now)
         return_header = blackjack_join_table(blackjack_db, data);
     } else if (strstr(function, "bet") != NULL) {
-        // TODO: Check for success/failure on this function (returns void right now)
         return_header = blackjack_place_bet(blackjack_db, data);
     } else if (strstr(function, "progress-hand") != NULL) {
         return_header = blackjack_progress_hand(blackjack_db, data, USER_NO_ACTION);
@@ -26,7 +24,7 @@ char *route_blackjack(char *function, char *data) {
         return_header = blackjack_progress_hand(blackjack_db, data, USER_STAND);
     }
 
-    db_save(blackjack_db);
+    db_save(blackjack_db, "blackjack");
 
     // TODO: Return an error that the function couldn't be found if the header is still NULL at this point
     if (return_header == NULL) {

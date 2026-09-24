@@ -1,105 +1,120 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "internal.h"
 
-#include "../../../include/server/games/blackjack/blackjack.h"
+#include "../../../include/server/utils/json_api.h"
 
-#include "../../../include/server/database/database.h"
-#include "../../../include/server/utils/json_handler.h"
-#include "../../../include/server/utils/strings.h"
+char *blackjack_join_table(struct json_value *db_json, char *req) {
+    if (db_json->type != JSON_OBJECT) {
+        // TODO: Fail
+    }
 
-int user_exists(char *existing_users, char *user) {
-    int num_users = 0;
+    char *req_start = req;
+    // TODO: Error checking
+    struct json_value *req_json = string_to_json_value(&req);
+    req = req_start;
 
-    char **users = csv_to_string_array(existing_users, &num_users);
+    // TODO: Macro with callback for verifying JSON object type
+    if (req_json->type != JSON_OBJECT) {
+        // TODO: Fail
+    }
 
-    for (int i = 0; i < num_users; ++i) {
-        if (!strcmp(user, users[i])) {
-            return 1;
+    // TODO: Error checking
+    struct json_value *table_id_json = json_object_get_value((struct json_object *)(req_json->data), "tableID");
+    if (table_id_json->type != JSON_STRING) {
+        // TODO: Fail
+    }
+    char *table_id = (char *)(table_id_json->data);
+
+    // TODO: Error checking
+    struct json_value *user_id_json = json_object_get_value((struct json_object *)(req_json->data), "userID");
+    if (user_id_json->type != JSON_STRING) {
+        // TODO: Fail
+    }
+    char *user_id = (char *)(user_id_json->data);
+
+    struct json_value *table_json = json_object_get_value((struct json_object *)(db_json->data), table_id);
+    struct json_object *table_object;
+
+    if (!table_json) {
+        table_json = create_object_json_value();
+        if (table_json->type != JSON_OBJECT) {
+            // TODO: Fail
+        }
+
+        table_object = (struct json_object *)(table_json->data);
+
+        json_object_add_value((struct json_object **)(&db_json->data), table_id, table_json);
+
+        struct json_value *users_json = create_array_json_value();
+
+        json_object_add_value(&table_object, "users", users_json);
+
+        struct json_value *dealer_json = create_object_json_value();
+
+        json_object_add_value(&table_object, "dealer", dealer_json);
+    }
+
+    if (table_json->type != JSON_OBJECT) {
+        // TODO: Fail
+    }
+
+    table_object = (struct json_object *)(table_json->data);
+
+    // TODO: Error checking
+    struct json_value *users_json = json_object_get_value(table_object, "users");
+    if (users_json->type != JSON_ARRAY) {
+        // TODO: Error
+    }
+
+    struct json_array *users_array = (struct json_array *)(users_json->data);
+
+    struct json_value *found_user_json = NULL;
+    for (int i = 0; i < users_array->length; ++i) {
+        struct json_value *tmp_user_json = users_array->values[i];
+        if (tmp_user_json->type != JSON_OBJECT) {
+            // TODO: Fail
+        }
+
+        // TODO: Error checking
+        struct json_value *tmp_user_id_json = json_object_get_value((struct json_object *)(tmp_user_json->data), "id");
+        if (tmp_user_id_json->type != JSON_STRING) {
+            // TODO: Fail
+        }
+
+        char *tmp_user_id = (char *)tmp_user_id_json->data;
+
+        if (!strcmp(user_id, tmp_user_id)) {
+            found_user_json = tmp_user_json;
+            break;
         }
     }
 
-    return 0;
-}
-
-char *blackjack_join_table(struct database_mappings *db, char *data) {
-    // TODO: Error checking
-    struct json_object *parsed_data = json_parse_string(data);
-
-    // TODO: Error checking
-    struct json_value *user_id_json = json_find_entry(parsed_data, "userID");
-    char *user_id = user_id_json->str_val;
-
-    // TODO: Error checking
-    struct json_value *table_id_json = json_find_entry(parsed_data, "tableID");
-    char *table_id = table_id_json->str_val;
-
-    struct database_entry *found_table = db_find(db, table_id);
-
-    if (found_table == NULL) {
-        printf("blackjack error: could not find entry %s in database\n", table_id);
-
-        struct database_entry *new_table = (struct database_entry *)malloc(sizeof(struct database_entry));
-        struct json_object *new_table_json = json_initialize_object();
-
-        struct json_value *new_table_val = (struct json_value *)malloc(sizeof(struct json_value));
-        new_table_val->str_val = user_id;
-        new_table_val->type = JSON_STRING;
-
-        // TODO: Unique user ID for each user to store in the database
-        json_add_entry(new_table_json, "users", new_table_val);
-
-        new_table->key = (char *)calloc(strlen(table_id) + 1, sizeof(char));
-        strcpy(new_table->key, table_id);
-        new_table->type = DB_STRING;
-        new_table->data_ptr = (void *)json_to_string(new_table_json);
+    if (!found_user_json) {
+        found_user_json = create_object_json_value();
+        if (found_user_json->type != JSON_OBJECT) {
+            // TODO: Fail
+        }
 
         // TODO: Error checking
-        db_insert(db, new_table);
+        json_object_add_value((struct json_object **)(&(found_user_json->data)), "id", user_id_json);
 
-        found_table = db_find(db, table_id);
+        struct json_value *bet_json = create_number_json_value(0, 0, 0, JSON_INTEGER);
+        if (bet_json->type != JSON_NUMBER) {
+            // TODO: Fail
+        }
 
         // TODO: Error checking
-        add_blank_bet(db, data);
+        json_object_add_value((struct json_object **)(&(found_user_json->data)), "bet", bet_json);
+
+        // TODO: Error checking
+        json_array_add_value(&users_array, found_user_json);
     }
 
-    if (found_table == NULL) {
-        // TODO: Return a JSON error
-        printf("blackjack error: db entry is still null\n");
-    }
-
-    struct json_object *entry_json = json_parse_string((char *)found_table->data_ptr);
-
-    // TODO: Error checking on both of these
-    struct json_value *existing_users_json = json_find_entry(entry_json, "users");
-    char *existing_users = existing_users_json->str_val;
-
-    if (user_exists(existing_users, user_id)) {
-        goto out;
-    }
-
-    char *new_existing_users = (char *)malloc((strlen(existing_users) + strlen(user_id) + 2) * sizeof(char));
-
-    strcpy(new_existing_users, existing_users);
-    strcat(new_existing_users, ",");
-    strcat(new_existing_users, user_id);
-    new_existing_users[strlen(existing_users) + strlen(user_id) + 1] = '\0';
-
-    printf("%s\n", new_existing_users);
-
-    free(existing_users);
-    existing_users_json->str_val = new_existing_users;
-
-    free(found_table->data_ptr);
-    found_table->data_ptr = json_to_string(entry_json);
-
-    // TODO: Error checking
-    add_blank_bet(db, data);
-
-out:
     printf("Joined table %s as %s\n", table_id, user_id);
 
-    return data;
+    // TODO: Better res
+    char *res = req;
+    return res;
 }

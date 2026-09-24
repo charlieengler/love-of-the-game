@@ -1,46 +1,4 @@
-typedef long unsigned int uint64_t;
+struct json_value;
 
-#define DB_MAX_NAME_LEN 128
-#define DB_MAX_KEY_LEN 128
-#define DB_NUM_DEFAULT_ENTRIES 256
-#define DB_GROW_MULTIPLIER 2
-
-enum db_remove_errors {
-    DB_REMOVE_SUCCESS,
-    DB_REMOVE_NO_KEYS,
-    DB_REMOVE_NO_ENTRIES,
-    DB_REMOVE_NOT_FOUND,
-};
-
-enum entry_data_types {
-    DB_UNDEFINED,
-    DB_STRING,
-    DB_JSON,
-    DB_INTEGER,
-    DB_FLOAT,
-};
-
-struct database_entry {
-    char *key;
-    enum entry_data_types type;
-    void *data_ptr;
-};
-
-// TODO: Redefine all relevant data types to their cross compatible counterparts (int's to uintx_t's)
-struct database_mappings {
-    uint64_t num_keys;
-    uint64_t num_entries;
-    uint64_t num_allocated;
-
-    char *db_name;
-
-    char **keys;
-    struct database_entry **entries;
-};
-
-uint64_t db_initialize(struct database_mappings **, char *);
-struct database_entry *db_find(struct database_mappings *mappings, char *key);
-int db_insert(struct database_mappings *mappings, struct database_entry *new_entry);
-int db_save(struct database_mappings *mappings);
-int db_remove(struct database_mappings *mappings, struct database_entry *old_entry);
-int db_close(struct database_mappings *mappings);
+struct json_value *db_initialize(char *name);
+int db_save(struct json_value *db, char *db_name);

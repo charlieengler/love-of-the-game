@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -397,12 +398,9 @@ out:
     return json_obj;
 
 fail:
-    json_obj->keys = NULL;
-    json_obj->values = NULL;
-    json_obj->num_allocated = 0;
-    json_obj->num_entries = 0;
+    destroy_json_object(json_obj);
 
-    return json_obj;
+    return NULL;
 }
 
 struct json_value *string_to_json_value(char **input) {
@@ -451,14 +449,12 @@ struct json_value *string_to_json_value(char **input) {
 
         case '{':
             struct json_object *json_obj = string_to_json_object(input);
-
-            if (json_obj->num_entries == 0) {
-                json->data = NULL;
-                json->type = JSON_NULL;
-            } else {
-                json->data = json_obj;
-                json->type = JSON_OBJECT;
+            if (!json_obj) {
+                // TODO: Fail
             }
+
+            json->data = json_obj;
+            json->type = JSON_OBJECT;
 
             break;
 

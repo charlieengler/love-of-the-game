@@ -6,35 +6,7 @@
 #include "../../include/server/utils/json_api.h"
 
 #include "../../include/server/utils/numbers.h"
-
-int append_str(char **target, char *addition, int *current_size, int *allocated_size) {
-    int addition_size = strlen(addition);
-    int difference = *allocated_size - *current_size;
-
-    if (addition_size > difference - 1) {
-        *allocated_size += difference * 1.5;
-
-        char *new_str = (char *)calloc(*allocated_size, sizeof(char));
-        strcpy(new_str, *target);
-
-        free(*target);
-
-        *target = new_str;
-    }
-
-    // TODO: If the string is supposed to be empty (current_size == 0), then this relies on nothing being resident in memory
-    //       before appending. This means that reused memory after free is called causes issues with the memory being full
-    //       of garbage if using malloc alone when creating the new strings. Therefore, calloc is used, but this is not as
-    //       performant. It may be worth finding a happy medium, maybe by only zeroing out the first byte of malloc'd memory,
-    //       or maybe modifying this function to zero out the first byte automatically if current_size == 0. Neither seems
-    //       particularly clean
-    strcat(*target, addition);
-
-    *current_size += addition_size;
-
-    // TODO: Error codes for various failures
-    return 0;
-}
+#include "../../include/server/utils/strings.h"
 
 char *json_string_to_string(char *json_str) {
     // TODO: Escape characters that need to be
@@ -276,10 +248,14 @@ char *json_value_to_string(struct json_value *json_val) {
         goto fail;
     }
 
-    // TODO: Check for errors
-    append_str(&str, output, &total_length, &alloc_size);
+    if (output) {
+        // TODO: Check for errors
+        append_str(&str, output, &total_length, &alloc_size);
 
-    free(output);
+        free(output);
+    } else {
+        goto fail;
+    }
 
     return str;
 
@@ -313,7 +289,8 @@ int destroy_json_object(struct json_object *json_obj) {
         // TODO: Error checking
         struct json_value *child_value = json_object_get_value(json_obj, json_obj->keys[i]);
 
-        free(json_obj->keys[i]);
+        // TODO: Error checking and this is broken
+        // free(json_obj->keys[i]);
 
         output = destroy_json_value(child_value);
     }
@@ -460,6 +437,228 @@ int json_object_add_value(struct json_object **json_obj, char *key, struct json_
     return 0;
 }
 
+/*
+// Credit: dbj2 by Dan Bernstein
+uint64_t hash(unsigned char *str) {
+    unsigned long final = 5381;
+    int c;
+
+    while ((c = *str++))
+        final = ((final << 5) + final) + c; // hash * 33 + c
+
+    return final;
+}
+
+uint64_t db_grow(struct database_mappings **mappings) {
+    uint64_t new_size = (*mappings)->num_allocated * DB_GROW_MULTIPLIER;
+    char **new_keys = (char **)calloc(new_size, sizeof(char *));
+    struct database_entry **new_entries = (struct database_entry **)calloc(new_size, sizeof(struct database_entry *));
+
+    struct database_mappings *new_mappings = (struct database_mappings *)malloc(sizeof(struct database_mappings));
+
+    new_mappings->num_keys = (*mappings)->num_keys;
+    new_mappings->num_entries = (*mappings)->num_entries;
+    new_mappings->num_allocated = new_size;
+    new_mappings->keys = new_keys;
+    new_mappings->entries = new_entries;
+
+    for (uint64_t i = 0; i < (*mappings)->num_keys; i++) {
+        struct database_entry *old_entry = (*mappings)->entries[i];
+        if (strcmp(old_entry->key, (*mappings)->keys[i]) != 0) {
+            printf("db grow error: key and entry do not match\n");
+            return 0;
+        }
+
+        db_insert(new_mappings, old_entry);
+    }
+
+    free(*mappings);
+    *mappings = new_mappings;
+
+    // TODO: Return the new number of possible mappings on success, 0 on failure
+    return new_size;
+}
+
+int db_insert(struct database_mappings *mappings, struct database_entry *new_entry) {
+    if (mappings->num_keys != mappings->num_entries) {
+        // TODO: Error checking on the following function
+        db_repair(mappings);
+    }
+
+    if (mappings->num_keys == mappings->num_allocated) {
+        // TODO: The grow function causes issues
+        uint64_t new_size = db_grow(&mappings);
+
+        if (new_size == 0) {
+            printf("db grow error: new_size == 0\n");
+            return -1;
+        } else if (new_size <= mappings->num_allocated) {
+            printf("db grow error: new_size (%ld) is the same as or less than the previous size\n", new_size);
+            return -1;
+        }
+    }
+
+    mappings->num_keys++;
+    mappings->num_entries++;
+
+    uint64_t index = hash((unsigned char *)new_entry->key) % mappings->num_allocated;
+    uint64_t num_loops = 0;
+    while (mappings->keys[index]) {
+        index++;
+        num_loops++;
+
+        if (num_loops > mappings->num_allocated) {
+            // TODO: Maybe grow the database if this is encountered
+            printf("db insert error: database is full, but didn't grow\n");
+            return -1;
+        }
+    }
+
+    mappings->keys[index] = new_entry->key;
+    mappings->entries[index] = new_entry;
+
+    if (mappings->num_keys == (uint64_t)(-1) || mappings->num_entries == (uint64_t)(-1)) {
+        printf("db insert error: database is absolutely full somehow\n");
+        return -1;
+    }
+
+    // TODO: Return 0 on success, something else otherwise
+    return 0;
+}
+
+struct database_entry *db_find(struct database_mappings *mappings, char *key) {
+    if (mappings->num_keys != mappings->num_entries)
+        // TODO: Error checking on the following function
+        db_repair(mappings);
+
+    if (mappings->num_keys == 0) {
+        printf("db find error: no keys in db\n");
+        return NULL;
+    }
+
+    if (mappings->num_entries == 0) {
+        printf("db find error: no entries in db\n");
+        return NULL;
+    }
+
+    unsigned long index = hash((unsigned char *)key) % mappings->num_allocated;
+    uint64_t num_loops = 0;
+    char found_entry = 0;
+    while (1) {
+        ++num_loops;
+
+        // TODO: Use a threshold value instead of the total size of mappings->num_allocated
+        if (num_loops >= mappings->num_allocated) {
+            // TODO: Maybe grow the database if this is encountered
+            printf("db find error: could not find the given key %s\n", key);
+            return NULL;
+        }
+
+        if (index >= mappings->num_allocated) {
+            index = 0;
+        }
+
+        if (!mappings->keys[index]) {
+            ++index;
+
+            continue;
+        }
+
+        if (strcmp(mappings->keys[index], key) == 0) {
+            found_entry = 1;
+
+            break;
+        }
+
+        ++index;
+    }
+
+    if (!found_entry) {
+        return NULL;
+    }
+
+    return mappings->entries[index];
+}
+
+int db_remove(struct database_mappings *mappings, struct database_entry *old_entry) {
+    if (mappings->num_keys != mappings->num_entries) {
+        // TODO: Error checking on the following function
+        db_repair(mappings);
+    }
+
+    if (mappings->num_keys == 0) {
+        printf("db remove error: no keys in db\n");
+        return DB_REMOVE_NO_KEYS;
+    }
+
+    if (mappings->num_entries == 0) {
+        printf("db remove error: no entries in db\n");
+        return DB_REMOVE_NO_ENTRIES;
+    }
+
+    switch (old_entry->type) {
+    case DB_STRING:
+        free((old_entry->data_ptr));
+        break;
+
+    case DB_JSON:
+        // TODO: Implement me
+        break;
+
+    case DB_INTEGER:
+        // TODO: Implement me
+        break;
+
+    case DB_FLOAT:
+        // TODO: Implement me
+        break;
+
+    case DB_UNDEFINED:
+    default:
+        printf("db remove error: undefined entry type\n");
+        // TODO: Maybe handle this better
+        free(old_entry->data_ptr);
+    }
+
+    unsigned long index = hash((unsigned char *)old_entry->key) % mappings->num_allocated;
+    uint64_t num_loops = 0;
+    while (1) {
+        ++num_loops;
+
+        // TODO: Use a threshold value instead of the total size of mappings->num_allocated
+        if (num_loops >= mappings->num_allocated) {
+            printf("db remove error: could not find the given key %s\n", old_entry->key);
+            return DB_REMOVE_NOT_FOUND;
+        }
+
+        if (index >= mappings->num_allocated) {
+            index = 0;
+        }
+
+        if (!mappings->keys[index]) {
+            ++index;
+
+            continue;
+        }
+
+        if (strcmp(mappings->keys[index], old_entry->key) == 0) {
+            free(mappings->keys[index]);
+            mappings->keys[index] = NULL;
+            free(mappings->entries[index]);
+            mappings->entries[index] = NULL;
+            mappings->num_keys--;
+            mappings->num_entries--;
+
+            break;
+        }
+
+        ++index;
+    }
+
+    return DB_REMOVE_SUCCESS;
+}
+*/
+
 struct json_value *json_object_get_value(struct json_object *json_obj, char *key) {
     // TODO: Update me when a hash map is used instead
     for (int i = 0; i < json_obj->num_entries; ++i) {
@@ -470,6 +669,57 @@ struct json_value *json_object_get_value(struct json_object *json_obj, char *key
 
     // TODO: Print an error
     return NULL;
+}
+
+int json_object_remove_value(struct json_object **json_obj, char *key) {
+    // TODO: Error codes for issues when removing the value
+
+    struct json_value *json_val = json_object_get_value(*json_obj, key);
+    if (!json_val) {
+        // TODO: Print an error
+        return -1;
+    }
+
+    --((*json_obj)->num_allocated);
+
+    int removal_index = -1;
+
+    char **new_keys = (char **)malloc((*json_obj)->num_allocated * sizeof(char *));
+    int index = 0;
+    for (int i = 0; i < (*json_obj)->num_entries; ++i) {
+        if (!strcmp(key, (*json_obj)->keys[i])) {
+            removal_index = i;
+            continue;
+        }
+
+        new_keys[index] = (*json_obj)->keys[i];
+
+        ++index;
+    }
+
+    free((*json_obj)->keys);
+
+    (*json_obj)->keys = new_keys;
+
+    struct json_value **new_values = (struct json_value **)malloc((*json_obj)->num_allocated * sizeof(struct json_value *));
+    index = 0;
+    for (int i = 0; i < (*json_obj)->num_entries; ++i) {
+        if (i == removal_index) {
+            continue;
+        }
+
+        new_values[index] = (*json_obj)->values[i];
+
+        ++index;
+    }
+
+    free((*json_obj)->values);
+
+    (*json_obj)->values = new_values;
+
+    --((*json_obj)->num_entries);
+
+    return 0;
 }
 
 struct json_value *create_array_json_value() {
@@ -492,7 +742,7 @@ int json_array_add_value(struct json_array **json_arr, struct json_value *json_v
     // TODO: Error codes for issues when adding the value
 
     struct json_value **new_values = (struct json_value **)malloc(((*json_arr)->length + 1) * sizeof(struct json_value *));
-    memcpy(new_values, (*json_arr)->values, (*json_arr)->length * sizeof(char *));
+    memcpy(new_values, (*json_arr)->values, (*json_arr)->length * sizeof(struct json_value *));
 
     free((*json_arr)->values);
 
@@ -503,6 +753,25 @@ int json_array_add_value(struct json_array **json_arr, struct json_value *json_v
     ++((*json_arr)->length);
 
     return 0;
+}
+
+struct json_value *json_array_pop_value(struct json_array *json_arr) {
+    if (json_arr->length == 0) {
+        return NULL;
+    }
+
+    --(json_arr->length);
+
+    struct json_value *json_val = json_arr->values[json_arr->length];
+
+    struct json_value **new_values = (struct json_value **)malloc((json_arr->length) * sizeof(struct json_value *));
+    memcpy(new_values, json_arr->values, (json_arr->length) * sizeof(struct json_value *));
+
+    free(json_arr->values);
+
+    json_arr->values = new_values;
+
+    return json_val;
 }
 
 struct json_value *create_true_json_value() {

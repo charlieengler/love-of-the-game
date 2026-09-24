@@ -1,7 +1,7 @@
 #ifndef BLACKJACK_INTERNAL_H
 #define BLACKJACK_INTERNAL_H
 
-struct database_mappings;
+struct json_value;
 struct json_object;
 
 #define USER_NO_ACTION 0
@@ -10,8 +10,7 @@ struct json_object;
 
 extern const int card_values[13];
 
-int tally_hand(int *hand, int hand_count);
-int deal_card(struct database_mappings *db, struct json_object *entry_json, char *data);
-int add_blank_bet(struct database_mappings *db, char *data);
+int tally_hand(struct json_value *hand_json);
+int deal_card(struct json_object *table_object, struct json_value *user_hand_json);
 
 #endif // BLACKJACK_INTERNAL_H
