@@ -70,37 +70,17 @@ char *json_object_to_string(struct json_object *json_obj) {
         goto out;
     }
 
-    char *key = json_obj->keys[0];
-
-    append_str(&str, "\"", &total_length, &alloc_size);
-    append_str(&str, key, &total_length, &alloc_size);
-    append_str(&str, "\":", &total_length, &alloc_size);
-
-    // TODO: Error checking
-    struct json_value *json_val = json_object_get_value(json_obj, key);
-
-    char *output = json_value_to_string(json_val);
-
-    if (!output) {
-        // TODO: Error message with reason for failure
-        goto fail;
-    }
-
-    append_str(&str, output, &total_length, &alloc_size);
-
-    free(output);
-
-    for (int i = 1; i < json_obj->num_entries; ++i) {
+    for (int i = 0; i < json_obj->num_entries; ++i) {
         char *key = json_obj->keys[i];
 
-        append_str(&str, ",\"", &total_length, &alloc_size);
+        append_str(&str, "\"", &total_length, &alloc_size);
         append_str(&str, key, &total_length, &alloc_size);
         append_str(&str, "\":", &total_length, &alloc_size);
 
         // TODO: Error checking
         struct json_value *json_val = json_object_get_value(json_obj, key);
 
-        output = json_value_to_string(json_val);
+        char *output = json_value_to_string(json_val);
 
         if (!output) {
             // TODO: Error message with reason for failure
@@ -108,6 +88,10 @@ char *json_object_to_string(struct json_object *json_obj) {
         }
 
         append_str(&str, output, &total_length, &alloc_size);
+
+        if (i + 1 < json_obj->num_entries) {
+            append_str(&str, ",", &total_length, &alloc_size);
+        }
 
         free(output);
     }
@@ -132,31 +116,21 @@ char *json_array_to_string(struct json_array *json_arr) {
         goto out;
     }
 
-    struct json_value *json_val = json_arr->values[0];
-
-    char *output = json_value_to_string(json_val);
-
-    if (!output) {
-        // TODO: Error message with reason for failure
-        goto fail;
-    }
-
-    append_str(&str, output, &total_length, &alloc_size);
-
-    free(output);
-
-    for (int i = 1; i < json_arr->length; ++i) {
+    for (int i = 0; i < json_arr->length; ++i) {
         struct json_value *json_val = json_arr->values[i];
 
-        output = json_value_to_string(json_val);
+        char *output = json_value_to_string(json_val);
 
         if (!output) {
             // TODO: Error message with reason for failure
             goto fail;
         }
 
-        append_str(&str, ",", &total_length, &alloc_size);
         append_str(&str, output, &total_length, &alloc_size);
+
+        if (i + 1 < json_arr->length) {
+            append_str(&str, ",", &total_length, &alloc_size);
+        }
 
         free(output);
     }
