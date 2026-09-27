@@ -1,8 +1,7 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../include/server/utils/json_api.h"
+#include "../../../include/server/utils/json_api.h"
 
 int string_to_json_true(char **input) {
     if (!strncmp(*input, "true", 4)) {
