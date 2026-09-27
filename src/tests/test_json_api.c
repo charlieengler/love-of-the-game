@@ -89,7 +89,11 @@ static int test_json_value_to_string_4() {
 }
 
 static int test_json_value_to_string_5() {
-    char *test_string_one = "{\"0\":\"first test\",\"1\":\"second test\",\"2\":\"third test\"}";
+    char *test_string_one = "{\n"
+                            "    \"0\": \"first test\",\n"
+                            "    \"1\": \"second test\",\n"
+                            "    \"2\": \"third test\"\n"
+                            "}";
     char *str_start = test_string_one;
 
     struct json_value *json_val = string_to_json_value(&test_string_one);
@@ -110,7 +114,11 @@ static int test_json_value_to_string_5() {
 }
 
 static int test_json_value_to_string_6() {
-    char *test_string_one = "{\"0\":1,\"1\":2,\"2\":3}";
+    char *test_string_one = "{\n"
+                            "    \"0\": 1,\n"
+                            "    \"1\" :2,\n"
+                            "    \"2\" :3\n"
+                            "}";
     char *str_start = test_string_one;
 
     struct json_value *json_val = string_to_json_value(&test_string_one);
@@ -131,7 +139,23 @@ static int test_json_value_to_string_6() {
 }
 
 static int test_json_value_to_string_7() {
-    char *test_string_one = "{\"0\":[\"first test\",\"second test\",\"third test\"],\"1\":[\"first test\",\"second test\",\"third test\"],\"2\":[\"first test\",\"second test\",\"third test\"]}";
+    char *test_string_one = "{\n"
+                            "    \"0\": [\n"
+                            "            \"first test\",\n"
+                            "            \"second test\",\n"
+                            "            \"third test\"\n"
+                            "    ],\n"
+                            "    \"1\": [\n"
+                            "            \"first test\",\n"
+                            "            \"second test\",\n"
+                            "            \"third test\"\n"
+                            "    ],\n"
+                            "    \"2\": [\n"
+                            "            \"first test\",\n"
+                            "            \"second test\",\n"
+                            "            \"third test\"\n"
+                            "    ]\n"
+                            "}";
     char *str_start = test_string_one;
 
     struct json_value *json_val = string_to_json_value(&test_string_one);
@@ -153,7 +177,23 @@ static int test_json_value_to_string_7() {
 }
 
 static int test_json_value_to_string_8() {
-    char *test_string_one = "{\"0\":[0,1,2],\"1\":[0,1,2],\"2\":[0,1,2]}";
+    char *test_string_one = "{\n"
+                            "    \"0\": [\n"
+                            "        0,\n"
+                            "        1,\n"
+                            "        2\n"
+                            "    ],\n"
+                            "    \"1\": [\n"
+                            "        0,\n"
+                            "        1,\n"
+                            "        2\n"
+                            "    ],\n"
+                            "    \"2\": [\n"
+                            "        0,\n"
+                            "        1,\n"
+                            "        2\n"
+                            "    ]\n"
+                            "}";
     char *str_start = test_string_one;
 
     struct json_value *json_val = string_to_json_value(&test_string_one);
@@ -175,7 +215,7 @@ static int test_json_value_to_string_8() {
 }
 
 static int test_json_value_to_string_9() {
-    char *test_string_one = "{\"0\":[{\"0\":\"first test\"},{\"1\":\"second test\"},{\"2\":\"third test\"}],\"1\":[{\"0\":\"first test\"},{\"1\":\"second test\"},{\"2\":\"third "
+    char *test_string_one = "{\n\"0\": [\n{\n\"0\": \"first test\"\n},\n{\n\"1\": \"second test\"},{\"2\":\"third test\"}],\"1\":[{\"0\":\"first test\"},{\"1\":\"second test\"},{\"2\":\"third "
                             "test\"}],\"2\":[{\"0\":\"first test\"},{\"1\":\"second test\"},{\"2\":\"third test\"}]}";
     char *str_start = test_string_one;
 
