@@ -170,12 +170,12 @@ char *char_array_to_csv(char **array, int num_entries) {
 }
 
 int append_str(char **target, char *addition, int *current_size, int *allocated_size) {
-    int addition_size = strlen(addition);
+    int addition_size = strlen(addition) + 1;
     int difference = *allocated_size - *current_size;
 
     // TODO: This growth seems to cause issues
-    if (addition_size > difference - 1) {
-        *allocated_size += difference * 100;
+    if (addition_size > difference) {
+        *allocated_size += addition_size * 1.5;
 
         char *new_str = (char *)calloc(*allocated_size, sizeof(char));
         // TODO: Change this to a memcpy?
