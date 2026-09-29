@@ -173,7 +173,6 @@ int append_str(char **target, char *addition, int *current_size, int *allocated_
     int addition_size = strlen(addition) + 1;
     int difference = *allocated_size - *current_size;
 
-    // TODO: This growth seems to cause issues
     if (addition_size > difference) {
         *allocated_size += addition_size * 1.5;
 
