@@ -62,15 +62,12 @@ int initialize_server() {
     return 0;
 }
 
-// TODO: There is an error when reloading the page then sending a blackjack bet request
-
 int run_server(int sockfd) {
     struct sockaddr_storage incoming_addr;
     socklen_t addr_size = sizeof(incoming_addr);
     int new_fd;
     while ((new_fd = accept(sockfd, (struct sockaddr *)&incoming_addr, &addr_size)) >= 0) {
-        char *tmp_buf = (char *)malloc(RCVBUFSIZE * sizeof(char));
-        char *buf = (char *)malloc((RCVBUFSIZE + 1) * sizeof(char));
+        char *buf = (char *)calloc((RCVBUFSIZE + 1), sizeof(char));
 
         printf("Receiving %ld bytes from client.\n", recv(new_fd, buf, RCVBUFSIZE, MSG_PEEK | MSG_TRUNC));
 
@@ -78,16 +75,22 @@ int run_server(int sockfd) {
         int total_read_size = 0;
         int num_packets = 1;
         do {
+            char *tmp_buf = (char *)malloc(RCVBUFSIZE * sizeof(char));
+
             read_size = recv(new_fd, tmp_buf, RCVBUFSIZE, 0);
 
-            buf = (char *)malloc((RCVBUFSIZE * num_packets + 1) * sizeof(char));
-            strcpy(buf, tmp_buf);
+            char *new_buf = (char *)calloc(((RCVBUFSIZE * num_packets) + 1), sizeof(char));
+            strcpy(new_buf, buf);
+            strcat(new_buf, tmp_buf);
+
+            free(tmp_buf);
+            free(buf);
+
+            buf = new_buf;
 
             num_packets++;
             total_read_size += read_size;
         } while (read_size == RCVBUFSIZE);
-
-        free(tmp_buf);
 
         if (total_read_size <= 0) {
             send_http_error(400, new_fd);
@@ -166,7 +169,7 @@ int run_server(int sockfd) {
         }
         free(response_length);
         // TODO: This causes an invalid next size for some reason
-        // free(send_buffer);
+        free(send_buffer);
 
         long total_send_size = 0;
         while ((size_t)total_send_size < strlen(response_buffer)) {
