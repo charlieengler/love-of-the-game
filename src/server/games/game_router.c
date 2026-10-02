@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -14,6 +13,8 @@ char *route_blackjack(char *function, char *data) {
 
     if (strstr(function, "join-table") != NULL) {
         return_header = blackjack_join_table(blackjack_db, data);
+    } else if (strstr(function, "check-status") != NULL) {
+        return_header = blackjack_status_update(blackjack_db, data);
     } else if (strstr(function, "bet") != NULL) {
         return_header = blackjack_place_bet(blackjack_db, data);
     } else if (strstr(function, "progress-hand") != NULL) {

@@ -460,7 +460,7 @@ struct json_value *string_to_json_value(char **input) {
         case '[':
             struct json_array *json_arr = string_to_json_array(input);
 
-            if (json_arr->length == 0) {
+            if (!json_arr) {
                 json->data = NULL;
                 json->type = JSON_NULL;
             } else {

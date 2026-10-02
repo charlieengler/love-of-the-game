@@ -61,6 +61,8 @@
 
             document.getElementById("table-id").innerText = res.tableID;
             document.getElementById("user-id").innerText = res.userID;
+
+            statusCheck();
         }
 
         const placeBet = async () => {
@@ -157,6 +159,29 @@
 
             redealCards(res);
         }
+
+        const statusCheck = () => {
+            setInterval(async function () {
+                const userID = document.getElementById("user-id-input").value;
+                const tableID = document.getElementById("table-id-input").value;
+
+                const data = {
+                    tableID: tableID,
+                };
+
+                const res = (await submitData("http://localhost:3000/routes/games/blackjack/check-status", data))[0];
+
+                redealCards(res);
+
+                if (res.activeUser.id == userID) {
+                    document.getElementById("hit-button").disabled = false;
+                    document.getElementById("stand-button").disabled = false;
+                } else {
+                    document.getElementById("hit-button").disabled = true;
+                    document.getElementById("stand-button").disabled = true;
+                }
+            }, 100);
+        }
     </script>
 </head>
 
@@ -169,8 +194,8 @@
 
     <button onclick="progressHand()">Progress Hand</button>
 
-    <button id="hit-button" onclick="hit()">Hit</button>
-    <button id="stand-button" onclick="stand()">Stand</button>
+    <button disabled id="hit-button" onclick="hit()">Hit</button>
+    <button disabled id="stand-button" onclick="stand()">Stand</button>
 
     <br />
 

@@ -1,1 +1,17 @@
-{}
+{
+    "abcdef": {
+        "users": [
+            {
+                "id": "charlie",
+                "bet": 100
+            },
+            {
+                "id": "other",
+                "bet": 200
+            }
+        ],
+        "dealer": {
+            "hand": []
+        }
+    }
+}

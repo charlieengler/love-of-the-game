@@ -69,7 +69,7 @@ int run_server(int sockfd) {
     while ((new_fd = accept(sockfd, (struct sockaddr *)&incoming_addr, &addr_size)) >= 0) {
         char *buf = (char *)calloc((RCVBUFSIZE + 1), sizeof(char));
 
-        printf("Receiving %ld bytes from client.\n", recv(new_fd, buf, RCVBUFSIZE, MSG_PEEK | MSG_TRUNC));
+        // printf("Receiving %ld bytes from client.\n", recv(new_fd, buf, RCVBUFSIZE, MSG_PEEK | MSG_TRUNC));
 
         int read_size = 0;
         int total_read_size = 0;
@@ -183,7 +183,7 @@ int run_server(int sockfd) {
             total_send_size += send_size;
         }
 
-        printf("Sent %ld bytes\n", total_send_size);
+        // printf("Sent %ld bytes\n", total_send_size);
 
         delete_header(&recv_header);
         free(buf);

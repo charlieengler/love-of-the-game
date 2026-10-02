@@ -25,6 +25,97 @@ char *generate_card_count_str(int num_users, int *user_hand_counts) {
     return card_count_str;
 }
 
+char *generate_table_res(struct json_value *table_json) {
+    struct json_object *table_object = (struct json_object *)(table_json->data);
+
+    int hand_progress;
+    // TODO: Error checking
+    struct json_value *hand_progress_json = json_object_get_value(table_object, "hand-progress");
+
+    if (!hand_progress_json) {
+        hand_progress = -1;
+    } else {
+        if (hand_progress_json->type != JSON_NUMBER) {
+            // TODO: Fail
+        }
+
+        hand_progress = (int)(((struct json_number *)(hand_progress_json->data))->integer);
+    }
+
+    // TODO: Error checking
+    struct json_value *users_json = json_object_get_value(table_object, "users");
+    if (users_json->type != JSON_ARRAY) {
+        // TODO: Fail
+    }
+
+    // TODO: Error checking
+    struct json_value *dealer_json = json_object_get_value(table_object, "dealer");
+    if (dealer_json->type != JSON_OBJECT) {
+        // TODO: Fail
+    }
+
+    struct json_array *users_array = (struct json_array *)(users_json->data);
+    int num_users = users_array->length;
+
+    struct json_value *dealer_hand_json = json_object_get_value((struct json_object *)(dealer_json->data), "hand");
+    if (!dealer_hand_json) {
+        dealer_hand_json = create_array_json_value();
+
+        json_object_add_value((struct json_object **)(&dealer_json->data), "hand", dealer_hand_json);
+    }
+
+    if (dealer_hand_json->type != JSON_ARRAY) {
+        // TODO: Fail
+    }
+
+    struct json_array *dealer_hand_arr = (struct json_array *)(dealer_hand_json->data);
+
+    struct json_value *res_dealer_hand_json;
+    struct json_value *active_user_json;
+    if (hand_progress >= 0 && hand_progress < num_users) {
+        active_user_json = users_array->values[hand_progress];
+    } else {
+        active_user_json = dealer_json;
+
+        res_dealer_hand_json = dealer_hand_json;
+    }
+
+    if (hand_progress < num_users) {
+        // TODO: Error checking
+        res_dealer_hand_json = create_array_json_value();
+        if (res_dealer_hand_json->type != JSON_ARRAY) {
+            // TODO: Fail
+        }
+
+        struct json_array *res_dealer_hand_arr = (struct json_array *)(res_dealer_hand_json->data);
+
+        if (dealer_hand_arr->length > 1) {
+            json_array_add_value(&res_dealer_hand_arr, dealer_hand_arr->values[1]);
+        }
+    }
+
+    struct json_value *res_json = create_object_json_value();
+    if (res_json->type != JSON_OBJECT) {
+        // TODO: Fail
+    }
+
+    struct json_object *res_object = (struct json_object *)(res_json->data);
+
+    // TODO: Error checking
+    json_object_add_value(&res_object, "users", users_json);
+
+    // TODO: Error checking
+    json_object_add_value(&res_object, "dealerCards", res_dealer_hand_json);
+
+    // TODO: Error checking
+    json_object_add_value(&res_object, "activeUser", active_user_json);
+
+    // TODO: Error checking
+    char *res = json_value_to_string(res_json);
+
+    return res;
+}
+
 // TODO: Proper bet handling and payouts
 char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_action) {
     if (db_json->type != JSON_OBJECT) {
@@ -161,30 +252,8 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
         // TODO: Error checking
         deal_card(table_object, dealer_hand_json);
 
-        // TODO: Helper for constructing res
-        struct json_value *res_json = create_object_json_value();
-        if (res_json->type != JSON_OBJECT) {
-            // TODO: Fail
-        }
-
-        struct json_object *return_object = (struct json_object *)(res_json->data);
-
         // TODO: Error checking
-        json_object_add_value(&return_object, "users", users_json);
-
-        // TODO: Error checking
-        struct json_value *res_dealer_hand_json = create_array_json_value();
-        if (res_dealer_hand_json->type != JSON_ARRAY) {
-            // TODO: Fail
-        }
-
-        json_array_add_value((struct json_array **)(&res_dealer_hand_json->data), ((struct json_array *)(dealer_hand_json->data))->values[1]);
-
-        // TODO: Error checking
-        json_object_add_value(&return_object, "dealerCards", res_dealer_hand_json);
-
-        // TODO: Error checking
-        res = json_value_to_string(res_json);
+        res = generate_table_res(table_json);
     } else if (hand_progress >= 0 && hand_progress < num_users) {
         // Turn for each player
 
@@ -240,28 +309,8 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
             progress_hand = 0;
         }
 
-        struct json_value *res_json = create_object_json_value();
-        if (res_json->type != JSON_OBJECT) {
-            // TODO: Fail
-        }
-
-        struct json_object *res_object = (struct json_object *)(res_json->data);
-
-        json_object_add_value(&res_object, "users", users_json);
-
         // TODO: Error checking
-        struct json_value *res_dealer_hand_json = create_array_json_value();
-        if (res_dealer_hand_json->type != JSON_ARRAY) {
-            // TODO: Fail
-        }
-
-        json_array_add_value((struct json_array **)(&res_dealer_hand_json->data), ((struct json_array *)(dealer_hand_json->data))->values[1]);
-
-        // TODO: Error checking
-        json_object_add_value(&res_object, "dealerCards", res_dealer_hand_json);
-
-        // TODO: Error checking
-        res = json_value_to_string(res_json);
+        res = generate_table_res(table_json);
 
         if (!progress_hand) {
             goto out;
@@ -288,21 +337,8 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
             dealer_sum = tally_hand(dealer_hand_json);
         }
 
-        struct json_value *res_json = create_object_json_value();
-        if (res_json->type != JSON_OBJECT) {
-            // TODO: Fail
-        }
-
-        struct json_object *res_object = (struct json_object *)(res_json->data);
-
         // TODO: Error checking
-        json_object_add_value(&res_object, "users", users_json);
-
-        // TODO: Error checking
-        json_object_add_value(&res_object, "dealerCards", dealer_hand_json);
-
-        // TODO: Error checking
-        res = json_value_to_string(res_json);
+        res = generate_table_res(table_json);
     } else {
         // Hand is over
 
@@ -366,7 +402,8 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
             json_object_remove_value((struct json_object **)(&tmp_user_json->data), "hand");
         }
 
-        // TODO: Construct a res
+        // TODO: Error checking
+        res = generate_table_res(table_json);
 
         goto out;
     }
@@ -377,6 +414,47 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
 
 out:
     // TODO: Destroy all JSON objects created at the top of this function
+
+    return res;
+}
+
+char *blackjack_status_update(struct json_value *db_json, char *req) {
+    if (db_json->type != JSON_OBJECT) {
+        // TODO: Fail
+    }
+
+    char *req_start = req;
+    // TODO: Error checking
+    struct json_value *req_json = string_to_json_value(&req);
+    req = req_start;
+
+    // TODO: Macro with callback for verifying JSON object type
+    if (req_json->type != JSON_OBJECT) {
+        // TODO: Fail
+    }
+
+    // TODO: Error checking
+    struct json_value *table_id_json = json_object_get_value((struct json_object *)(req_json->data), "tableID");
+    if (table_id_json->type != JSON_STRING) {
+        // TODO: Fail
+    }
+    char *table_id = (char *)(table_id_json->data);
+
+    struct json_value *table_json = json_object_get_value((struct json_object *)(db_json->data), table_id);
+
+    if (table_json == NULL) {
+        // TODO: Potentially need to create the table here, although it should already exist
+        printf("blackjack error: could not find entry %s in database when starting hand\n", table_id);
+
+        return NULL;
+    }
+
+    if (table_json->type != JSON_OBJECT) {
+        // TODO: Fail
+    }
+
+    // TODO: Error checking
+    char *res = generate_table_res(table_json);
 
     return res;
 }
