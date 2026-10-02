@@ -41,6 +41,25 @@ int *get_shuffled_deck(char num_jokers) {
     return deck;
 }
 
+int *get_boot(int num_decks, char num_jokers_per_deck) {
+    int cards_per_deck = NUM_CARDS + num_jokers_per_deck;
+
+    int *boot = malloc(cards_per_deck * num_decks * sizeof(int));
+
+    int index = 0;
+    for (int i = 0; i < num_decks; ++i) {
+        int *tmp_deck = get_shuffled_deck(num_jokers_per_deck);
+
+        for (int j = 0; j < cards_per_deck; ++j) {
+            boot[index] = tmp_deck[j];
+
+            ++index;
+        }
+    }
+
+    return boot;
+}
+
 char *get_card_string(int card) {
     char *ret_str;
 

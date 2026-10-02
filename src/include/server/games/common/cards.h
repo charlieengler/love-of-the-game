@@ -62,6 +62,7 @@
 #define JOKER 52
 
 int *get_shuffled_deck(char num_jokers);
+int *get_boot(int num_decks, char num_jokers_per_deck);
 char *get_card_string(int card);
 char *get_card_index_string(int *cards, int num_cards);
 int *parse_card_index_string(char *cards_string, int *num_cards);

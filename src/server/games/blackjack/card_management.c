@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <stdlib.h>
 
 #include "./internal.h"
 
@@ -31,9 +31,8 @@ int deal_card(struct json_object *table_object, struct json_value *user_hand_jso
     struct json_array *deck_array = (struct json_array *)(deck_json->data);
 
     if (deck_array->length == 0) {
-        // TODO: Support multiple decks in the table card pool
-        int num_cards = NUM_CARDS;
-        int *shuffled_deck = get_shuffled_deck(0);
+        int num_cards = NUM_CARDS * 5;
+        int *shuffled_deck = get_boot(5, 0);
 
         for (int i = 0; i < num_cards; ++i) {
             // TODO: Error checking
@@ -45,6 +44,8 @@ int deal_card(struct json_object *table_object, struct json_value *user_hand_jso
             // TODO: Error checking
             json_array_add_value(&deck_array, card_json);
         }
+
+        free(shuffled_deck);
     }
 
     // TODO: Error checking
