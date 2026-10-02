@@ -4,72 +4,7 @@
 
 #include "../../../include/server/utils/json_api.h"
 
-#include "../../../include/server/utils/strings.h"
-
 #include "./internal.h"
-
-char *json_value_to_string_helper(struct json_value *json_val, int depth) {
-    int total_length = 0;
-    int alloc_size = 100;
-    char *str = (char *)calloc(alloc_size, sizeof(char *));
-
-    // TODO: Destroy the JSON related structs as they are added to the string, or destroy the whole value at the end of the function call
-    char *output = NULL;
-    switch (json_val->type) {
-    case JSON_STRING:
-        output = json_string_to_string((char *)json_val->data, depth);
-        break;
-
-    case JSON_NUMBER:
-        output = json_number_to_string((struct json_number *)json_val->data, depth);
-        break;
-
-    case JSON_OBJECT:
-        output = json_object_to_string((struct json_object *)json_val->data, depth);
-        break;
-
-    case JSON_ARRAY:
-        output = json_array_to_string((struct json_array *)json_val->data, depth);
-        break;
-
-    case JSON_TRUE:
-        output = json_true_to_string(depth);
-        break;
-
-    case JSON_FALSE:
-        output = json_false_to_string(depth);
-        break;
-
-    case JSON_NULL:
-        output = json_null_to_string(depth);
-        break;
-
-    case JSON_UNDEFINED:
-    default:
-        // TODO: Error message with reason for failure
-        goto fail;
-    }
-
-    if (!output) {
-        // TODO: Error message with reason for failure
-        goto fail;
-    }
-
-    if (output) {
-        // TODO: Check for errors
-        append_str(&str, output, &total_length, &alloc_size);
-
-        free(output);
-    } else {
-        goto fail;
-    }
-
-    return str;
-
-fail:
-    free(str);
-    return NULL;
-}
 
 char *json_value_to_string(struct json_value *json_val) { return json_value_to_string_helper(json_val, 0); }
 
