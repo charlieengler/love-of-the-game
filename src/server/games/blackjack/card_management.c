@@ -12,23 +12,20 @@
 const int card_values[13] = {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10};
 
 int deal_card(struct json_object *table_object, struct json_value *user_hand_json) {
-    struct json_value *deck_json = json_object_get_value(table_object, "deck");
+    struct json_array *deck_array;
+
+    struct json_value *deck_json = json_object_get_value(table_object, "deck", (void **)&deck_array, JSON_ARRAY);
 
     if (!deck_json) {
         // TODO: Error checking
-        deck_json = create_array_json_value();
-        if (deck_json->type != JSON_ARRAY) {
-            // TODO: Fail
-        }
+        deck_json = create_array_json_value(NULL);
 
-        json_object_add_value(&table_object, "deck", deck_json);
+        json_object_add_value(&table_object, "deck", deck_json, (void **)&deck_array, JSON_ARRAY);
     }
 
     if (deck_json->type != JSON_ARRAY) {
         // TODO: Fail
     }
-
-    struct json_array *deck_array = (struct json_array *)(deck_json->data);
 
     if (deck_array->length == 0) {
         int num_cards = NUM_CARDS * 5;
@@ -36,10 +33,7 @@ int deal_card(struct json_object *table_object, struct json_value *user_hand_jso
 
         for (int i = 0; i < num_cards; ++i) {
             // TODO: Error checking
-            struct json_value *card_json = create_number_json_value(shuffled_deck[i], 0, 0, JSON_INTEGER);
-            if (card_json->type != JSON_NUMBER) {
-                // TODO: Fail
-            }
+            struct json_value *card_json = create_number_json_value(NULL, shuffled_deck[i], 0, 0, JSON_INTEGER);
 
             // TODO: Error checking
             json_array_add_value(&deck_array, card_json);

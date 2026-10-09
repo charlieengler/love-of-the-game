@@ -430,7 +430,7 @@ struct json_object *string_to_json_object(char **input) {
                     goto fail;
                 }
 
-                int add_res = json_object_add_value(&json_obj, current_key, json_val);
+                int add_res = json_object_add_value(&json_obj, current_key, json_val, NULL, -1);
 
                 if (add_res) {
                     printd("json_parser.c->string_to_json_object(): json_object_add_value() returned %d on input %s\n", add_res, start);

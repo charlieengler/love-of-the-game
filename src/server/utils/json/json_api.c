@@ -45,7 +45,7 @@ int destroy_json_object(struct json_object *json_obj) {
             continue;
         }
 
-        struct json_value *child_value = json_object_get_value(json_obj, json_obj->keys[i]);
+        struct json_value *child_value = json_object_get_value(json_obj, json_obj->keys[i], NULL, -1);
         if (!child_value) {
             printd("json_api.c->destroy_json_object(): could not find object value at key %s\n", json_obj->keys[i]);
 
@@ -165,7 +165,7 @@ struct json_number *create_json_number() {
     return json_num;
 }
 
-struct json_value *create_number_json_value(long long integer, long long fraction, long long exponent, enum json_number_types type) {
+struct json_value *create_number_json_value(struct json_number **output, long long integer, long long fraction, long long exponent, enum json_number_types type) {
     struct json_value *json_val = (struct json_value *)malloc(sizeof(struct json_value));
 
     json_val->type = JSON_NUMBER;
@@ -173,6 +173,8 @@ struct json_value *create_number_json_value(long long integer, long long fractio
     struct json_number *json_num = create_json_number();
     if (!json_num) {
         printd("json_api.c->create_number_json_value(): create_json_number() returned NULL\n");
+
+        free(json_val);
 
         return NULL;
     }
@@ -183,6 +185,10 @@ struct json_value *create_number_json_value(long long integer, long long fractio
     json_num->exponent = exponent;
 
     json_val->data = json_num;
+
+    if (output) {
+        *output = json_num;
+    }
 
     return json_val;
 }
@@ -199,16 +205,24 @@ struct json_object *create_json_object() {
     return json_obj;
 }
 
-struct json_value *create_object_json_value() {
+struct json_value *create_object_json_value(struct json_object **output) {
     struct json_value *json_val = (struct json_value *)malloc(sizeof(struct json_value));
 
     json_val->type = JSON_OBJECT;
 
-    json_val->data = create_json_object();
-    if (!json_val->data) {
+    struct json_object *json_obj = create_json_object();
+    if (!json_obj) {
         printd("json_api.c->create_object_json_value(): create_json_object() returned NULL\n");
 
+        free(json_val);
+
         return NULL;
+    }
+
+    json_val->data = json_obj;
+
+    if (output) {
+        *output = json_obj;
     }
 
     return json_val;
@@ -235,7 +249,7 @@ static int json_object_grow(struct json_object **json_obj) {
     return new_size;
 }
 
-int json_object_add_value(struct json_object **json_obj, char *key, struct json_value *json_val) {
+int json_object_add_value(struct json_object **json_obj, char *key, struct json_value *json_val, void **output_data, enum json_value_types expected_data_type) {
     // TODO: Error codes for issues when adding the value
 
     if ((*json_obj)->num_entries == (*json_obj)->num_allocated) {
@@ -282,10 +296,20 @@ int json_object_add_value(struct json_object **json_obj, char *key, struct json_
         return -1;
     }
 
+    if ((*json_obj)->values[index]->type != expected_data_type && expected_data_type != -1) {
+        printd("json_api.c->json_object_add_value(): data types do not match for key %s, expected %d, got %d\n", key, expected_data_type, (*json_obj)->values[index]->type);
+
+        return -1;
+    }
+
+    if (output_data) {
+        *output_data = json_val->data;
+    }
+
     return 0;
 }
 
-struct json_value *json_object_get_value(struct json_object *json_obj, char *key) {
+struct json_value *json_object_get_value(struct json_object *json_obj, char *key, void **output_data, enum json_value_types expected_data_type) {
     if (json_obj->num_entries == 0) {
         printd("json_api.c->json_object_get_value(): unable to find json value at %s in object, object was empty\n", key);
 
@@ -314,6 +338,16 @@ struct json_value *json_object_get_value(struct json_object *json_obj, char *key
         }
 
         if (strcmp(json_obj->keys[index], key) == 0) {
+            // if (json_obj->values[index]->type != expected_data_type && expected_data_type != -1) {
+            //     printd("json_api.c->json_object_get_value(): data types do not match for key %s, expected %d, got %d\n", key, expected_data_type, json_obj->values[index]->type);
+            //
+            //     return NULL;
+            // }
+
+            if (output_data) {
+                *output_data = json_obj->values[index]->data;
+            }
+
             return json_obj->values[index];
         }
 
@@ -375,16 +409,24 @@ struct json_array *create_json_array() {
     return json_arr;
 }
 
-struct json_value *create_array_json_value() {
+struct json_value *create_array_json_value(struct json_array **output) {
     struct json_value *json_val = (struct json_value *)malloc(sizeof(struct json_value));
 
     json_val->type = JSON_ARRAY;
 
-    json_val->data = create_json_array();
-    if (!json_val->data) {
+    struct json_array *json_arr = create_json_array();
+    if (!json_arr) {
         printd("json_api.c->create_array_json_value(): create_json_array() returned NULL\n");
 
+        free(json_val);
+
         return NULL;
+    }
+
+    json_val->data = json_arr;
+
+    if (output) {
+        *output = json_arr;
     }
 
     return json_val;

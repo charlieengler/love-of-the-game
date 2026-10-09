@@ -43,7 +43,7 @@ struct json_value *db_initialize(char *name) {
     }
     fclose(db_file);
 
-    struct json_value *json_val = create_object_json_value();
+    struct json_value *json_val = create_object_json_value(NULL);
     if (length > 1) {
         json_val = string_to_json_value(&db_buffer);
     }

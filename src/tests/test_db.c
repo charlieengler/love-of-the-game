@@ -9,6 +9,8 @@
 
 // TODO: Implement me
 static int test_db_initialize_no_file() {
+    printf("    Running test_db_initialize_no_file()\n");
+
     char *test_name = "test-initialize-no-file";
 
     struct json_value *db = db_initialize(test_name);
@@ -25,6 +27,8 @@ static int test_db_initialize_no_file() {
 
 // TODO: Implement me
 static int test_db_initialize_with_file() {
+    printf("    Running test_db_initialize_with_file()\n");
+
     char *test_name = "test-initialize-with-file";
 
     struct json_value *db_json = db_initialize(test_name);
@@ -42,22 +46,16 @@ static int test_db_initialize_with_file() {
 
     struct json_object *db_obj = (struct json_object *)(db_json->data);
 
-    struct json_value *object_tests_json = json_object_get_value(db_obj, "object-tests");
+    struct json_object *object_tests_object;
+    struct json_value *object_tests_json = json_object_get_value(db_obj, "object-tests", (void **)&object_tests_object, JSON_OBJECT);
     if (!object_tests_json) {
         printf("[TEST FAIL] test_db_initialize_with_file(): object_tests_json was null\n");
 
         return 1;
     }
 
-    if (object_tests_json->type != JSON_OBJECT) {
-        printf("[TEST FAIL] test_db_initialize_with_file(): object_tests_json type (%d) was not JSON_OBJECT (%d)\n", object_tests_json->type, JSON_OBJECT);
-
-        return 1;
-    }
-
-    struct json_object *object_tests_object = (struct json_object *)(object_tests_json->data);
-
-    struct json_value *object_objects_json = json_object_get_value(object_tests_object, "object-objects");
+    struct json_object *object_objects_object;
+    struct json_value *object_objects_json = json_object_get_value(object_tests_object, "object-objects", (void **)&object_objects_object, JSON_OBJECT);
     if (!object_objects_json) {
         printf("[TEST FAIL] test_db_initialize_with_file(): object_objects_json was null\n");
 
@@ -70,8 +68,6 @@ static int test_db_initialize_with_file() {
         return 1;
     }
 
-    struct json_object *object_objects_object = (struct json_object *)(object_objects_json->data);
-
     for (int i = 0; i < 3; ++i) {
     }
 
@@ -80,6 +76,8 @@ static int test_db_initialize_with_file() {
 
 // TODO: Implement me
 static int test_db_save() {
+    printf("    Running test_db_save()\n");
+
     char *test_name = "test-save";
 
     struct json_value *db = db_initialize(test_name);

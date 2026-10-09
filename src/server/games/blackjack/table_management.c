@@ -28,47 +28,34 @@ char *generate_card_count_str(int num_users, int *user_hand_counts) {
 char *generate_table_res(struct json_value *table_json) {
     struct json_object *table_object = (struct json_object *)(table_json->data);
 
-    int hand_progress;
+    struct json_number *hand_progress_num;
     // TODO: Error checking
-    struct json_value *hand_progress_json = json_object_get_value(table_object, "hand-progress");
+    struct json_value *hand_progress_json = json_object_get_value(table_object, "hand-progress", (void **)&hand_progress_num, JSON_NUMBER);
 
+    int hand_progress;
     if (!hand_progress_json) {
         hand_progress = -1;
     } else {
-        if (hand_progress_json->type != JSON_NUMBER) {
-            // TODO: Fail
-        }
-
-        hand_progress = (int)(((struct json_number *)(hand_progress_json->data))->integer);
+        hand_progress = (int)(hand_progress_num->integer);
     }
 
+    struct json_array *users_array;
     // TODO: Error checking
-    struct json_value *users_json = json_object_get_value(table_object, "users");
-    if (users_json->type != JSON_ARRAY) {
-        // TODO: Fail
-    }
+    struct json_value *users_json = json_object_get_value(table_object, "users", (void **)&users_array, JSON_ARRAY);
 
-    // TODO: Error checking
-    struct json_value *dealer_json = json_object_get_value(table_object, "dealer");
-    if (dealer_json->type != JSON_OBJECT) {
-        // TODO: Fail
-    }
-
-    struct json_array *users_array = (struct json_array *)(users_json->data);
     int num_users = users_array->length;
 
-    struct json_value *dealer_hand_json = json_object_get_value((struct json_object *)(dealer_json->data), "hand");
+    struct json_object *dealer_object;
+    // TODO: Error checking
+    struct json_value *dealer_json = json_object_get_value(table_object, "dealer", (void **)&dealer_object, JSON_OBJECT);
+
+    struct json_array *dealer_hand_arr;
+    struct json_value *dealer_hand_json = json_object_get_value(dealer_object, "hand", (void **)&dealer_hand_arr, JSON_ARRAY);
     if (!dealer_hand_json) {
-        dealer_hand_json = create_array_json_value();
+        dealer_hand_json = create_array_json_value(NULL);
 
-        json_object_add_value((struct json_object **)(&dealer_json->data), "hand", dealer_hand_json);
+        json_object_add_value((struct json_object **)(&dealer_json->data), "hand", dealer_hand_json, (void **)&dealer_hand_arr, JSON_ARRAY);
     }
-
-    if (dealer_hand_json->type != JSON_ARRAY) {
-        // TODO: Fail
-    }
-
-    struct json_array *dealer_hand_arr = (struct json_array *)(dealer_hand_json->data);
 
     struct json_value *res_dealer_hand_json;
     struct json_value *active_user_json;
@@ -81,34 +68,28 @@ char *generate_table_res(struct json_value *table_json) {
     }
 
     if (hand_progress < num_users) {
-        // TODO: Error checking
-        res_dealer_hand_json = create_array_json_value();
-        if (res_dealer_hand_json->type != JSON_ARRAY) {
-            // TODO: Fail
-        }
+        struct json_array *res_dealer_hand_arr;
 
-        struct json_array *res_dealer_hand_arr = (struct json_array *)(res_dealer_hand_json->data);
+        // TODO: Error checking
+        res_dealer_hand_json = create_array_json_value(&res_dealer_hand_arr);
 
         if (dealer_hand_arr->length > 1) {
             json_array_add_value(&res_dealer_hand_arr, dealer_hand_arr->values[1]);
         }
     }
 
-    struct json_value *res_json = create_object_json_value();
-    if (res_json->type != JSON_OBJECT) {
-        // TODO: Fail
-    }
+    struct json_object *res_object;
 
-    struct json_object *res_object = (struct json_object *)(res_json->data);
+    struct json_value *res_json = create_object_json_value(&res_object);
 
     // TODO: Error checking
-    json_object_add_value(&res_object, "users", users_json);
+    json_object_add_value(&res_object, "users", users_json, NULL, JSON_ARRAY);
 
     // TODO: Error checking
-    json_object_add_value(&res_object, "dealerCards", res_dealer_hand_json);
+    json_object_add_value(&res_object, "dealerCards", res_dealer_hand_json, NULL, JSON_ARRAY);
 
     // TODO: Error checking
-    json_object_add_value(&res_object, "activeUser", active_user_json);
+    json_object_add_value(&res_object, "activeUser", active_user_json, NULL, JSON_OBJECT);
 
     // TODO: Error checking
     char *res = json_value_to_string(res_json);
@@ -134,14 +115,12 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
 
     struct json_object *req_object = (struct json_object *)(req_json->data);
 
+    char *table_id;
     // TODO: Error checking
-    struct json_value *table_id_json = json_object_get_value((struct json_object *)(req_json->data), "tableID");
-    if (table_id_json->type != JSON_STRING) {
-        // TODO: Fail
-    }
-    char *table_id = (char *)(table_id_json->data);
+    json_object_get_value((struct json_object *)(req_json->data), "tableID", (void **)&table_id, JSON_STRING);
 
-    struct json_value *table_json = json_object_get_value((struct json_object *)(db_json->data), table_id);
+    struct json_object *table_object;
+    struct json_value *table_json = json_object_get_value((struct json_object *)(db_json->data), table_id, (void **)&table_object, JSON_OBJECT);
 
     if (table_json == NULL) {
         // TODO: Potentially need to create the table here, although it should already exist
@@ -150,53 +129,35 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
         return NULL;
     }
 
-    if (table_json->type != JSON_OBJECT) {
-        // TODO: Fail
-    }
-
-    struct json_object *table_object = (struct json_object *)(table_json->data);
-
-    int hand_progress;
+    struct json_number *hand_progress_num;
     // TODO: Error checking
-    struct json_value *hand_progress_json = json_object_get_value(table_object, "hand-progress");
+    struct json_value *hand_progress_json = json_object_get_value(table_object, "hand-progress", (void **)&hand_progress_num, JSON_NUMBER);
 
     if (!hand_progress_json) {
-        hand_progress_json = create_number_json_value(-1, 0, 0, JSON_INTEGER);
+        hand_progress_json = create_number_json_value(NULL, -1, 0, 0, JSON_INTEGER);
 
         // TODO: Error checking
-        json_object_add_value(&table_object, "hand-progress", hand_progress_json);
+        json_object_add_value(&table_object, "hand-progress", hand_progress_json, (void **)&hand_progress_num, JSON_NUMBER);
     }
 
-    if (hand_progress_json->type != JSON_NUMBER) {
-        // TODO: Fail
-    }
+    int hand_progress = (int)(hand_progress_num->integer);
 
-    hand_progress = (int)(((struct json_number *)(hand_progress_json->data))->integer);
-
+    struct json_array *users_array;
     // TODO: Error checking
-    struct json_value *users_json = json_object_get_value(table_object, "users");
-    if (users_json->type != JSON_ARRAY) {
-        // TODO: Fail
-    }
+    json_object_get_value(table_object, "users", (void **)&users_array, JSON_ARRAY);
 
-    struct json_array *users_array = (struct json_array *)(users_json->data);
     int num_users = users_array->length;
 
+    struct json_object *dealer_object;
     // TODO: Error checking
-    struct json_value *dealer_json = json_object_get_value(table_object, "dealer");
-    if (dealer_json->type != JSON_OBJECT) {
-        // TODO: Fail
-    }
+    struct json_value *dealer_json = json_object_get_value(table_object, "dealer", (void **)&dealer_object, JSON_OBJECT);
 
-    struct json_value *dealer_hand_json = json_object_get_value((struct json_object *)(dealer_json->data), "hand");
+    struct json_array *dealer_hand_arr;
+    struct json_value *dealer_hand_json = json_object_get_value(dealer_object, "hand", (void **)&dealer_hand_arr, JSON_ARRAY);
     if (!dealer_hand_json) {
-        dealer_hand_json = create_array_json_value();
+        dealer_hand_json = create_array_json_value(NULL);
 
-        json_object_add_value((struct json_object **)(&dealer_json->data), "hand", dealer_hand_json);
-    }
-
-    if (dealer_hand_json->type != JSON_ARRAY) {
-        // TODO: Fail
+        json_object_add_value((struct json_object **)(&dealer_json->data), "hand", dealer_hand_json, (void **)&dealer_hand_arr, JSON_ARRAY);
     }
 
     char *res = req;
@@ -209,15 +170,12 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
 
             struct json_object *tmp_user_object = (struct json_object *)(tmp_user_json->data);
 
-            struct json_value *tmp_user_hand_json = json_object_get_value(tmp_user_object, "hand");
+            struct json_value *tmp_user_hand_json = json_object_get_value(tmp_user_object, "hand", NULL, JSON_ARRAY);
             if (!tmp_user_hand_json) {
-                tmp_user_hand_json = create_array_json_value();
+                // TODO: Error checking
+                tmp_user_hand_json = create_array_json_value(NULL);
 
-                if (tmp_user_hand_json->type != JSON_ARRAY) {
-                    // TODO: Fail
-                }
-
-                json_object_add_value(&tmp_user_object, "hand", tmp_user_hand_json);
+                json_object_add_value(&tmp_user_object, "hand", tmp_user_hand_json, NULL, JSON_ARRAY);
             }
 
             if (tmp_user_hand_json->type != JSON_ARRAY) {
@@ -239,11 +197,7 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
 
             struct json_object *tmp_user_object = (struct json_object *)(tmp_user_json->data);
 
-            struct json_value *tmp_user_hand_json = json_object_get_value(tmp_user_object, "hand");
-
-            if (tmp_user_hand_json->type != JSON_ARRAY) {
-                // TODO: Fail
-            }
+            struct json_value *tmp_user_hand_json = json_object_get_value(tmp_user_object, "hand", NULL, JSON_ARRAY);
 
             // TODO: Error checking
             deal_card(table_object, tmp_user_hand_json);
@@ -257,13 +211,9 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
     } else if (hand_progress >= 0 && hand_progress < num_users) {
         // Turn for each player
 
+        char *req_user_id;
         // TODO: Error checking
-        struct json_value *req_user_id_json = json_object_get_value(req_object, "userID");
-        if (req_user_id_json->type != JSON_STRING) {
-            // TODO: Fail
-        }
-
-        char *req_user_id = (char *)(req_user_id_json->data);
+        struct json_value *req_user_id_json = json_object_get_value(req_object, "userID", (void **)&req_user_id, JSON_STRING);
 
         struct json_value *user_json = users_array->values[hand_progress];
         if (user_json->type != JSON_OBJECT) {
@@ -272,12 +222,8 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
 
         struct json_object *user_object = (struct json_object *)(user_json->data);
 
-        struct json_value *user_id_json = json_object_get_value(user_object, "id");
-        if (user_id_json->type != JSON_STRING) {
-            // TODO: Fail
-        }
-
-        char *user_id = (char *)(user_id_json->data);
+        char *user_id;
+        json_object_get_value(user_object, "id", (void **)&user_id, JSON_STRING);
 
         if (strcmp(req_user_id, user_id)) {
             // TODO: Return error as res, not a printf
@@ -290,7 +236,7 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
         }
 
         // TODO: Error checking
-        struct json_value *user_hand_json = json_object_get_value(user_object, "hand");
+        struct json_value *user_hand_json = json_object_get_value(user_object, "hand", NULL, JSON_ARRAY);
         if (user_hand_json->type != JSON_OBJECT) {
             // TODO: Fail
         }
@@ -317,14 +263,12 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
         }
     } else if (hand_progress == num_users) {
         // Dealer's turn
+        struct json_object *dealer_object;
         // TODO: Error checking
-        struct json_value *dealer_json = json_object_get_value(table_object, "dealer");
-        if (dealer_json->type != JSON_OBJECT) {
-            // TODO: Fail
-        }
+        json_object_get_value(table_object, "dealer", (void **)&dealer_object, JSON_OBJECT);
 
         // TODO: Error checking
-        struct json_value *dealer_hand_json = json_object_get_value((struct json_object *)(dealer_json->data), "hand");
+        struct json_value *dealer_hand_json = json_object_get_value(dealer_object, "hand", NULL, JSON_ARRAY);
         if (dealer_hand_json->type != JSON_ARRAY) {
             // TODO: Fail
         }
@@ -353,28 +297,22 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
                 // TODO: Fail
             }
 
-            struct json_value *tmp_user_hand_json = json_object_get_value((struct json_object *)(tmp_user_json->data), "hand");
+            struct json_value *tmp_user_hand_json = json_object_get_value((struct json_object *)(tmp_user_json->data), "hand", NULL, JSON_ARRAY);
 
             int user_value = tally_hand(tmp_user_hand_json);
             if (user_value > 21) {
                 user_value = 0;
             }
 
+            char *tmp_user_id;
             // TODO: Error checking
-            struct json_value *tmp_user_id_json = json_object_get_value((struct json_object *)(tmp_user_json->data), "id");
-            if (tmp_user_id_json->type != JSON_STRING) {
-                // TODO: Fail
-            }
+            json_object_get_value((struct json_object *)(tmp_user_json->data), "id", (void **)&tmp_user_id, JSON_STRING);
 
-            char *tmp_user_id = (char *)(tmp_user_id_json->data);
-
+            struct json_number *tmp_user_bet_num;
             // TODO: Error checking
-            struct json_value *tmp_user_bet_json = json_object_get_value((struct json_object *)(tmp_user_json->data), "bet");
-            if (tmp_user_bet_json->type != JSON_NUMBER) {
-                // TODO: Fail
-            }
+            json_object_get_value((struct json_object *)(tmp_user_json->data), "bet", (void **)&tmp_user_bet_num, JSON_NUMBER);
 
-            int tmp_user_bet = (int)(((struct json_number *)(tmp_user_bet_json->data))->integer);
+            int tmp_user_bet = (int)(tmp_user_bet_num->integer);
 
             // TODO: Store user cash somewhere
             if (user_value > dealer_value) {
@@ -393,7 +331,7 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
         // TODO: Error checking on these
         json_object_remove_value(&table_object, "hand-progress");
         json_object_remove_value(&table_object, "deck");
-        json_object_remove_value((struct json_object **)(&dealer_json->data), "hand");
+        json_object_remove_value(&dealer_object, "hand");
 
         for (int i = 0; i < num_users; ++i) {
             struct json_value *tmp_user_json = users_array->values[i];
@@ -433,14 +371,11 @@ char *blackjack_status_update(struct json_value *db_json, char *req) {
         // TODO: Fail
     }
 
+    char *table_id;
     // TODO: Error checking
-    struct json_value *table_id_json = json_object_get_value((struct json_object *)(req_json->data), "tableID");
-    if (table_id_json->type != JSON_STRING) {
-        // TODO: Fail
-    }
-    char *table_id = (char *)(table_id_json->data);
+    json_object_get_value((struct json_object *)(req_json->data), "tableID", (void **)&table_id, JSON_STRING);
 
-    struct json_value *table_json = json_object_get_value((struct json_object *)(db_json->data), table_id);
+    struct json_value *table_json = json_object_get_value((struct json_object *)(db_json->data), table_id, NULL, JSON_OBJECT);
 
     if (!table_json) {
         // TODO: Potentially need to create the table here, although it should already exist

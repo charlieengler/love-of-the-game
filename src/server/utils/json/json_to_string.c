@@ -123,7 +123,7 @@ char *json_object_to_string(struct json_object *json_obj, int depth) {
             goto fail;
         }
 
-        struct json_value *json_val = json_object_get_value(json_obj, key);
+        struct json_value *json_val = json_object_get_value(json_obj, key, NULL, -1);
         if (!json_val) {
             printd("json_to_string.c->json_object_to_string(): json_val was null when getting json_obj value at %s\n", key);
 

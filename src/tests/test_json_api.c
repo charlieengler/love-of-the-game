@@ -5,6 +5,8 @@
 #include "tests.h"
 
 static int test_json_value_to_string_1() {
+    printf("    Running test_json_value_to_string_1()\n");
+
     char *test_string_one = "\"test string\"";
     char *str_start = test_string_one;
 
@@ -26,6 +28,8 @@ static int test_json_value_to_string_1() {
 }
 
 static int test_json_value_to_string_2() {
+    printf("    Running test_json_value_to_string_2()\n");
+
     char *test_string_one = "0";
     char *str_start = test_string_one;
 
@@ -47,6 +51,8 @@ static int test_json_value_to_string_2() {
 }
 
 static int test_json_value_to_string_3() {
+    printf("    Running test_json_value_to_string_3()\n");
+
     char *test_string_one = "1.1";
     char *str_start = test_string_one;
 
@@ -68,6 +74,8 @@ static int test_json_value_to_string_3() {
 }
 
 static int test_json_value_to_string_4() {
+    printf("    Running test_json_value_to_string_4()\n");
+
     char *test_string_one = "1.0e10";
     char *str_start = test_string_one;
 
@@ -89,6 +97,8 @@ static int test_json_value_to_string_4() {
 }
 
 static int test_json_value_to_string_5() {
+    printf("    Running test_json_value_to_string_5()\n");
+
     char *test_string_one = "{\n"
                             "    \"0\": \"first test\",\n"
                             "    \"1\": \"second test\",\n"
@@ -114,6 +124,8 @@ static int test_json_value_to_string_5() {
 }
 
 static int test_json_value_to_string_6() {
+    printf("    Running test_json_value_to_string_6()\n");
+
     char *test_string_one = "{\n"
                             "    \"0\": 1,\n"
                             "    \"1\": 2,\n"
@@ -139,6 +151,8 @@ static int test_json_value_to_string_6() {
 }
 
 static int test_json_value_to_string_7() {
+    printf("    Running test_json_value_to_string_7()\n");
+
     char *test_string_one = "{\n"
                             "    \"0\": [\n"
                             "        \"first test\",\n"
@@ -177,6 +191,8 @@ static int test_json_value_to_string_7() {
 }
 
 static int test_json_value_to_string_8() {
+    printf("    Running test_json_value_to_string_8()\n");
+
     char *test_string_one = "{\n"
                             "    \"0\": [\n"
                             "        0,\n"
@@ -215,6 +231,8 @@ static int test_json_value_to_string_8() {
 }
 
 static int test_json_value_to_string_9() {
+    printf("    Running test_json_value_to_string_9()\n");
+
     char *test_string_one = "{\n"
                             "    \"0\": [\n"
                             "        {\n"
@@ -271,6 +289,8 @@ static int test_json_value_to_string_9() {
 }
 
 static int test_json_value_to_string_10() {
+    printf("    Running test_json_value_to_string_10()\n");
+
     char *test_string_one = "{\n"
                             "    \"0\": [\n"
                             "        [\n"
@@ -310,6 +330,8 @@ static int test_json_value_to_string_10() {
 }
 
 static int test_json_value_to_string_11() {
+    printf("    Running test_json_value_to_string_11()\n");
+
     char *test_string_one = "{\n"
                             "    \"0\": [\n"
                             "        true,\n"
@@ -337,6 +359,8 @@ static int test_json_value_to_string_11() {
 }
 
 static int test_json_value_to_string_12() {
+    printf("    Running test_json_value_to_string_12()\n");
+
     char *test_string_one = "{\n"
                             "    \"0\": true,\n"
                             "    \"1\": false,\n"
@@ -362,6 +386,8 @@ static int test_json_value_to_string_12() {
 }
 
 static int test_json_value_to_string_13() {
+    printf("    Running test_json_value_to_string_13()\n");
+
     char *test_string_one = "[\n"
                             "    \"first test\",\n"
                             "    \"second test\",\n"
@@ -387,6 +413,8 @@ static int test_json_value_to_string_13() {
 }
 
 static int test_json_value_to_string_14() {
+    printf("    Running test_json_value_to_string_14()\n");
+
     char *test_string_one = "[\n"
                             "    0,\n"
                             "    1,\n"
@@ -412,6 +440,8 @@ static int test_json_value_to_string_14() {
 }
 
 static int test_json_value_to_string_15() {
+    printf("    Running test_json_value_to_string_15()\n");
+
     char *test_string_one = "[\n"
                             "    {\n"
                             "        \"0\": \"first test\",\n"
@@ -447,6 +477,8 @@ static int test_json_value_to_string_15() {
 }
 
 static int test_json_value_to_string_16() {
+    printf("    Running test_json_value_to_string_16()\n");
+
     char *test_string_one = "[\n"
                             "    {\n"
                             "        \"0\": 0,\n"
@@ -484,6 +516,8 @@ static int test_json_value_to_string_16() {
 }
 
 static int test_json_value_to_string_17() {
+    printf("    Running test_json_value_to_string_17()\n");
+
     char *test_string_one = "[\n"
                             "    {\n"
                             "        \"0\": {\n"
@@ -517,6 +551,8 @@ static int test_json_value_to_string_17() {
 }
 
 static int test_json_value_to_string_18() {
+    printf("    Running test_json_value_to_string_18()\n");
+
     char *test_string_one = "[\n"
                             "    {\n"
                             "        \"0\": {\n"
@@ -558,6 +594,8 @@ static int test_json_value_to_string_18() {
 }
 
 static int test_json_value_to_string_19() {
+    printf("    Running test_json_value_to_string_19()\n");
+
     char *test_string_one = "[\n"
                             "    {\n"
                             "        \"0\": {\n"
@@ -587,6 +625,8 @@ static int test_json_value_to_string_19() {
 }
 
 static int test_json_value_to_string_20() {
+    printf("    Running test_json_value_to_string_20()\n");
+
     char *test_string_one = "[\n"
                             "    [\n"
                             "        \"first test\",\n"
@@ -624,6 +664,8 @@ static int test_json_value_to_string_20() {
 }
 
 static int test_json_value_to_string_21() {
+    printf("    Running test_json_value_to_string_21()\n");
+
     char *test_string_one = "[\n"
                             "    [\n"
                             "        0,\n"
@@ -661,6 +703,8 @@ static int test_json_value_to_string_21() {
 }
 
 static int test_json_value_to_string_22() {
+    printf("    Running test_json_value_to_string_22()\n");
+
     char *test_string_one = "[\n"
                             "    [\n"
                             "        {\n"
@@ -716,6 +760,8 @@ static int test_json_value_to_string_22() {
 }
 
 static int test_json_value_to_string_23() {
+    printf("    Running test_json_value_to_string_23()\n");
+
     char *test_string_one = "[\n"
                             "    [\n"
                             "        [\n"
@@ -755,6 +801,8 @@ static int test_json_value_to_string_23() {
 }
 
 static int test_json_value_to_string_24() {
+    printf("    Running test_json_value_to_string_24()\n");
+
     char *test_string_one = "[\n"
                             "    [\n"
                             "        true,\n"
@@ -792,6 +840,8 @@ static int test_json_value_to_string_24() {
 }
 
 static int test_json_value_to_string_25() {
+    printf("    Running test_json_value_to_string_25()\n");
+
     char *test_string_one = "[\n"
                             "    true,\n"
                             "    false,\n"
@@ -817,6 +867,8 @@ static int test_json_value_to_string_25() {
 }
 
 static int test_json_value_to_string_26() {
+    printf("    Running test_json_value_to_string_26()\n");
+
     char *test_string_one = "true";
     char *str_start = test_string_one;
 
@@ -838,6 +890,8 @@ static int test_json_value_to_string_26() {
 }
 
 static int test_json_value_to_string_27() {
+    printf("    Running test_json_value_to_string_27()\n");
+
     char *test_string_one = "false";
     char *str_start = test_string_one;
 
@@ -859,6 +913,8 @@ static int test_json_value_to_string_27() {
 }
 
 static int test_json_value_to_string_28() {
+    printf("    Running test_json_value_to_string_28()\n");
+
     char *test_string_one = "null";
     char *str_start = test_string_one;
 

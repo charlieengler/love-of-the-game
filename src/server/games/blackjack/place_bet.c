@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 
 #include "internal.h"
@@ -21,48 +22,32 @@ char *blackjack_place_bet(struct json_value *db_json, char *req) {
         // TODO: Fail
     }
 
+    char *table_id;
     // TODO: Error checking
-    struct json_value *table_id_json = json_object_get_value((struct json_object *)(req_json->data), "tableID");
-    if (table_id_json->type != JSON_STRING) {
-        // TODO: Fail
-    }
-    char *table_id = (char *)(table_id_json->data);
+    json_object_get_value((struct json_object *)(req_json->data), "tableID", (void **)&table_id, JSON_STRING);
 
+    char *user_id;
     // TODO: Error checking
-    struct json_value *user_id_json = json_object_get_value((struct json_object *)(req_json->data), "userID");
-    if (user_id_json->type != JSON_STRING) {
-        // TODO: Fail
-    }
-    char *user_id = (char *)(user_id_json->data);
+    json_object_get_value((struct json_object *)(req_json->data), "userID", (void **)&user_id, JSON_STRING);
 
+    struct json_number *bet_num;
     // TODO: Error checking
-    struct json_value *bet_json = json_object_get_value((struct json_object *)(req_json->data), "bet");
-    if (bet_json->type != JSON_NUMBER) {
-        // TODO: Fail
-    }
-    int bet = (int)(((struct json_number *)(bet_json->data))->integer);
+    json_object_get_value((struct json_object *)(req_json->data), "bet", (void **)&bet_num, JSON_NUMBER);
 
-    struct json_value *table_json = json_object_get_value((struct json_object *)(db_json->data), table_id);
-    struct json_object *table_object;
+    int bet = (int)(bet_num->integer);
+
+    struct json_value *table_json = json_object_get_value((struct json_object *)(db_json->data), table_id, NULL, JSON_OBJECT);
 
     if (!table_json) {
         // TODO: Error checking
         blackjack_join_table(db_json, req);
     }
 
-    if (table_json->type != JSON_OBJECT) {
-        // TODO: Fail
-    }
+    struct json_object *table_object = (struct json_object *)(table_json->data);
 
-    table_object = (struct json_object *)(table_json->data);
-
+    struct json_array *users_array;
     // TODO: Error checking
-    struct json_value *users_json = json_object_get_value(table_object, "users");
-    if (users_json->type != JSON_ARRAY) {
-        // TODO: Fail
-    }
-
-    struct json_array *users_array = (struct json_array *)(users_json->data);
+    json_object_get_value(table_object, "users", (void **)&users_array, JSON_ARRAY);
 
     struct json_value *found_user_json = NULL;
     for (int i = 0; i < users_array->length; ++i) {
@@ -70,14 +55,11 @@ char *blackjack_place_bet(struct json_value *db_json, char *req) {
         if (tmp_user_json->type != JSON_OBJECT) {
             // TODO: Fail
         }
+        struct json_object *tmp_user_object = tmp_user_json->data;
 
+        char *tmp_user_id;
         // TODO: Error checking
-        struct json_value *tmp_user_id_json = json_object_get_value((struct json_object *)(tmp_user_json->data), "id");
-        if (tmp_user_id_json->type != JSON_STRING) {
-            // TODO: Fail
-        }
-
-        char *tmp_user_id = (char *)tmp_user_id_json->data;
+        json_object_get_value(tmp_user_object, "id", (void **)&tmp_user_id, JSON_STRING);
 
         if (!strcmp(user_id, tmp_user_id)) {
             found_user_json = tmp_user_json;
@@ -94,13 +76,13 @@ char *blackjack_place_bet(struct json_value *db_json, char *req) {
         // TODO: Fail
     }
 
-    // TODO: Error checking
-    struct json_value *user_bet_json = json_object_get_value((struct json_object *)(found_user_json->data), "bet");
-    if (user_bet_json->type != JSON_NUMBER) {
-        // TODO: Fail
-    }
+    struct json_object *found_user_object = found_user_json->data;
 
-    ((struct json_number *)(user_bet_json->data))->integer = bet;
+    struct json_number *user_bet_num;
+    // TODO: Error checking
+    json_object_get_value(found_user_object, "bet", (void **)&user_bet_num, JSON_NUMBER);
+
+    user_bet_num->integer = bet;
 
     // TODO: Better res
     char *res = req;
