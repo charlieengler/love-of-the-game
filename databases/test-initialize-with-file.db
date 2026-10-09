@@ -1,1 +1,67 @@
-{}
+{
+    "object-tests": {
+        "object-objects": {
+            "0": { "1": 1 },
+            "1": { "2": 2 },
+            "2": { "3": 3 }
+        },
+        "object-arrays": {
+            "0": [ 1 ],
+            "1": [ 2 ],
+            "2": [ 3 ]
+        },
+        "object-strings": {
+            "0": "1",
+            "1": "2",
+            "2": "3"
+        },
+        "object-numbers": {
+            "0": 1,
+            "1": 2,
+            "2": 3
+        },
+        "object-true-false-null": {
+            "0": true,
+            "1": false,
+            "2": null
+        }
+    },
+
+    "array-tests": {
+        "array-objects": [
+            { "0": 0 },
+            { "1": 1 },
+            { "2": 2 }
+        ],
+        "array-arrays": [
+            [ 0 ],
+            [ 1 ],
+            [ 2 ]
+        ],
+        "array-strings": [
+            "0",
+            "1",
+            "2"
+        ],
+        "array-numbers": [
+            0,
+            1,
+            2
+        ],
+        "array-true-false-null": [
+            true,
+            false,
+            null
+        ]
+    },
+
+    "string-test": "test-string",
+
+    "number-test": 0,
+
+    "true-test": true,
+
+    "false-test": false,
+
+    "null-test": null
+}

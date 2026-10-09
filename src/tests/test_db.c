@@ -27,7 +27,53 @@ static int test_db_initialize_no_file() {
 static int test_db_initialize_with_file() {
     char *test_name = "test-initialize-with-file";
 
-    struct json_value *db = db_initialize(test_name);
+    struct json_value *db_json = db_initialize(test_name);
+    if (!db_json) {
+        printf("[TEST FAIL] test_db_initialize_with_file(): db_json was null\n");
+
+        return 1;
+    }
+
+    if (db_json->type != JSON_OBJECT) {
+        printf("[TEST FAIL] test_db_initialize_with_file(): db_json type (%d) was not JSON_OBJECT (%d)\n", db_json->type, JSON_OBJECT);
+
+        return 1;
+    }
+
+    struct json_object *db_obj = (struct json_object *)(db_json->data);
+
+    struct json_value *object_tests_json = json_object_get_value(db_obj, "object-tests");
+    if (!object_tests_json) {
+        printf("[TEST FAIL] test_db_initialize_with_file(): object_tests_json was null\n");
+
+        return 1;
+    }
+
+    if (object_tests_json->type != JSON_OBJECT) {
+        printf("[TEST FAIL] test_db_initialize_with_file(): object_tests_json type (%d) was not JSON_OBJECT (%d)\n", object_tests_json->type, JSON_OBJECT);
+
+        return 1;
+    }
+
+    struct json_object *object_tests_object = (struct json_object *)(object_tests_json->data);
+
+    struct json_value *object_objects_json = json_object_get_value(object_tests_object, "object-objects");
+    if (!object_objects_json) {
+        printf("[TEST FAIL] test_db_initialize_with_file(): object_objects_json was null\n");
+
+        return 1;
+    }
+
+    if (object_objects_json->type != JSON_OBJECT) {
+        printf("[TEST FAIL] test_db_initialize_with_file(): object_objects_json type (%d) was not JSON_OBJECT (%d)\n", object_objects_json->type, JSON_OBJECT);
+
+        return 1;
+    }
+
+    struct json_object *object_objects_object = (struct json_object *)(object_objects_json->data);
+
+    for (int i = 0; i < 3; ++i) {
+    }
 
     return 0;
 }
