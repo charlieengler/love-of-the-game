@@ -41,21 +41,19 @@ int destroy_json_number(struct json_number *json_num) {
 int destroy_json_object(struct json_object *json_obj) {
     int output = 0;
 
-    for (int i = 0; i < json_obj->num_entries; ++i) {
+    for (int i = 0; i < json_obj->num_allocated; ++i) {
+        if (!json_obj->keys[i]) {
+            continue;
+        }
+
         // TODO: Error checking
         struct json_value *child_value = json_object_get_value(json_obj, json_obj->keys[i]);
 
-        // TODO: Error checking and this is broken
-        // free(json_obj->keys[i]);
-
-        output = destroy_json_value(child_value);
-    }
-
-    for (int i = json_obj->num_entries; i < json_obj->num_allocated; ++i) {
         // TODO: Error checking
         free(json_obj->keys[i]);
+
         // TODO: Error checking
-        free(json_obj->values[i]);
+        output = destroy_json_value(child_value);
     }
 
     // TODO: Error checking

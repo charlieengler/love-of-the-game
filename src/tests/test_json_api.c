@@ -141,19 +141,19 @@ static int test_json_value_to_string_6() {
 static int test_json_value_to_string_7() {
     char *test_string_one = "{\n"
                             "    \"0\": [\n"
-                            "            \"first test\",\n"
-                            "            \"second test\",\n"
-                            "            \"third test\"\n"
+                            "        \"first test\",\n"
+                            "        \"second test\",\n"
+                            "        \"third test\"\n"
                             "    ],\n"
                             "    \"1\": [\n"
-                            "            \"first test\",\n"
-                            "            \"second test\",\n"
-                            "            \"third test\"\n"
+                            "        \"first test\",\n"
+                            "        \"second test\",\n"
+                            "        \"third test\"\n"
                             "    ],\n"
                             "    \"2\": [\n"
-                            "            \"first test\",\n"
-                            "            \"second test\",\n"
-                            "            \"third test\"\n"
+                            "        \"first test\",\n"
+                            "        \"second test\",\n"
+                            "        \"third test\"\n"
                             "    ]\n"
                             "}";
     char *str_start = test_string_one;
@@ -887,61 +887,85 @@ int test_json_api() {
 
     failed_test_counter += test_json_value_to_string_1();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_2();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_3();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_4();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_5();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_6();
     ++num_tests;
 
-    // TODO: This test causes issues with subsequent tests
-    // failed_test_counter += test_json_value_to_string_7();
-    // ++num_tests;
+    failed_test_counter += test_json_value_to_string_7();
+    ++num_tests;
 
     failed_test_counter += test_json_value_to_string_8();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_9();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_10();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_11();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_12();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_13();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_14();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_15();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_16();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_17();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_18();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_19();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_20();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_21();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_22();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_23();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_24();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_25();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_26();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_27();
     ++num_tests;
+
     failed_test_counter += test_json_value_to_string_28();
     ++num_tests;
 
