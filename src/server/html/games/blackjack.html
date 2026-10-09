@@ -171,6 +171,13 @@
 
                 const res = (await submitData("http://localhost:3000/routes/games/blackjack/check-status", data))[0];
 
+                const progressHandButton = document.getElementById("progress-hand");
+                if (res.handEnded) {
+                    progressHandButton.innerText = "End Hand";
+                } else {
+                    progressHandButton.innerText = "Start Hand";
+                }
+
                 redealCards(res);
 
                 if (res.activeUser.id == userID) {
@@ -180,7 +187,7 @@
                     document.getElementById("hit-button").disabled = true;
                     document.getElementById("stand-button").disabled = true;
                 }
-            }, 10);
+            }, 1000);
         }
     </script>
 </head>
@@ -192,7 +199,7 @@
     <input id="bet-value-input" placeholder="Bet" type="number" />
     <button onclick="placeBet()">Place Bet</button>
 
-    <button onclick="progressHand()">Progress Hand</button>
+    <button id="progress-hand" onclick="progressHand()">Start Hand</button>
 
     <button disabled id="hit-button" onclick="hit()">Hit</button>
     <button disabled id="stand-button" onclick="stand()">Stand</button>

@@ -82,6 +82,16 @@ char *generate_table_res(struct json_value *table_json) {
 
     struct json_value *res_json = create_object_json_value(&res_object);
 
+    if (hand_progress >= num_users) {
+        struct json_value *hand_ended_json = create_true_json_value();
+
+        json_object_add_value(&res_object, "handEnded", hand_ended_json, NULL, JSON_TRUE);
+    } else {
+        struct json_value *hand_ended_json = create_false_json_value();
+
+        json_object_add_value(&res_object, "handEnded", hand_ended_json, NULL, JSON_FALSE);
+    }
+
     // TODO: Error checking
     json_object_add_value(&res_object, "users", users_json, NULL, JSON_ARRAY);
 
@@ -361,6 +371,8 @@ char *blackjack_status_update(struct json_value *db_json, char *req) {
         // TODO: Fail
     }
 
+    struct json_object *db_object = db_json->data;
+
     char *req_start = req;
     // TODO: Error checking
     struct json_value *req_json = string_to_json_value(&req);
@@ -375,7 +387,8 @@ char *blackjack_status_update(struct json_value *db_json, char *req) {
     // TODO: Error checking
     json_object_get_value((struct json_object *)(req_json->data), "tableID", (void **)&table_id, JSON_STRING);
 
-    struct json_value *table_json = json_object_get_value((struct json_object *)(db_json->data), table_id, NULL, JSON_OBJECT);
+    struct json_object *table_object;
+    struct json_value *table_json = json_object_get_value(db_object, table_id, (void **)&table_object, JSON_OBJECT);
 
     if (!table_json) {
         // TODO: Potentially need to create the table here, although it should already exist
@@ -384,8 +397,19 @@ char *blackjack_status_update(struct json_value *db_json, char *req) {
         return NULL;
     }
 
-    if (table_json->type != JSON_OBJECT) {
-        // TODO: Fail
+    struct json_number *hand_progress_num = NULL;
+    json_object_get_value(table_object, "hand-progress", (void **)&hand_progress_num, JSON_NUMBER);
+
+    struct json_array *users_arr = NULL;
+    json_object_get_value(table_object, "users", (void **)&users_arr, JSON_ARRAY);
+
+    if (hand_progress_num && users_arr) {
+        int hand_progress = hand_progress_num->integer;
+        int num_users = users_arr->length;
+
+        if (hand_progress == num_users) {
+            blackjack_progress_hand(db_json, req, USER_NO_ACTION);
+        }
     }
 
     // TODO: Error checking

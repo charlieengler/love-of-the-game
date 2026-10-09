@@ -81,6 +81,8 @@ int db_save(struct json_value *db, char *db_name) {
 
     char *db_data_str = json_value_to_string(db);
 
+    destroy_json_value(db);
+
     if (db_data_str) {
         fputs(db_data_str, db_file);
 
