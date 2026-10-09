@@ -8,7 +8,7 @@
 #ifdef DEBUG
 #define printd(...) printf(__VA_ARGS__)
 #else
-void()
+#define printd(...) asm("nop")
 #endif
 
 #endif // LOGGING_H
