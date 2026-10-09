@@ -4,6 +4,7 @@
 #define JSON_OBJECT_DEFAULT_ALLOC 10
 #define JSON_OBJECT_GROW_MULTIPLIER 2
 
+struct json_value;
 struct json_object;
 struct json_array;
 struct json_number;

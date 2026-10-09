@@ -4,41 +4,61 @@
 
 #include "./internal.h"
 
+#include "../../../include/logging.h"
+
 #include "../../../include/server/utils/json_api.h"
 
 int string_to_json_true(char **input) {
+    char *start = *input;
+
     if (!strncmp(*input, "true", 4)) {
         *input += 4;
 
         return 1;
     }
 
+    printd("json_parser.c->string_to_json_true(): expected \"true\", string %s didn't match\n", start);
+
     return 0;
 }
 
 int string_to_json_false(char **input) {
+    char *start = *input;
+
     if (!strncmp(*input, "false", 5)) {
         *input += 5;
 
         return 0;
     }
 
+    printd("json_parser.c->string_to_json_false(): expected \"false\", string %s didn't match\n", start);
+
     return -1;
 }
 
 int string_to_json_null(char **input) {
+    char *start = *input;
+
     if (!strncmp(*input, "null", 4)) {
         *input += 4;
 
         return 0;
     }
 
+    printd("json_parser.c->string_to_json_null(): expected \"null\", string %s didn't match\n", start);
+
     return -1;
 }
 
 struct json_number *string_to_json_number(char **input) {
-    // TODO: Error checking
     struct json_number *json_num = create_json_number();
+    if (!json_num) {
+        printd("json_parser.c->string_to_json_number(): create_json_number() returned NULL\n");
+
+        return NULL;
+    }
+
+    char *start = *input;
 
     char sign = 1;
     char is_integer = 1;
@@ -62,12 +82,14 @@ struct json_number *string_to_json_number(char **input) {
         switch (**input) {
         case '.':
             if (is_fraction) {
-                // TODO: Print an error for reason of failure
+                printd("json_parser.c->string_to_json_number(): is_fraction already set on input %s\n", start);
+
                 goto fail;
             }
 
             if (is_exponent) {
-                // TODO: Print an error for reason of failure
+                printd("json_parser.c->string_to_json_number(): is_exponent already set on input %s\n", start);
+
                 goto fail;
             }
 
@@ -81,7 +103,8 @@ struct json_number *string_to_json_number(char **input) {
         case 'E':
         case 'e':
             if (is_exponent) {
-                // TODO: Print an error for reason of failure
+                printd("json_parser.c->string_to_json_number(): is_exponent already set on input %s\n", start);
+
                 goto fail;
             }
 
@@ -114,22 +137,26 @@ struct json_number *string_to_json_number(char **input) {
         case '8':
         case '9':
             if (is_fraction && is_exponent) {
-                // TODO: Print an error for reason of failure
+                printd("json_parser.c->string_to_json_number(): is_fraction and is_exponent both set on input %s\n", start);
+
                 goto fail;
             }
 
             if (is_fraction && is_integer) {
-                // TODO: Print an error for reason of failure
+                printd("json_parser.c->string_to_json_number(): is_fraction and is_integer both set on input %s\n", start);
+
                 goto fail;
             }
 
             if (is_integer && is_exponent) {
-                // TODO: Print an error for reason of failure
+                printd("json_parser.c->string_to_json_number(): is_integer and is_exponent both set on input %s\n", start);
+
                 goto fail;
             }
 
             if (!is_integer && !is_fraction && !is_exponent) {
-                // TODO: Print an error for reason of failure
+                printd("json_parser.c->string_to_json_number(): is_integer, is_fraction, and is_exponent all unset on input %s\n", start);
+
                 goto fail;
             }
 
@@ -157,7 +184,7 @@ struct json_number *string_to_json_number(char **input) {
                 break;
             }
 
-            // TODO: Print an error for reason of failure
+            printd("json_parser.c->string_to_json_number(): failed to add digit on input %s\n", start);
             goto fail;
 
         default:
@@ -199,21 +226,19 @@ fail:
     free(integer_str);
     free(fraction_str);
     free(exponent_str);
+    free(json_num);
 
-    json_num->integer = 0;
-    json_num->fraction = 0;
-    json_num->exponent = 0;
-    json_num->type = JSON_UNDEFINED_NUMBER;
-
-    return json_num;
+    return NULL;
 }
 
 char *string_to_json_string(char **input) {
+    char *start = *input;
+
     // TODO: This allocation could get huge depending on the size of the input JSON string
     char *json_str = (char *)malloc((strlen(*input) + 1) * sizeof(char));
 
     if (**input != '"') {
-        // TODO: Print an error for reason of failure
+        printd("json_parser.c->string_to_json_string(): JSON string started without quotes on input %s\n", start);
         goto fail;
     }
 
@@ -242,7 +267,8 @@ char *string_to_json_string(char **input) {
 
 out:
     if (!properly_terminated) {
-        // TODO: Print an error for reason of failure
+        printd("json_parser.c->string_to_json_string(): JSON string improperly terminated on input %s\n", start);
+
         goto fail;
     }
 
@@ -264,11 +290,18 @@ fail:
 }
 
 struct json_array *string_to_json_array(char **input) {
-    // TODO: Error checking
+    char *start = *input;
+
     struct json_array *json_arr = create_json_array();
+    if (!json_arr) {
+        printd("json_parser.c->string_to_json_array(): create_json_array() returned NULL\n");
+
+        return NULL;
+    }
 
     if (**input != '[') {
-        // TODO: Print an error for reason of failure
+        printd("json_parser.c->string_to_json_array(): JSON array started without a square bracket on input %s\n", start);
+
         goto fail;
     }
 
@@ -289,11 +322,18 @@ struct json_array *string_to_json_array(char **input) {
             goto out;
 
         default:
-            // TODO: Maybe error check string_to_json_value, maybe handle it in json_object_add_value
             struct json_value *json_val = string_to_json_value(&(*input));
+            if (!json_val) {
+                printd("json_parser.c->string_to_json_array(): string_to_json_value() was NULL on input %s\n", start);
 
-            if (json_array_add_value(&json_arr, json_val)) {
-                // TODO: Print error explaining why string value could not be added
+                goto fail;
+            }
+
+            int add_res = json_array_add_value(&json_arr, json_val);
+
+            if (add_res) {
+                printd("json_parser.c->string_to_json_array(): json_array_add_value() returned %d on input %s\n", add_res, start);
+
                 goto fail;
             }
 
@@ -303,7 +343,8 @@ struct json_array *string_to_json_array(char **input) {
 
 out:
     if (!properly_terminated) {
-        // TODO: Print error explaining failure
+        printd("json_parser.c->string_to_json_array(): JSON array string improperly terminated on input %s\n", start);
+
         goto fail;
     }
 
@@ -317,11 +358,19 @@ fail:
 }
 
 struct json_object *string_to_json_object(char **input) {
+    char *start = *input;
+
     // TODO: Error checking
     struct json_object *json_obj = create_json_object();
+    if (!json_obj) {
+        printd("json_parser.c->string_to_json_object(): create_json_object() returned NULL\n");
+
+        return NULL;
+    }
 
     if (**input != '{') {
-        // TODO: Print an error for reason of failure
+        printd("json_parser.c->string_to_json_object(): JSON array started without a curly brace on input %s\n", start);
+
         goto fail;
     }
 
@@ -337,7 +386,8 @@ struct json_object *string_to_json_object(char **input) {
 
         case ':':
             if (!setting_key) {
-                // TODO: Print error on why object creation failed
+                printd("json_parser.c->string_to_json_object(): improper key format on input %s\n", start);
+
                 goto fail;
             }
 
@@ -347,7 +397,8 @@ struct json_object *string_to_json_object(char **input) {
 
         case ',':
             if (setting_key) {
-                // TODO: Print error on why object creation failed
+                printd("json_parser.c->string_to_json_object(): improper value format on input %s\n", start);
+
                 goto fail;
             }
 
@@ -365,7 +416,8 @@ struct json_object *string_to_json_object(char **input) {
                 char *str = string_to_json_string(&(*input));
 
                 if (!str) {
-                    // TODO: Print error stating invalid key
+                    printd("json_parser.c->string_to_json_object(): unable to parse key string on input %s\n", start);
+
                     goto fail;
                 } else {
                     current_key = str;
@@ -373,9 +425,17 @@ struct json_object *string_to_json_object(char **input) {
             } else {
                 // TODO: Maybe error check string_to_json_value, maybe handle it in json_object_add_value
                 struct json_value *json_val = string_to_json_value(&(*input));
+                if (!json_val) {
+                    printd("json_parser.c->string_to_json_object(): string_to_json_value() returned NULL on input %s\n", start);
 
-                if (json_object_add_value(&json_obj, current_key, json_val)) {
-                    // TODO: Print error explaining why string value could not be added
+                    goto fail;
+                }
+
+                int add_res = json_object_add_value(&json_obj, current_key, json_val);
+
+                if (add_res) {
+                    printd("json_parser.c->string_to_json_object(): json_object_add_value() returned %d on input %s\n", add_res, start);
+
                     goto fail;
                 }
             }
@@ -386,19 +446,25 @@ struct json_object *string_to_json_object(char **input) {
 
 out:
     if (!properly_terminated) {
-        // TODO: Print error explaining failure
+        printd("json_parser.c->string_to_json_object(): JSON object string improperly terminated on input %s\n", start);
+
         goto fail;
     }
 
     return json_obj;
 
 fail:
-    destroy_json_object(json_obj);
+    int destroy_res = destroy_json_object(json_obj);
+    if (destroy_res) {
+        printd("json_parser.c->string_to_json_object(): destroy_json_object() returned %d on input %s\n", destroy_res, start);
+    }
 
     return NULL;
 }
 
 struct json_value *string_to_json_value(char **input) {
+    char *start = *input;
+
     struct json_value *json = (struct json_value *)malloc(sizeof(struct json_value));
     json->data = NULL;
     json->type = JSON_UNDEFINED;
@@ -409,14 +475,15 @@ struct json_value *string_to_json_value(char **input) {
 
         case '"':
             char *str = string_to_json_string(input);
+            if (!str) {
+                printd("json_parser.c->string_to_json_value(): string_to_json_string() returned NULL on input %s\n", start);
 
+                goto fail;
+            }
+
+            json->type = JSON_STRING;
             json->data = str;
 
-            if (!str) {
-                json->type = JSON_NULL;
-            } else {
-                json->type = JSON_STRING;
-            }
             break;
 
         case '-':
@@ -431,77 +498,85 @@ struct json_value *string_to_json_value(char **input) {
         case '8':
         case '9':
             struct json_number *json_num = string_to_json_number(input);
+            if (!json_num) {
+                printd("json_parser.c->string_to_json_value(): string_to_json_number() returned NULL on input %s\n", start);
+
+                goto fail;
+            }
 
             if (json_num->type == JSON_UNDEFINED_NUMBER) {
-                json->data = NULL;
-                json->type = JSON_NULL;
-            } else {
-                json->data = json_num;
-                json->type = JSON_NUMBER;
+                printd("json_parser.c->string_to_json_value(): string_to_json_number() was an undefined number type on input %s\n", start);
+
+                goto fail;
             }
+
+            json->type = JSON_NUMBER;
+            json->data = json_num;
 
             break;
 
         case '{':
             struct json_object *json_obj = string_to_json_object(input);
             if (!json_obj) {
-                // TODO: Fail
+                printd("json_parser.c->string_to_json_value(): string_to_json_object() returned NULL on input %s\n", start);
+
+                goto fail;
             }
 
-            json->data = json_obj;
             json->type = JSON_OBJECT;
+            json->data = json_obj;
 
             break;
 
         case '[':
             struct json_array *json_arr = string_to_json_array(input);
-
             if (!json_arr) {
-                json->data = NULL;
-                json->type = JSON_NULL;
-            } else {
-                json->data = json_arr;
-                json->type = JSON_ARRAY;
+                printd("json_parser.c->string_to_json_value(): string_to_json_array() returned NULL on input %s\n", start);
+
+                goto fail;
             }
+
+            json->type = JSON_ARRAY;
+            json->data = json_arr;
 
             break;
 
         case 't':
             char truthy = string_to_json_true(input);
+            if (truthy != 1) {
+                printd("json_parser.c->string_to_json_value(): string_to_json_true() returned %d on input %s\n", truthy, start);
 
-            json->data = NULL;
-
-            if (!truthy) {
-                json->type = JSON_UNDEFINED;
-            } else {
-                json->type = JSON_TRUE;
+                goto fail;
             }
+
+            json->type = JSON_TRUE;
+            json->data = NULL;
 
             break;
 
         case 'f':
             char falsy = string_to_json_false(input);
-
-            json->data = NULL;
-
             if (falsy) {
-                json->type = JSON_UNDEFINED;
-            } else {
-                json->type = JSON_FALSE;
+                printd("json_parser.c->string_to_json_value(): string_to_json_false() returned %d on input %s\n", falsy, start);
+
+                goto fail;
             }
+
+            json->type = JSON_FALSE;
+            json->data = NULL;
 
             break;
 
         case 'n':
             int null = string_to_json_null(input);
-
-            json->data = NULL;
-
             if (null) {
-                json->type = JSON_UNDEFINED;
-            } else {
-                json->type = JSON_NULL;
+                printd("json_parser.c->string_to_json_value(): string_to_json_null() returned %d on input %s\n", null, start);
+
+                goto fail;
             }
+
+            json->type = JSON_NULL;
+            json->data = NULL;
 
             break;
 
@@ -511,12 +586,20 @@ struct json_value *string_to_json_value(char **input) {
             goto out;
 
         default:
+            printd("json_parser.c->string_to_json_value(): undefined JSON type on input %s\n", start);
+
             json->data = NULL;
             json->type = JSON_UNDEFINED;
+
             break;
         }
     }
 
 out:
     return json;
+
+fail:
+    free(json);
+
+    return NULL;
 }

@@ -1,7 +1,8 @@
 #include <stddef.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "../../../include/logging.h"
 
 #include "../../../include/server/utils/json_api.h"
 
@@ -23,7 +24,6 @@ char *json_value_to_string(struct json_value *json_val) { return json_value_to_s
 int destroy_json_string(char *str) {
     int output = 0;
 
-    // TODO: Check for errors
     free(str);
 
     return output;
@@ -32,7 +32,6 @@ int destroy_json_string(char *str) {
 int destroy_json_number(struct json_number *json_num) {
     int output = 0;
 
-    // TODO: Check for errors
     free(json_num);
 
     return output;
@@ -46,22 +45,26 @@ int destroy_json_object(struct json_object *json_obj) {
             continue;
         }
 
-        // TODO: Error checking
         struct json_value *child_value = json_object_get_value(json_obj, json_obj->keys[i]);
+        if (!child_value) {
+            printd("json_api.c->destroy_json_object(): could not find object value at key %s\n", json_obj->keys[i]);
 
-        // TODO: Error checking
+            return -1;
+        }
+
         free(json_obj->keys[i]);
 
         // TODO: Error checking
         output = destroy_json_value(child_value);
+        if (output) {
+            printd("json_api.c->destroy_json_object(): unable to destroy object value at key %s\n", json_obj->keys[i]);
+
+            return output;
+        }
     }
 
-    // TODO: Error checking
     free(json_obj->keys);
-    // TODO: Error checking
     free(json_obj->values);
-
-    // TODO: Error checking
     free(json_obj);
 
     return output;
@@ -72,12 +75,14 @@ int destroy_json_array(struct json_array *json_arr) {
 
     for (int i = 0; i < json_arr->length; ++i) {
         output = destroy_json_value(json_arr->values[i]);
+        if (output) {
+            printd("json_api.c->destroy_json_array(): unable to destroy object value at position %d\n", i);
+
+            return output;
+        }
     }
 
-    // TODO: Error checking
     free(json_arr->values);
-
-    // TODO: Error checking
     free(json_arr);
 
     return output;
@@ -88,18 +93,38 @@ int destroy_json_value(struct json_value *json_val) {
     switch (json_val->type) {
     case JSON_STRING:
         output = destroy_json_string((char *)json_val->data);
+        if (output) {
+            printd("json_api.c->destroy_json_value(): destroy_json_string() returned %d\n", output);
+
+            return output;
+        }
         break;
 
     case JSON_NUMBER:
         output = destroy_json_number((struct json_number *)json_val->data);
+        if (output) {
+            printd("json_api.c->destroy_json_value(): destroy_json_number() returned %d\n", output);
+
+            return output;
+        }
         break;
 
     case JSON_OBJECT:
         output = destroy_json_object((struct json_object *)json_val->data);
+        if (output) {
+            printd("json_api.c->destroy_json_value(): destroy_json_object() returned %d\n", output);
+
+            return output;
+        }
         break;
 
     case JSON_ARRAY:
         output = destroy_json_array((struct json_array *)json_val->data);
+        if (output) {
+            printd("json_api.c->destroy_json_value(): destroy_json_array() returned %d\n", output);
+
+            return output;
+        }
         break;
 
     case JSON_TRUE:
@@ -109,7 +134,8 @@ int destroy_json_value(struct json_value *json_val) {
 
     case JSON_UNDEFINED:
     default:
-        // TODO: Error message with reason for failure
+        printd("json_api.c->destroy_json_value(): JSON value had undefined type\n");
+
         goto out;
     }
 
@@ -144,8 +170,12 @@ struct json_value *create_number_json_value(long long integer, long long fractio
 
     json_val->type = JSON_NUMBER;
 
-    // TODO: Error checking
     struct json_number *json_num = create_json_number();
+    if (!json_num) {
+        printd("json_api.c->create_number_json_value(): create_json_number() returned NULL\n");
+
+        return NULL;
+    }
 
     json_num->type = type;
     json_num->integer = integer;
@@ -174,8 +204,12 @@ struct json_value *create_object_json_value() {
 
     json_val->type = JSON_OBJECT;
 
-    // TODO: Error checking
     json_val->data = create_json_object();
+    if (!json_val->data) {
+        printd("json_api.c->create_object_json_value(): create_json_object() returned NULL\n");
+
+        return NULL;
+    }
 
     return json_val;
 }
@@ -198,11 +232,9 @@ static int json_object_grow(struct json_object **json_obj) {
     (*json_obj)->values = new_values;
     (*json_obj)->num_allocated = new_size;
 
-    // TODO: Return the new number of possible mappings on success, 0 on failure
     return new_size;
 }
 
-// TODO: Hash map the object entries at some point
 int json_object_add_value(struct json_object **json_obj, char *key, struct json_value *json_val) {
     // TODO: Error codes for issues when adding the value
 
@@ -210,13 +242,13 @@ int json_object_add_value(struct json_object **json_obj, char *key, struct json_
         int new_size = json_object_grow(json_obj);
 
         if (new_size == 0) {
-            printf("Grown JSON object had size zero\n");
+            printd("json_api.c->json_object_add_value(): grown JSON object had size zero\n");
 
-            // TODO: Fail
+            return -1;
         } else if (new_size <= (*json_obj)->num_allocated) {
-            printf("Grown JSON object new_size (%d) is the same as or less than the previous size (%d)\n", new_size, (*json_obj)->num_allocated);
+            printd("json_api.c->json_object_add_value(): grown JSON object new_size (%d) is the same as or less than the previous size (%d)\n", new_size, (*json_obj)->num_allocated);
 
-            // TODO: Fail
+            return -1;
         }
     }
 
@@ -232,11 +264,9 @@ int json_object_add_value(struct json_object **json_obj, char *key, struct json_
         ++num_loops;
 
         if (num_loops > (*json_obj)->num_allocated) {
-            // TODO: Maybe grow the database if this is encountered
-            printf("Unable to add value to JSON object, the object didn't grow\n");
+            printd("json_api.c->json_object_add_value(): unable to add value to JSON object, the object didn't grow\n");
 
-            // TODO: Fail
-            break;
+            return -1;
         }
     }
 
@@ -247,9 +277,9 @@ int json_object_add_value(struct json_object **json_obj, char *key, struct json_
     ++((*json_obj)->num_entries);
 
     if ((*json_obj)->num_entries == -1) {
-        printf("Unable to add value to JSON object, it's completely full somehow\n");
+        printd("json_api.c->json_object_add_value(): unable to add value to JSON object, it's completely full somehow\n");
 
-        // TODO: Fail
+        return -1;
     }
 
     return 0;
@@ -257,9 +287,8 @@ int json_object_add_value(struct json_object **json_obj, char *key, struct json_
 
 struct json_value *json_object_get_value(struct json_object *json_obj, char *key) {
     if (json_obj->num_entries == 0) {
-        printf("Unable to find JSON value at %s in object, object was empty\n", key);
+        printd("json_api.c->json_object_get_value(): unable to find json value at %s in object, object was empty\n", key);
 
-        // TODO: Fail
         return NULL;
     }
 
@@ -269,10 +298,9 @@ struct json_value *json_object_get_value(struct json_object *json_obj, char *key
         ++num_loops;
 
         if (num_loops >= json_obj->num_allocated) {
-            printf("Unable to find JSON value at %s in object\n", key);
+            printd("json_api.c->json_object_get_value(): unable to find JSON value at %s in object\n", key);
 
-            // TODO: Fail
-            break;
+            return NULL;
         }
 
         if (index > json_obj->num_allocated - 1) {
@@ -305,9 +333,9 @@ int json_object_remove_value(struct json_object **json_obj, char *key) {
 
         // TODO: Use a threshold value instead of the total size of mappings->num_allocated
         if (num_loops >= (*json_obj)->num_allocated) {
-            printf("Unable to find JSON value at %s in object\n", key);
+            printd("json_api.c->json_object_remove_value(): unable to find JSON value at %s in object\n", key);
 
-            // TODO: Fail
+            return -1;
         }
 
         if (index >= (*json_obj)->num_allocated) {
@@ -352,15 +380,17 @@ struct json_value *create_array_json_value() {
 
     json_val->type = JSON_ARRAY;
 
-    // TODO: Error checking
     json_val->data = create_json_array();
+    if (!json_val->data) {
+        printd("json_api.c->create_array_json_value(): create_json_array() returned NULL\n");
+
+        return NULL;
+    }
 
     return json_val;
 }
 
 int json_array_add_value(struct json_array **json_arr, struct json_value *json_val) {
-    // TODO: Error codes for issues when adding the value
-
     struct json_value **new_values = (struct json_value **)malloc(((*json_arr)->length + 1) * sizeof(struct json_value *));
     memcpy(new_values, (*json_arr)->values, (*json_arr)->length * sizeof(struct json_value *));
 
