@@ -47,6 +47,7 @@ struct json_value *db_initialize(char *name) {
     if (length > 1) {
         json_val = string_to_json_value(&db_buffer);
     }
+
     db_buffer = db_buffer_start;
     free(db_buffer);
 

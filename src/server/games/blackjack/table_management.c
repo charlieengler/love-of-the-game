@@ -442,7 +442,7 @@ char *blackjack_status_update(struct json_value *db_json, char *req) {
 
     struct json_value *table_json = json_object_get_value((struct json_object *)(db_json->data), table_id);
 
-    if (table_json == NULL) {
+    if (!table_json) {
         // TODO: Potentially need to create the table here, although it should already exist
         printf("blackjack error: could not find entry %s in database when starting hand\n", table_id);
 

@@ -1,10 +1,22 @@
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "../../../include/server/utils/json_api.h"
 
 #include "./internal.h"
+
+// Credit: dbj2 by Dan Bernstein
+static uint64_t hash(unsigned char *str) {
+    unsigned long final = 5381;
+    int c;
+
+    while ((c = *str++))
+        final = ((final << 5) + final) + c; // hash * 33 + c
+
+    return final;
+}
 
 char *json_value_to_string(struct json_value *json_val) { return json_value_to_string_helper(json_val, 0); }
 
@@ -118,12 +130,24 @@ struct json_value *create_string_json_value(char *str) {
     return json_val;
 }
 
+struct json_number *create_json_number() {
+    struct json_number *json_num = (struct json_number *)malloc(sizeof(struct json_number));
+
+    json_num->integer = 0;
+    json_num->fraction = 0;
+    json_num->exponent = 0;
+    json_num->type = JSON_UNDEFINED_NUMBER;
+
+    return json_num;
+}
+
 struct json_value *create_number_json_value(long long integer, long long fraction, long long exponent, enum json_number_types type) {
     struct json_value *json_val = (struct json_value *)malloc(sizeof(struct json_value));
 
     json_val->type = JSON_NUMBER;
 
-    struct json_number *json_num = (struct json_number *)malloc(sizeof(struct json_number));
+    // TODO: Error checking
+    struct json_number *json_num = create_json_number();
 
     json_num->type = type;
     json_num->integer = integer;
@@ -135,335 +159,194 @@ struct json_value *create_number_json_value(long long integer, long long fractio
     return json_val;
 }
 
+struct json_object *create_json_object() {
+    struct json_object *json_obj = (struct json_object *)malloc(sizeof(struct json_object));
+
+    json_obj->keys = (char **)calloc(JSON_OBJECT_DEFAULT_ALLOC, sizeof(char *));
+    json_obj->values = (struct json_value **)malloc(JSON_OBJECT_DEFAULT_ALLOC * sizeof(struct json_value *));
+
+    json_obj->num_entries = 0;
+    json_obj->num_allocated = JSON_OBJECT_DEFAULT_ALLOC;
+
+    return json_obj;
+}
+
 struct json_value *create_object_json_value() {
     struct json_value *json_val = (struct json_value *)malloc(sizeof(struct json_value));
 
     json_val->type = JSON_OBJECT;
 
-    struct json_object *json_obj = (struct json_object *)malloc(sizeof(struct json_object));
-
-    json_obj->keys = NULL;
-    json_obj->values = NULL;
-
-    json_obj->num_entries = 0;
-    json_obj->num_allocated = 0;
-
-    json_val->data = json_obj;
+    // TODO: Error checking
+    json_val->data = create_json_object();
 
     return json_val;
+}
+
+static int json_object_grow(struct json_object **json_obj) {
+    int new_size = ((*json_obj)->num_allocated + 1) * JSON_OBJECT_GROW_MULTIPLIER;
+    char **new_keys = (char **)calloc(new_size, sizeof(char *));
+
+    memcpy(new_keys, (*json_obj)->keys, (*json_obj)->num_entries * sizeof(char *));
+
+    free((*json_obj)->keys);
+
+    struct json_value **new_values = (struct json_value **)malloc(new_size * sizeof(struct json_value *));
+
+    memcpy(new_values, (*json_obj)->values, (*json_obj)->num_entries * sizeof(struct json_value *));
+
+    free((*json_obj)->values);
+
+    (*json_obj)->keys = new_keys;
+    (*json_obj)->values = new_values;
+    (*json_obj)->num_allocated = new_size;
+
+    // TODO: Return the new number of possible mappings on success, 0 on failure
+    return new_size;
 }
 
 // TODO: Hash map the object entries at some point
 int json_object_add_value(struct json_object **json_obj, char *key, struct json_value *json_val) {
     // TODO: Error codes for issues when adding the value
 
-    char **new_keys = (char **)malloc(((*json_obj)->num_allocated + 1) * sizeof(char *));
-    memcpy(new_keys, (*json_obj)->keys, (*json_obj)->num_allocated * sizeof(char *));
-
-    free((*json_obj)->keys);
-
-    (*json_obj)->keys = new_keys;
-
-    (*json_obj)->keys[(*json_obj)->num_allocated] = key;
-
-    struct json_value **new_values = (struct json_value **)malloc(((*json_obj)->num_allocated + 1) * sizeof(struct json_value *));
-    memcpy(new_values, (*json_obj)->values, (*json_obj)->num_allocated * sizeof(char *));
-
-    free((*json_obj)->values);
-
-    (*json_obj)->values = new_values;
-
-    (*json_obj)->values[(*json_obj)->num_allocated] = json_val;
-
-    ++((*json_obj)->num_allocated);
-    ++((*json_obj)->num_entries);
-
-    return 0;
-}
-
-/*
-// Credit: dbj2 by Dan Bernstein
-uint64_t hash(unsigned char *str) {
-    unsigned long final = 5381;
-    int c;
-
-    while ((c = *str++))
-        final = ((final << 5) + final) + c; // hash * 33 + c
-
-    return final;
-}
-
-uint64_t db_grow(struct database_mappings **mappings) {
-    uint64_t new_size = (*mappings)->num_allocated * DB_GROW_MULTIPLIER;
-    char **new_keys = (char **)calloc(new_size, sizeof(char *));
-    struct database_entry **new_entries = (struct database_entry **)calloc(new_size, sizeof(struct database_entry *));
-
-    struct database_mappings *new_mappings = (struct database_mappings *)malloc(sizeof(struct database_mappings));
-
-    new_mappings->num_keys = (*mappings)->num_keys;
-    new_mappings->num_entries = (*mappings)->num_entries;
-    new_mappings->num_allocated = new_size;
-    new_mappings->keys = new_keys;
-    new_mappings->entries = new_entries;
-
-    for (uint64_t i = 0; i < (*mappings)->num_keys; i++) {
-        struct database_entry *old_entry = (*mappings)->entries[i];
-        if (strcmp(old_entry->key, (*mappings)->keys[i]) != 0) {
-            printf("db grow error: key and entry do not match\n");
-            return 0;
-        }
-
-        db_insert(new_mappings, old_entry);
-    }
-
-    free(*mappings);
-    *mappings = new_mappings;
-
-    // TODO: Return the new number of possible mappings on success, 0 on failure
-    return new_size;
-}
-
-int db_insert(struct database_mappings *mappings, struct database_entry *new_entry) {
-    if (mappings->num_keys != mappings->num_entries) {
-        // TODO: Error checking on the following function
-        db_repair(mappings);
-    }
-
-    if (mappings->num_keys == mappings->num_allocated) {
-        // TODO: The grow function causes issues
-        uint64_t new_size = db_grow(&mappings);
+    if ((*json_obj)->num_entries == (*json_obj)->num_allocated) {
+        int new_size = json_object_grow(json_obj);
 
         if (new_size == 0) {
-            printf("db grow error: new_size == 0\n");
-            return -1;
-        } else if (new_size <= mappings->num_allocated) {
-            printf("db grow error: new_size (%ld) is the same as or less than the previous size\n", new_size);
-            return -1;
+            printf("Grown JSON object had size zero\n");
+
+            // TODO: Fail
+        } else if (new_size <= (*json_obj)->num_allocated) {
+            printf("Grown JSON object new_size (%d) is the same as or less than the previous size (%d)\n", new_size, (*json_obj)->num_allocated);
+
+            // TODO: Fail
         }
     }
 
-    mappings->num_keys++;
-    mappings->num_entries++;
+    int index = hash((unsigned char *)key) % (*json_obj)->num_allocated;
+    int num_loops = 0;
+    while ((*json_obj)->keys[index]) {
+        if (index < (*json_obj)->num_allocated - 1) {
+            ++index;
+        } else {
+            index = 0;
+        }
 
-    uint64_t index = hash((unsigned char *)new_entry->key) % mappings->num_allocated;
-    uint64_t num_loops = 0;
-    while (mappings->keys[index]) {
-        index++;
-        num_loops++;
+        ++num_loops;
 
-        if (num_loops > mappings->num_allocated) {
+        if (num_loops > (*json_obj)->num_allocated) {
             // TODO: Maybe grow the database if this is encountered
-            printf("db insert error: database is full, but didn't grow\n");
-            return -1;
+            printf("Unable to add value to JSON object, the object didn't grow\n");
+
+            // TODO: Fail
+            break;
         }
     }
 
-    mappings->keys[index] = new_entry->key;
-    mappings->entries[index] = new_entry;
+    (*json_obj)->keys[index] = (char *)calloc(strlen(key) + 1, sizeof(char));
+    strcpy((*json_obj)->keys[index], key);
+    (*json_obj)->values[index] = json_val;
 
-    if (mappings->num_keys == (uint64_t)(-1) || mappings->num_entries == (uint64_t)(-1)) {
-        printf("db insert error: database is absolutely full somehow\n");
-        return -1;
+    ++((*json_obj)->num_entries);
+
+    if ((*json_obj)->num_entries == -1) {
+        printf("Unable to add value to JSON object, it's completely full somehow\n");
+
+        // TODO: Fail
     }
 
-    // TODO: Return 0 on success, something else otherwise
     return 0;
 }
 
-struct database_entry *db_find(struct database_mappings *mappings, char *key) {
-    if (mappings->num_keys != mappings->num_entries)
-        // TODO: Error checking on the following function
-        db_repair(mappings);
-
-    if (mappings->num_keys == 0) {
-        printf("db find error: no keys in db\n");
-        return NULL;
-    }
-
-    if (mappings->num_entries == 0) {
-        printf("db find error: no entries in db\n");
-        return NULL;
-    }
-
-    unsigned long index = hash((unsigned char *)key) % mappings->num_allocated;
-    uint64_t num_loops = 0;
-    char found_entry = 0;
-    while (1) {
-        ++num_loops;
-
-        // TODO: Use a threshold value instead of the total size of mappings->num_allocated
-        if (num_loops >= mappings->num_allocated) {
-            // TODO: Maybe grow the database if this is encountered
-            printf("db find error: could not find the given key %s\n", key);
-            return NULL;
-        }
-
-        if (index >= mappings->num_allocated) {
-            index = 0;
-        }
-
-        if (!mappings->keys[index]) {
-            ++index;
-
-            continue;
-        }
-
-        if (strcmp(mappings->keys[index], key) == 0) {
-            found_entry = 1;
-
-            break;
-        }
-
-        ++index;
-    }
-
-    if (!found_entry) {
-        return NULL;
-    }
-
-    return mappings->entries[index];
-}
-
-int db_remove(struct database_mappings *mappings, struct database_entry *old_entry) {
-    if (mappings->num_keys != mappings->num_entries) {
-        // TODO: Error checking on the following function
-        db_repair(mappings);
-    }
-
-    if (mappings->num_keys == 0) {
-        printf("db remove error: no keys in db\n");
-        return DB_REMOVE_NO_KEYS;
-    }
-
-    if (mappings->num_entries == 0) {
-        printf("db remove error: no entries in db\n");
-        return DB_REMOVE_NO_ENTRIES;
-    }
-
-    switch (old_entry->type) {
-    case DB_STRING:
-        free((old_entry->data_ptr));
-        break;
-
-    case DB_JSON:
-        // TODO: Implement me
-        break;
-
-    case DB_INTEGER:
-        // TODO: Implement me
-        break;
-
-    case DB_FLOAT:
-        // TODO: Implement me
-        break;
-
-    case DB_UNDEFINED:
-    default:
-        printf("db remove error: undefined entry type\n");
-        // TODO: Maybe handle this better
-        free(old_entry->data_ptr);
-    }
-
-    unsigned long index = hash((unsigned char *)old_entry->key) % mappings->num_allocated;
-    uint64_t num_loops = 0;
-    while (1) {
-        ++num_loops;
-
-        // TODO: Use a threshold value instead of the total size of mappings->num_allocated
-        if (num_loops >= mappings->num_allocated) {
-            printf("db remove error: could not find the given key %s\n", old_entry->key);
-            return DB_REMOVE_NOT_FOUND;
-        }
-
-        if (index >= mappings->num_allocated) {
-            index = 0;
-        }
-
-        if (!mappings->keys[index]) {
-            ++index;
-
-            continue;
-        }
-
-        if (strcmp(mappings->keys[index], old_entry->key) == 0) {
-            free(mappings->keys[index]);
-            mappings->keys[index] = NULL;
-            free(mappings->entries[index]);
-            mappings->entries[index] = NULL;
-            mappings->num_keys--;
-            mappings->num_entries--;
-
-            break;
-        }
-
-        ++index;
-    }
-
-    return DB_REMOVE_SUCCESS;
-}
-*/
-
 struct json_value *json_object_get_value(struct json_object *json_obj, char *key) {
-    // TODO: Update me when a hash map is used instead
-    for (int i = 0; i < json_obj->num_entries; ++i) {
-        if (!strcmp(json_obj->keys[i], key)) {
-            return json_obj->values[i];
-        }
+    if (json_obj->num_entries == 0) {
+        printf("Unable to find JSON value at %s in object, object was empty\n", key);
+
+        // TODO: Fail
+        return NULL;
     }
 
-    // TODO: Print an error
+    int index = hash((unsigned char *)key) % json_obj->num_allocated;
+    int num_loops = 0;
+    while (1) {
+        ++num_loops;
+
+        if (num_loops >= json_obj->num_allocated) {
+            printf("Unable to find JSON value at %s in object\n", key);
+
+            // TODO: Fail
+            break;
+        }
+
+        if (index > json_obj->num_allocated - 1) {
+            index = 0;
+        }
+
+        if (!json_obj->keys[index]) {
+            ++index;
+
+            continue;
+        }
+
+        if (strcmp(json_obj->keys[index], key) == 0) {
+            return json_obj->values[index];
+        }
+
+        ++index;
+    }
+
     return NULL;
 }
 
 int json_object_remove_value(struct json_object **json_obj, char *key) {
     // TODO: Error codes for issues when removing the value
 
-    struct json_value *json_val = json_object_get_value(*json_obj, key);
-    if (!json_val) {
-        // TODO: Print an error
-        return -1;
-    }
+    int index = hash((unsigned char *)key) % (*json_obj)->num_allocated;
+    int num_loops = 0;
+    while (1) {
+        ++num_loops;
 
-    --((*json_obj)->num_allocated);
+        // TODO: Use a threshold value instead of the total size of mappings->num_allocated
+        if (num_loops >= (*json_obj)->num_allocated) {
+            printf("Unable to find JSON value at %s in object\n", key);
 
-    int removal_index = -1;
+            // TODO: Fail
+        }
 
-    char **new_keys = (char **)malloc((*json_obj)->num_allocated * sizeof(char *));
-    int index = 0;
-    for (int i = 0; i < (*json_obj)->num_entries; ++i) {
-        if (!strcmp(key, (*json_obj)->keys[i])) {
-            removal_index = i;
+        if (index >= (*json_obj)->num_allocated) {
+            index = 0;
+        }
+
+        if (!(*json_obj)->keys[index]) {
+            ++index;
+
             continue;
         }
 
-        new_keys[index] = (*json_obj)->keys[i];
+        if (strcmp((*json_obj)->keys[index], key) == 0) {
+            free((*json_obj)->keys[index]);
+            (*json_obj)->keys[index] = NULL;
 
-        ++index;
-    }
+            free((*json_obj)->values[index]);
+            (*json_obj)->values[index] = NULL;
 
-    free((*json_obj)->keys);
+            --((*json_obj)->num_entries);
 
-    (*json_obj)->keys = new_keys;
-
-    struct json_value **new_values = (struct json_value **)malloc((*json_obj)->num_allocated * sizeof(struct json_value *));
-    index = 0;
-    for (int i = 0; i < (*json_obj)->num_entries; ++i) {
-        if (i == removal_index) {
-            continue;
+            break;
         }
 
-        new_values[index] = (*json_obj)->values[i];
-
         ++index;
     }
-
-    free((*json_obj)->values);
-
-    (*json_obj)->values = new_values;
-
-    --((*json_obj)->num_entries);
 
     return 0;
+}
+
+struct json_array *create_json_array() {
+    struct json_array *json_arr = (struct json_array *)malloc(sizeof(struct json_array));
+
+    json_arr->values = NULL;
+    json_arr->length = 0;
+
+    return json_arr;
 }
 
 struct json_value *create_array_json_value() {
@@ -471,13 +354,8 @@ struct json_value *create_array_json_value() {
 
     json_val->type = JSON_ARRAY;
 
-    struct json_array *json_arr = (struct json_array *)malloc(sizeof(struct json_array));
-
-    json_arr->values = NULL;
-
-    json_arr->length = 0;
-
-    json_val->data = json_arr;
+    // TODO: Error checking
+    json_val->data = create_json_array();
 
     return json_val;
 }

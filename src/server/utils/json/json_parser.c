@@ -1,5 +1,8 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "./internal.h"
 
 #include "../../../include/server/utils/json_api.h"
 
@@ -34,11 +37,8 @@ int string_to_json_null(char **input) {
 }
 
 struct json_number *string_to_json_number(char **input) {
-    struct json_number *json_num = (struct json_number *)malloc(sizeof(struct json_number));
-    json_num->integer = 0;
-    json_num->fraction = 0;
-    json_num->exponent = 0;
-    json_num->type = JSON_UNDEFINED_NUMBER;
+    // TODO: Error checking
+    struct json_number *json_num = create_json_number();
 
     char sign = 1;
     char is_integer = 1;
@@ -264,9 +264,8 @@ fail:
 }
 
 struct json_array *string_to_json_array(char **input) {
-    struct json_array *json_arr = (struct json_array *)malloc(sizeof(struct json_array));
-    json_arr->values = NULL;
-    json_arr->length = 0;
+    // TODO: Error checking
+    struct json_array *json_arr = create_json_array();
 
     if (**input != '[') {
         // TODO: Print an error for reason of failure
@@ -318,11 +317,8 @@ fail:
 }
 
 struct json_object *string_to_json_object(char **input) {
-    struct json_object *json_obj = (struct json_object *)malloc(sizeof(struct json_object));
-    json_obj->keys = NULL;
-    json_obj->values = NULL;
-    json_obj->num_allocated = 0;
-    json_obj->num_entries = 0;
+    // TODO: Error checking
+    struct json_object *json_obj = create_json_object();
 
     if (**input != '{') {
         // TODO: Print an error for reason of failure

@@ -81,7 +81,14 @@ char *json_object_to_string(struct json_object *json_obj, int depth) {
         goto out;
     }
 
-    for (int i = 0; i < json_obj->num_entries; ++i) {
+    int total_entries = 0;
+    for (int i = 0; i < json_obj->num_allocated; ++i) {
+        if (!json_obj->keys[i]) {
+            continue;
+        }
+
+        ++total_entries;
+
         append_out = append_str(&str, "\n", &total_length, &alloc_size);
         if (append_out) {
 #ifdef DEBUG
@@ -156,7 +163,7 @@ char *json_object_to_string(struct json_object *json_obj, int depth) {
             goto fail;
         }
 
-        if (i + 1 < json_obj->num_entries) {
+        if (total_entries < json_obj->num_entries) {
             append_out = append_str(&str, ",", &total_length, &alloc_size);
             if (append_out) {
 #ifdef DEBUG
