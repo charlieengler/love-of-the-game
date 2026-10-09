@@ -7,7 +7,7 @@
 #include "../../../include/server/games/common/cards.h"
 
 #include "../../../include/server/database/database.h"
-#include "../../../include/server/utils/json_api.h"
+#include "../../../include/server/utils/json.h"
 
 const int card_values[13] = {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10};
 

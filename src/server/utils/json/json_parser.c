@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -6,7 +5,7 @@
 
 #include "../../../include/logging.h"
 
-#include "../../../include/server/utils/json_api.h"
+#include "../../../include/server/utils/json.h"
 
 int string_to_json_true(char **input) {
     char *start = *input;

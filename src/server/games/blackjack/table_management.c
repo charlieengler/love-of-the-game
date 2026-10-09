@@ -7,7 +7,7 @@
 #include "../../../include/server/games/blackjack/blackjack.h"
 
 #include "../../../include/server/database/database.h"
-#include "../../../include/server/utils/json_api.h"
+#include "../../../include/server/utils/json.h"
 
 char *generate_card_count_str(int num_users, int *user_hand_counts) {
     char *card_count_str = (char *)malloc((num_users * 3 + 1) * sizeof(char));

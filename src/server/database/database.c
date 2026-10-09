@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "../../include/server/database/database.h"
-#include "../../include/server/utils/json_api.h"
+#include "../../include/server/utils/json.h"
 // TODO: The contents of the database should be stored in memory, but saved to disk constantly on a separate thread
 // TODO: Database calls should be asynchronous and realistically contained within a new process
 

@@ -5,7 +5,7 @@
 #include "tests.h"
 
 #include "../include/server/database/database.h"
-#include "../include/server/utils/json_api.h"
+// #include "../include/server/utils/json_api.h"
 
 // TODO: Convert me
 // static int test_db_initialize_no_file() {

@@ -1,11 +1,10 @@
-#include <stdio.h>
 #include <string.h>
 
 #include "internal.h"
 
 #include "../../../include/server/games/blackjack/blackjack.h"
 
-#include "../../../include/server/utils/json_api.h"
+#include "../../../include/server/utils/json.h"
 
 char *blackjack_place_bet(struct json_value *db_json, char *req) {
     if (db_json->type != JSON_OBJECT) {

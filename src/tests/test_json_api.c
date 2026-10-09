@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../include/server/utils/json_api.h"
+#include "../include/server/utils/json.h"
 #include "tests.h"
 
 static int test_json_value_to_string_1() {

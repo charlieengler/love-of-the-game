@@ -3,7 +3,7 @@
 
 #include "internal.h"
 
-#include "../../../include/server/utils/json_api.h"
+#include "../../../include/server/utils/json.h"
 
 char *blackjack_join_table(struct json_value *db_json, char *req) {
     if (db_json->type != JSON_OBJECT) {
