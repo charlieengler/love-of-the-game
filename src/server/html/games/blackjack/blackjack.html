@@ -7,27 +7,26 @@
     <script src="../../network.js" type="text/javascript"></script>
     <script src="../common/cards.js" type="text/javascript"></script>
 
-    <script src="./card_management.js" type="text/javascript"></script>
     <script src="./hand_management.js" type="text/javascript"></script>
     <script src="./table_management.js" type="text/javascript"></script>
     <script src="./user_management.js" type="text/javascript"></script>
 
-    <script>
-
-    </script>
+    <link rel="stylesheet" href="./blackjack.css">
 </head>
 
-<body style="background-color: black; color: white;">
-    <input id="user-id-input" placeholder="User ID" />
-    <input id="table-id-input" placeholder="Table ID" />
-    <button onclick="joinTable()">Join Table</button>
-    <input id="bet-value-input" placeholder="Bet" type="number" />
-    <button onclick="placeBet()">Place Bet</button>
+<body style="background-color: #222; color: white;">
+    <div class="setup" id="setup-window">
+        <h1>Get Started</h1>
+        <div style="text-align: left;">
+            <input class="setup-input" id="user-id-input" placeholder="User ID" />
+            <input class="setup-input" id="table-id-input" placeholder="Table ID" />
+            <button class="setup-button" id="join-table-button" onclick="joinTable()">Join Table</button>
+            <input class="setup-input" id="bet-value-input" placeholder="Bet" type="number" />
+            <button class="setup-button" id="place-bet-button" onclick="placeBet()">Place Bet</button>
+        </div>
+    </div>
 
-    <button id="progress-hand" onclick="progressHand()">Start Hand</button>
-
-    <button disabled id="hit-button" onclick="hit()">Hit</button>
-    <button disabled id="stand-button" onclick="stand()">Stand</button>
+    <button class="start-hand-button" id="progress-hand" onclick="progressHand()">Start Hand</button>
 
     <br />
 
@@ -42,8 +41,8 @@
 
     <br />
     <br />
-    <div id="dealer-card-table"></div>
-    <div id="user-card-table"></div>
+    <div class="dealer-card-table" id="dealer-card-table"></div>
+    <div class="user-card-table" id="user-card-table"></div>
 </body>
 
 </html>

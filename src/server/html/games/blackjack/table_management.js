@@ -12,5 +12,9 @@ const joinTable = async () => {
     document.getElementById("table-id").innerText = res.tableID;
     document.getElementById("user-id").innerText = res.userID;
 
+    document.getElementById("user-id-input").style.display = "none";
+    document.getElementById("table-id-input").style.display = "none";
+    document.getElementById("join-table-button").style.display = "none";
+
     statusCheck();
 }

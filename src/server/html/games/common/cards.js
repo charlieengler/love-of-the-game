@@ -217,7 +217,7 @@ const cards = [
     },
 ];
 
-const generateCardGraphic = (card, slot) => {
+const generateCardGraphic = (card, parent) => {
     const cardContainer = document.createElement("div");
     cardContainer.style = "border:1px solid white; display:inline-block; height:150px; position:relative; width:100px;";
 
@@ -234,7 +234,5 @@ const generateCardGraphic = (card, slot) => {
     cardGraphic.style = "bottom:0; position:absolute; right:0;"
     cardContainer.appendChild(cardGraphic);
 
-    const cardSlot = document.getElementById(slot);
-
-    cardSlot.appendChild(cardContainer);
+    parent.appendChild(cardContainer);
 }
