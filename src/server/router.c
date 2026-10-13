@@ -59,12 +59,18 @@ int route_get(char *trimmed_path, char *full_path, int new_fd, char **send_buffe
 
     const char *text_str = "Content-Type: text/";
     int type_offset = split_string(trimmed_path, '.') + 1;
-    int type_length = strlen(&trimmed_path[type_offset]);
+
+    char *type = &trimmed_path[type_offset];
+    if (!strcmp(type, "js")) {
+        type = "javascript";
+    }
+
+    int type_length = strlen(type);
     const char *end_str = "; charset=UTF-8\r\n";
 
     *content_type = (char *)malloc(strlen(text_str) + type_length + strlen(end_str) + 1);
     strcpy(*content_type, text_str);
-    strcat(*content_type, &trimmed_path[type_offset]);
+    strcat(*content_type, type);
     strcat(*content_type, end_str);
     (*content_type)[strlen(text_str) + type_length + strlen(end_str)] = '\0';
 
