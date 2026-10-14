@@ -169,9 +169,8 @@ char *char_array_to_csv(char **array, int num_entries) {
     return csv;
 }
 
-int append_str(char **target, char *addition, int *current_size, int *allocated_size) {
-    int addition_size = strlen(addition) + 1;
-    int difference = *allocated_size - *current_size;
+int grow_str(char **target, int addition_size, int current_size, int *allocated_size) {
+    int difference = *allocated_size - current_size;
 
     if (addition_size > difference) {
         *allocated_size += addition_size * 1.5;
@@ -183,6 +182,18 @@ int append_str(char **target, char *addition, int *current_size, int *allocated_
         free(*target);
 
         *target = new_str;
+    }
+
+    return 0;
+}
+
+int append_str(char **target, char *addition, int *current_size, int *allocated_size) {
+    int addition_size = strlen(addition) + 1;
+
+    if (grow_str(target, addition_size, *current_size, allocated_size)) {
+        printf("strings.c->append_str(): Unable to grow string\n");
+
+        return -1;
     }
 
     // TODO: If the string is supposed to be empty (current_size == 0), then this relies on nothing being resident in memory

@@ -1,3 +1,5 @@
+#include <errno.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -6,6 +8,7 @@
 #include "../../../include/logging.h"
 
 #include "../../../include/server/utils/json.h"
+#include "../../../include/server/utils/strings.h"
 
 int string_to_json_true(char **input) {
     char *start = *input;
@@ -70,12 +73,13 @@ struct json_number *string_to_json_number(char **input) {
         ++(*input);
     }
 
-    // TODO: These allocations could get huge fast depending on the input size of the JSON string
-    char *integer_str = (char *)malloc((strlen(*input) + 1) * sizeof(char));
+    const int long_long_max = 20;
+
+    char *integer_str = (char *)malloc((long_long_max + 1) * sizeof(char));
     int int_i = 0;
-    char *fraction_str = (char *)malloc((strlen(*input) + 1) * sizeof(char));
+    char *fraction_str = (char *)malloc((long_long_max + 1) * sizeof(char));
     int frac_i = 0;
-    char *exponent_str = (char *)malloc((strlen(*input) + 1) * sizeof(char));
+    char *exponent_str = (char *)malloc((long_long_max + 1) * sizeof(char));
     int exp_i = 0;
     while (**input) {
         switch (**input) {
@@ -196,12 +200,50 @@ out:
     fraction_str[frac_i] = '\0';
     exponent_str[exp_i] = '\0';
 
-    // TODO: Error checking
-    json_num->integer = atoi(integer_str) * sign;
-    // TODO: Error checking
-    json_num->fraction = atoi(fraction_str) * sign;
-    // TODO: Error checking
-    json_num->exponent = atoi(exponent_str) * exponent_sign;
+    char *i;
+    char *f;
+    char *e;
+
+    errno = 0;
+
+    json_num->integer = strtoll(integer_str, &i, 0) * sign;
+    if ((errno == ERANGE && (json_num->integer == LONG_MAX || json_num->integer == LONG_MIN)) || (errno != 0 && json_num->integer == 0)) {
+        printf("json_parser.c->string_to_json_number(): strtoll() conversion for integer field was out of range on integer_str %s\n", integer_str);
+
+        goto fail;
+    }
+
+    if (i == integer_str && int_i > 0) {
+        printf("json_parser.c->string_to_json_number(): strtoll() conversion for integer field failed to find digits on integer_str %s\n", integer_str);
+
+        goto fail;
+    }
+
+    json_num->fraction = strtoll(fraction_str, &f, 0) * sign;
+    if ((errno == ERANGE && (json_num->fraction == LONG_MAX || json_num->fraction == LONG_MIN)) || (errno != 0 && json_num->fraction == 0)) {
+        printf("json_parser.c->string_to_json_number(): strtoll() conversion for fraction field was out of range on fraction_str %s\n", fraction_str);
+
+        goto fail;
+    }
+
+    if (f == fraction_str && frac_i > 0) {
+        printf("json_parser.c->string_to_json_number(): strtoll() conversion for fraction field failed to find digits on fraction_str %s\n", fraction_str);
+
+        goto fail;
+    }
+
+    json_num->exponent = strtoll(exponent_str, &e, 0) * exponent_sign;
+    if ((errno == ERANGE && (json_num->exponent == LONG_MAX || json_num->exponent == LONG_MIN)) || (errno != 0 && json_num->exponent == 0)) {
+        printf("json_parser.c->string_to_json_number(): strtoll() conversion for exponent field was out of range on exponent_str %s\n", exponent_str);
+
+        goto fail;
+    }
+
+    if (e == exponent_str && exp_i > 0) {
+        printf("json_parser.c->string_to_json_number(): strtoll() conversion for exponent field failed to find digits on exponent_str %s\n", exponent_str);
+
+        goto fail;
+    }
 
     free(integer_str);
     free(fraction_str);
@@ -233,8 +275,8 @@ fail:
 char *string_to_json_string(char **input) {
     char *start = *input;
 
-    // TODO: This allocation could get huge depending on the size of the input JSON string
-    char *json_str = (char *)malloc((strlen(*input) + 1) * sizeof(char));
+    int allocation_size = 10;
+    char *json_str = (char *)calloc(allocation_size, sizeof(char));
 
     if (**input != '"') {
         printd("json_parser.c->string_to_json_string(): JSON string started without quotes on input %s\n", start);
@@ -256,6 +298,14 @@ char *string_to_json_string(char **input) {
             goto out;
 
         default:
+            if (i >= allocation_size) {
+                if (grow_str(&json_str, 1, i, &allocation_size)) {
+                    printf("json_parser.c->string_to_json_string(): Unable to grow string on input %s\n", start);
+
+                    goto fail;
+                }
+            }
+
             json_str[i] = **input;
             ++(*input);
             break;
@@ -359,7 +409,6 @@ fail:
 struct json_object *string_to_json_object(char **input) {
     char *start = *input;
 
-    // TODO: Error checking
     struct json_object *json_obj = create_json_object();
     if (!json_obj) {
         printd("json_parser.c->string_to_json_object(): create_json_object() returned NULL\n");
@@ -422,7 +471,6 @@ struct json_object *string_to_json_object(char **input) {
                     current_key = str;
                 }
             } else {
-                // TODO: Maybe error check string_to_json_value, maybe handle it in json_object_add_value
                 struct json_value *json_val = string_to_json_value(&(*input));
                 if (!json_val) {
                     printd("json_parser.c->string_to_json_object(): string_to_json_value() returned NULL on input %s\n", start);

@@ -54,7 +54,6 @@ int destroy_json_object(struct json_object *json_obj) {
 
         free(json_obj->keys[i]);
 
-        // TODO: Error checking
         output = destroy_json_value(child_value);
         if (output) {
             printd("json_api.c->destroy_json_object(): unable to destroy object value at key %s\n", json_obj->keys[i]);
@@ -250,8 +249,6 @@ static int json_object_grow(struct json_object **json_obj) {
 }
 
 int json_object_add_value(struct json_object **json_obj, char *key, struct json_value *json_val, void **output_data, enum json_value_types expected_data_type) {
-    // TODO: Error codes for issues when adding the value
-
     if ((*json_obj)->num_entries == (*json_obj)->num_allocated) {
         int new_size = json_object_grow(json_obj);
 
@@ -358,14 +355,11 @@ struct json_value *json_object_get_value(struct json_object *json_obj, char *key
 }
 
 int json_object_remove_value(struct json_object **json_obj, char *key) {
-    // TODO: Error codes for issues when removing the value
-
     int index = hash((unsigned char *)key) % (*json_obj)->num_allocated;
     int num_loops = 0;
     while (1) {
         ++num_loops;
 
-        // TODO: Use a threshold value instead of the total size of mappings->num_allocated
         if (num_loops >= (*json_obj)->num_allocated) {
             printd("json_api.c->json_object_remove_value(): unable to find JSON value at %s in object\n", key);
 

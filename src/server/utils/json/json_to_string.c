@@ -24,31 +24,21 @@ char *json_string_to_string(char *json_str) {
 }
 
 char *json_number_to_string(struct json_number *json_num) {
-    // TODO: Support long long data type, not just int via int_num_places
+    const int long_long_max = 20;
 
-    int int_places = int_num_places(json_num->integer);
-    int fraction_places = int_num_places(json_num->fraction);
-    int exponent_places = int_num_places(json_num->exponent);
-
-    char *output = (char *)calloc((int_places + fraction_places + exponent_places + 3), sizeof(char));
+    char *output = (char *)calloc((long_long_max * 3 + 3), sizeof(char));
 
     switch (json_num->type) {
     case JSON_INTEGER:
         sprintf(output, "%lld", json_num->integer);
-
-        output[int_places] = '\0';
         break;
 
     case JSON_FRACTION:
         sprintf(output, "%lld.%lld", json_num->integer, json_num->fraction);
-
-        output[int_places + fraction_places + 1] = '\0';
         break;
 
     case JSON_EXPONENTIAL:
         sprintf(output, "%lld.%llde%lld", json_num->integer, json_num->fraction, json_num->exponent);
-
-        output[int_places + fraction_places + exponent_places + 2] = '\0';
         break;
 
     case JSON_UNDEFINED_NUMBER:
@@ -315,7 +305,6 @@ char *json_value_to_string_helper(struct json_value *json_val, int depth) {
     int alloc_size = 100;
     char *str = (char *)calloc(alloc_size, sizeof(char *));
 
-    // TODO: Destroy the JSON related structs as they are added to the string, or destroy the whole value at the end of the function call
     char *output = NULL;
     switch (json_val->type) {
     case JSON_STRING:
