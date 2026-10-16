@@ -47,6 +47,8 @@ static int split_string(char *input, char delimiter) {
     return -1;
 }
 
+// TODO: This function fails when the name of the HTML file is longer than some amount of characters
+//       (auth.html works, authenticate.html does not)
 struct header parse_header(char *raw_header) {
     struct header return_header;
     return_header.method = "UNDEFINED";

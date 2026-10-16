@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Login</title>
+
+    <script src="../../network.js" type="text/javascript"></script>
+    <script src="./authenticate.js" type="text/javascript"></script>
+</head>
+
+<body style="background-color: #222; color: white;">
+    <div id="login-form">
+        <input id="login-username-input" placeholder="Username" type="text" />
+        <input id="login-password-input" placeholder="Password" style="display: none;" type="password" />
+        <button id="find-button" onclick="find()">-></button>
+        <button id="login-button" onclick="login()" style="display: none;">Log In</button>
+    </div>
+
+    <div id="signup-form" style="display: none;">
+        <input id="signup-username-input" placeholder="Username" type="text" />
+        <input id="signup-password-input" placeholder="Password" type="password" />
+        <button id="signup-button" onclick="signup()">Sign Up</button>
+    </div>
+</body>
+
+</html>

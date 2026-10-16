@@ -47,7 +47,7 @@ char *route_game(char *path, char *data) {
         return res;
     }
 
-    const char *header_const = "{\"error\":\"Unknown game\"}";
+    const char *header_const = "{\"error\":\"Unknown game route\"}";
     char *return_header = (char *)calloc(strlen(header_const) + 1, sizeof(char));
     strcpy(return_header, header_const);
 

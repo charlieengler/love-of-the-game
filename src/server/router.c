@@ -6,6 +6,7 @@
 #include "../include/router.h"
 
 #include "../include/server/games/games.h"
+#include "../include/server/users/users.h"
 
 #include "../include/server/utils/server_errors.h"
 
@@ -81,6 +82,10 @@ int route_post(char *path, char *data, char **send_buffer) {
     char *route = NULL;
     if ((route = strstr(path, "routes/games/")) != NULL) {
         *send_buffer = route_game(route + strlen("routes/games/"), data);
+
+        return 0;
+    } else if ((route = strstr(path, "routes/users/")) != NULL) {
+        *send_buffer = route_users(route + strlen("routes/users/"), data);
 
         return 0;
     }
