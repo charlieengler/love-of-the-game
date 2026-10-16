@@ -168,7 +168,6 @@ int run_server(int sockfd) {
             free(content_type);
         }
         free(response_length);
-        // TODO: This causes an invalid next size for some reason
         free(send_buffer);
 
         long total_send_size = 0;
@@ -185,7 +184,8 @@ int run_server(int sockfd) {
 
         // printf("Sent %ld bytes\n", total_send_size);
 
-        delete_header(&recv_header);
+        // TODO: When logging in user, causes corrupted size vs. prev_size error
+        // delete_header(&recv_header);
         free(buf);
         free(find_path);
         free(response_buffer);

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "../../include/server/users/authenticate.h"
 
@@ -87,6 +88,35 @@ char *login_user(struct json_value *db_json, char *req) {
     // TODO: Error checking
     json_object_add_value(&user_object, "logged_in", create_true_json_value(), NULL, JSON_TRUE);
 
+    // TODO: Error checking
+    json_object_remove_value(&user_object, "last_login");
+
+    struct json_object *last_login_object;
+    // TODO: Error checking
+    struct json_value *last_login_json = create_object_json_value(&last_login_object);
+
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+
+    // TODO: Error checking on all of these
+    struct json_value *year_json = create_number_json_value(NULL, t->tm_year + 1900, 0, 0, JSON_INTEGER);
+    struct json_value *month_json = create_number_json_value(NULL, t->tm_mon + 1, 0, 0, JSON_INTEGER);
+    struct json_value *day_json = create_number_json_value(NULL, t->tm_mday, 0, 0, JSON_INTEGER);
+    struct json_value *hour_json = create_number_json_value(NULL, t->tm_hour, 0, 0, JSON_INTEGER);
+    struct json_value *minute_json = create_number_json_value(NULL, t->tm_min, 0, 0, JSON_INTEGER);
+    struct json_value *second_json = create_number_json_value(NULL, t->tm_sec, 0, 0, JSON_INTEGER);
+
+    // TODO: Error checking on all of these
+    json_object_add_value(&last_login_object, "year", year_json, NULL, JSON_NUMBER);
+    json_object_add_value(&last_login_object, "month", month_json, NULL, JSON_NUMBER);
+    json_object_add_value(&last_login_object, "day", day_json, NULL, JSON_NUMBER);
+    json_object_add_value(&last_login_object, "hour", hour_json, NULL, JSON_NUMBER);
+    json_object_add_value(&last_login_object, "minute", minute_json, NULL, JSON_NUMBER);
+    json_object_add_value(&last_login_object, "second", second_json, NULL, JSON_NUMBER);
+
+    // TODO: error checking
+    json_object_add_value(&user_object, "last_login", last_login_json, NULL, JSON_OBJECT);
+
     // TODO: Return value
     char *res = json_value_to_string(user_json);
 
@@ -132,6 +162,49 @@ char *create_user(struct json_value *db_json, char *req) {
 
     json_object_add_value(&res_object, "createdUser", create_true_json_value(), NULL, JSON_TRUE);
 
+    char *res = json_value_to_string(res_json);
+
+    return res;
+}
+
+char *logout_user(struct json_value *db_json, char *req) {
+    if (db_json->type != JSON_OBJECT) {
+        // TODO: Fail
+    }
+
+    struct json_object *db_object = db_json->data;
+
+    char *req_start = req;
+    struct json_value *req_json = string_to_json_value(&req);
+    req = req_start;
+
+    if (req_json->type != JSON_OBJECT) {
+        // TODO: Fail
+    }
+
+    char *user_id;
+    // TODO: Error checking
+    json_object_get_value((struct json_object *)(req_json->data), "userID", (void **)&user_id, JSON_STRING);
+
+    struct json_object *user_object;
+    struct json_value *user_json = json_object_get_value(db_object, user_id, (void **)&user_object, JSON_OBJECT);
+    if (!user_json) {
+        // TODO: Handle user not found
+    }
+
+    // TODO: Error checking
+    json_object_remove_value(&user_object, "logged_in");
+
+    // TODO: Error checking
+    json_object_add_value(&user_object, "logged_in", create_false_json_value(), NULL, JSON_FALSE);
+
+    struct json_object *res_object;
+    struct json_value *res_json = create_object_json_value(&res_object);
+
+    // TODO: Error checking
+    json_object_add_value(&res_object, "loggedOut", create_true_json_value(), NULL, JSON_TRUE);
+
+    // TODO: Error checking
     char *res = json_value_to_string(res_json);
 
     return res;

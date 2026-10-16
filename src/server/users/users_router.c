@@ -17,6 +17,8 @@ char *route_auth(char *function, char *data) {
         return_header = find_user(users_db, data);
     } else if (strstr(function, "signup") != NULL) {
         return_header = create_user(users_db, data);
+    } else if (strstr(function, "logout") != NULL) {
+        return_header = logout_user(users_db, data);
     }
 
     db_save(users_db, "users");

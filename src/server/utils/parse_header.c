@@ -125,10 +125,10 @@ struct header parse_header(char *raw_header) {
     }
 
     // TODO: Don't use hard coded string indices
-    return_header.method = (char *)malloc(strlen(strings[0]) * sizeof(char));
+    return_header.method = (char *)calloc(strlen(strings[0] + 1), sizeof(char));
     strcpy(return_header.method, strings[0]);
 
-    return_header.path = (char *)malloc(strlen(strings[1]) * sizeof(char));
+    return_header.path = (char *)calloc(strlen(strings[1] + 1), sizeof(char));
     strcpy(return_header.path, strings[1]);
 
     char *version_string = strings[2] + split_string(strings[2], '/') + 1;
@@ -137,7 +137,7 @@ struct header parse_header(char *raw_header) {
     if (strcmp(return_header.method, "POST") == 0) {
         return_header.content_length = atoi(strings[29]);
 
-        return_header.content = (char *)malloc(strlen(strings[num_strings - 1]) * sizeof(char));
+        return_header.content = (char *)calloc(strlen(strings[num_strings - 1] + 1), sizeof(char));
         strcpy(return_header.content, strings[num_strings - 1]);
     }
 
