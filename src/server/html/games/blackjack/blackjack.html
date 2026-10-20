@@ -4,6 +4,7 @@
 <head>
     <title>Blackjack</title>
 
+    <script src="../../cookies.js" type="text/javascript"></script>
     <script src="../../network.js" type="text/javascript"></script>
     <script src="../common/cards.js" type="text/javascript"></script>
 
@@ -12,15 +13,30 @@
     <script src="./user_management.js" type="text/javascript"></script>
 
     <link rel="stylesheet" href="./blackjack.css">
+
+    <script type="text/javascript">
+        const setUserID = () => {
+            const userID = getCookie("userID");
+
+            if (!userID) {
+                window.location.href = "http://localhost:3000/users/auth.html";
+            }
+
+            const userIDSetup = document.getElementById("user-id-setup");
+
+            userIDSetup.innerText = userID;
+        }
+    </script>
 </head>
 
-<body style="background-color: #222; color: white;">
+<body onload="setUserID()" style="background-color: #222; color: white;">
     <div class="setup" id="setup-window">
         <h1>Get Started</h1>
         <div style="text-align: left;">
-            <input class="setup-input" id="user-id-input" placeholder="User ID" />
+            <h2 id="user-id-setup"></h2>
             <input class="setup-input" id="table-id-input" placeholder="Table ID" />
             <button class="setup-button" id="join-table-button" onclick="joinTable()">Join Table</button>
+            <h2 id="table-id-setup"></h2>
             <input class="setup-input" id="bet-value-input" placeholder="Bet" type="number" />
             <button class="setup-button" id="place-bet-button" onclick="placeBet()">Place Bet</button>
         </div>

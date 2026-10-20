@@ -12,5 +12,7 @@ extern const int card_values[13];
 
 int tally_hand(struct json_value *hand_json);
 int deal_card(struct json_object *table_object, struct json_value *user_hand_json);
+int validate_user(char *req);
+int update_user_balance(char *user_id, int amount);
 
 #endif // BLACKJACK_INTERNAL_H

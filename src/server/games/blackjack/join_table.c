@@ -3,6 +3,8 @@
 
 #include "internal.h"
 
+#include "../../../include/server/database/database.h"
+#include "../../../include/server/users/authenticate.h"
 #include "../../../include/server/utils/json.h"
 
 char *blackjack_join_table(struct json_value *db_json, char *req) {
@@ -27,6 +29,12 @@ char *blackjack_join_table(struct json_value *db_json, char *req) {
     char *user_id;
     // TODO: Error checking
     struct json_value *user_id_json = json_object_get_value((struct json_object *)(req_json->data), "userID", (void **)&user_id, JSON_STRING);
+
+    if (validate_user(req)) {
+        printf("Failed to validate user when joining table\n");
+
+        // TODO: Fail
+    }
 
     struct json_object *table_object;
     struct json_value *table_json = json_object_get_value((struct json_object *)(db_json->data), table_id, (void **)&table_object, JSON_OBJECT);

@@ -123,6 +123,7 @@ char *login_user(struct json_value *db_json, char *req) {
     return res;
 }
 
+// TODO: Some issue with create_user
 char *create_user(struct json_value *db_json, char *req) {
     if (db_json->type != JSON_OBJECT) {
         // TODO: Fail
@@ -150,10 +151,13 @@ char *create_user(struct json_value *db_json, char *req) {
     struct json_object *user_object;
     struct json_value *user_json = create_object_json_value(&user_object);
 
+    // TODO: Error checking on everything
     // TODO: Storing password as plaintext lmao
     json_object_add_value(&user_object, "password", password_json, NULL, JSON_STRING);
 
     json_object_add_value(&user_object, "logged_in", create_false_json_value(), NULL, JSON_FALSE);
+
+    json_object_add_value(&user_object, "balance", create_number_json_value(NULL, 1000, 0, 0, JSON_INTEGER), NULL, JSON_NUMBER);
 
     json_object_add_value(&db_object, user_id, user_json, NULL, JSON_OBJECT);
 

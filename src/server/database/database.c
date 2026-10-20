@@ -36,7 +36,7 @@ struct json_value *db_initialize(char *name) {
     length = ftell(db_file);
     // TODO: Error checking
     fseek(db_file, 0, SEEK_SET);
-    db_buffer = calloc(length, sizeof(char));
+    db_buffer = calloc(length + 1, sizeof(char));
     char *db_buffer_start = db_buffer;
     if (db_buffer) {
         fread(db_buffer, 1, length, db_file);

@@ -57,6 +57,8 @@ char *generate_table_res(struct json_value *table_json) {
         json_object_add_value((struct json_object **)(&dealer_json->data), "hand", dealer_hand_json, (void **)&dealer_hand_arr, JSON_ARRAY);
     }
 
+    struct json_value *new_hand_json = json_object_get_value(table_object, "new-hand", NULL, JSON_TRUE);
+
     struct json_value *res_dealer_hand_json;
     struct json_value *active_user_json;
     if (hand_progress >= 0 && hand_progress < num_users) {
@@ -90,6 +92,10 @@ char *generate_table_res(struct json_value *table_json) {
         struct json_value *hand_ended_json = create_false_json_value();
 
         json_object_add_value(&res_object, "handEnded", hand_ended_json, NULL, JSON_FALSE);
+    }
+
+    if (new_hand_json) {
+        json_object_add_value(&res_object, "newHand", new_hand_json, NULL, JSON_TRUE);
     }
 
     // TODO: Error checking
@@ -172,6 +178,9 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
 
     char *res = req;
     if (hand_progress == -1) {
+        // TODO: Error checking
+        json_object_remove_value(&table_object, "new-hand");
+
         for (int i = 0; i < num_users; ++i) {
             struct json_value *tmp_user_json = users_array->values[i];
             if (tmp_user_json->type != JSON_OBJECT) {
@@ -326,14 +335,12 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
 
             // TODO: Store user cash somewhere
             if (user_value > dealer_value) {
-                printf("%s receives %d\n", tmp_user_id, tmp_user_bet);
-            } else if (user_value < dealer_value) {
-                printf("%s loses %d\n", tmp_user_id, tmp_user_bet);
-            } else {
-                if (!user_value) {
-                    printf("%s loses %d\n", tmp_user_id, tmp_user_bet);
-                } else {
-                    printf("%s keeps %d\n", tmp_user_id, tmp_user_bet);
+                // TODO: Error checking
+                update_user_balance(tmp_user_id, tmp_user_bet * 2);
+            } else if (user_value == dealer_value) {
+                if (user_value) {
+                    // TODO: Error checking
+                    update_user_balance(tmp_user_id, tmp_user_bet);
                 }
             }
         }
@@ -348,7 +355,14 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
 
             // TODO: Error checking
             json_object_remove_value((struct json_object **)(&tmp_user_json->data), "hand");
+
+            // TODO: I think this causes issues
+            // TODO: Error checking
+            json_object_remove_value((struct json_object **)(&tmp_user_json->data), "bet");
         }
+
+        // TODO: Error checking
+        json_object_add_value(&table_object, "new-hand", create_true_json_value(), NULL, JSON_TRUE);
 
         // TODO: Error checking
         res = generate_table_res(table_json);

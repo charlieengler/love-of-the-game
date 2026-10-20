@@ -1,5 +1,10 @@
 const progressHand = async () => {
-    const userID = document.getElementById("user-id").innerText;
+    const userID = getCookie("userID");
+
+    if(!userID) {
+        window.location.href = "http://localhost:3000/users/auth.html";
+    }
+
     const tableID = document.getElementById("table-id").innerText;
 
     const data = {
@@ -21,7 +26,12 @@ const createHitButton = () => {
     hit.className = "hit-button";
 
     hit.onclick = async function () {
-        const userID = document.getElementById("user-id").innerText;
+        const userID = getCookie("userID");
+
+        if(!userID) {
+            window.location.href = "http://localhost:3000/users/auth.html";
+        }
+
         const tableID = document.getElementById("table-id").innerText;
 
         const data = {
@@ -46,7 +56,12 @@ const createStandButton = () => {
     stand.className = "stand-button";
 
     stand.onclick = async function () {
-        const userID = document.getElementById("user-id").innerText;
+        const userID = getCookie("userID");
+
+        if(!userID) {
+            window.location.href = "http://localhost:3000/users/auth.html";
+        }
+
         const tableID = document.getElementById("table-id").innerText;
 
         const data = {
@@ -126,7 +141,12 @@ const redealCards = (activeUser, currentUser, data) => {
 
 const statusCheck = () => {
     setInterval(async function () {
-        const userID = document.getElementById("user-id").innerText;
+        const userID = getCookie("userID");
+
+        if(!userID) {
+            window.location.href = "http://localhost:3000/users/auth.html";
+        }
+
         const tableID = document.getElementById("table-id").innerText;
 
         const data = {
@@ -144,6 +164,10 @@ const statusCheck = () => {
         } else {
             progressHandButton.innerText = "Start Hand";
             progressHandButton.className = "start-hand-button";
+        }
+
+        if(res.newHand) {
+            document.getElementById("setup-window").style.display = "block";
         }
 
         if(!res.activeUser) {

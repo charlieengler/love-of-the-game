@@ -1,1 +1,28 @@
-{}
+{
+    "charlie": {
+        "last_login": {
+            "month": 10,
+            "year": 2026,
+            "hour": 12,
+            "minute": 13,
+            "second": 14,
+            "day": 19
+        },
+        "password": "password",
+        "logged_in": true,
+        "balance": 1000
+    },
+    "other": {
+        "last_login": {
+            "month": 10,
+            "year": 2026,
+            "hour": 12,
+            "minute": 32,
+            "second": 32,
+            "day": 19
+        },
+        "password": "password",
+        "logged_in": true,
+        "balance": 1000
+    }
+}

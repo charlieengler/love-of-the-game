@@ -1,5 +1,10 @@
 const joinTable = async () => {
-    const userID = document.getElementById("user-id-input").value;
+    const userID = getCookie("userID");
+
+    if(!userID) {
+        window.location.href = "http://localhost:3000/users/auth.html";
+    }
+
     const tableID = document.getElementById("table-id-input").value;
 
     const data = {
@@ -12,8 +17,8 @@ const joinTable = async () => {
     document.getElementById("table-id").innerText = res.tableID;
     document.getElementById("user-id").innerText = res.userID;
 
-    document.getElementById("user-id-input").style.display = "none";
     document.getElementById("table-id-input").style.display = "none";
+    document.getElementById("table-id-setup").innerText = res.tableID;
     document.getElementById("join-table-button").style.display = "none";
 
     statusCheck();
