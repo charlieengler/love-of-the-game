@@ -167,7 +167,17 @@ const statusCheck = () => {
         }
 
         if(res.newHand) {
+            const userBet = res.users.find(x => x.id === userID).bet;
+
             document.getElementById("setup-window").style.display = "block";
+
+            if(!userBet) {
+                document.getElementById("bet-value-setup").innerText = '';
+                document.getElementById("bet-value-input").style.display = "block";
+                document.getElementById("place-bet-button").style.display = "block";
+            }
+        } else {
+            document.getElementById("setup-window").style.display = "none";
         }
 
         if(!res.activeUser) {

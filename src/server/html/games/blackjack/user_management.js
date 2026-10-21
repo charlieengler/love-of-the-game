@@ -20,5 +20,7 @@ const placeBet = async () => {
     document.getElementById("user-id").innerText = res.userID;
     document.getElementById("bet-value").innerText = res.bet;
 
-    document.getElementById("setup-window").style.display = "none";
+    document.getElementById("bet-value-input").style.display = "none";
+    document.getElementById("place-bet-button").style.display = "none";
+    document.getElementById("bet-value-setup").innerText = res.bet;
 }

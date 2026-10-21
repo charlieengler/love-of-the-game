@@ -79,12 +79,6 @@ char *blackjack_place_bet(struct json_value *db_json, char *req) {
         // TODO: Fail
     }
 
-    struct json_number *bet_num;
-    // TODO: Error checking
-    json_object_get_value(req_object, "bet", (void **)&bet_num, JSON_NUMBER);
-
-    int bet = (int)(bet_num->integer);
-
     struct json_object *table_object;
     struct json_value *table_json = json_object_get_value(db_object, table_id, (void **)&table_object, JSON_OBJECT);
 
@@ -128,9 +122,22 @@ char *blackjack_place_bet(struct json_value *db_json, char *req) {
 
     struct json_object *found_user_object = found_user_json->data;
 
+    struct json_number *bet_num;
+    // TODO: Error checking
+    json_object_get_value(req_object, "bet", (void **)&bet_num, JSON_NUMBER);
+
+    int bet = (int)(bet_num->integer);
+
     struct json_number *user_bet_num;
     // TODO: Error checking
-    json_object_get_value(found_user_object, "bet", (void **)&user_bet_num, JSON_NUMBER);
+    struct json_value *user_bet_json = json_object_get_value(found_user_object, "bet", (void **)&user_bet_num, JSON_NUMBER);
+    if (!user_bet_json) {
+        // TODO: Error checking
+        user_bet_json = create_number_json_value(&user_bet_num, 0, 0, 0, JSON_INTEGER);
+
+        // TODO: Error checking
+        json_object_add_value(&found_user_object, "bet", user_bet_json, NULL, JSON_NUMBER);
+    }
 
     if (check_user_balance(user_id) < bet) {
         bet = 0;

@@ -40,17 +40,26 @@ char *blackjack_join_table(struct json_value *db_json, char *req) {
     struct json_value *table_json = json_object_get_value((struct json_object *)(db_json->data), table_id, (void **)&table_object, JSON_OBJECT);
 
     if (!table_json) {
+        // TODO: Error checking
         table_json = create_object_json_value(&table_object);
 
+        // TODO: Error checking
         json_object_add_value((struct json_object **)(&db_json->data), table_id, table_json, (void **)&table_object, JSON_OBJECT);
 
+        // TODO: Error checking
         struct json_value *users_json = create_array_json_value(NULL);
 
+        // TODO: Error checking
         json_object_add_value(&table_object, "users", users_json, NULL, JSON_ARRAY);
 
+        // TODO: Error checking
         struct json_value *dealer_json = create_object_json_value(NULL);
 
+        // TODO: Error checking
         json_object_add_value(&table_object, "dealer", dealer_json, NULL, JSON_OBJECT);
+
+        // TODO: Error checking
+        json_object_add_value(&table_object, "new-hand", create_true_json_value(), NULL, JSON_TRUE);
     }
 
     struct json_array *users_array;
