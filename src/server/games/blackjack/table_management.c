@@ -113,8 +113,7 @@ char *generate_table_res(struct json_value *table_json) {
     return res;
 }
 
-// TODO: Proper bet handling and payouts
-char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_action) {
+int blackjack_progress_hand(struct json_value *db_json, char *req, int user_action, char **send_buffer) {
     if (db_json->type != JSON_OBJECT) {
         // TODO: Fail
     }
@@ -142,7 +141,7 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
         // TODO: Potentially need to create the table here, although it should already exist
         printf("blackjack error: could not find entry %s in database when starting hand\n", table_id);
 
-        return NULL;
+        return 500;
     }
 
     struct json_number *hand_progress_num;
@@ -377,10 +376,14 @@ char *blackjack_progress_hand(struct json_value *db_json, char *req, int user_ac
 out:
     // TODO: Destroy all JSON objects created at the top of this function
 
-    return res;
+    if (send_buffer) {
+        *send_buffer = res;
+    }
+
+    return 200;
 }
 
-char *blackjack_status_update(struct json_value *db_json, char *req) {
+int blackjack_status_update(struct json_value *db_json, char *req, char **send_buffer) {
     if (db_json->type != JSON_OBJECT) {
         // TODO: Fail
     }
@@ -408,7 +411,7 @@ char *blackjack_status_update(struct json_value *db_json, char *req) {
         // TODO: Potentially need to create the table here, although it should already exist
         printf("blackjack error: could not find entry %s in database when starting hand\n", table_id);
 
-        return NULL;
+        return 500;
     }
 
     struct json_number *hand_progress_num = NULL;
@@ -422,12 +425,15 @@ char *blackjack_status_update(struct json_value *db_json, char *req) {
         int num_users = users_arr->length;
 
         if (hand_progress == num_users) {
-            blackjack_progress_hand(db_json, req, USER_NO_ACTION);
+            // TODO: Error checking
+            blackjack_progress_hand(db_json, req, USER_NO_ACTION, send_buffer);
         }
     }
 
-    // TODO: Error checking
-    char *res = generate_table_res(table_json);
+    if (send_buffer) {
+        // TODO: Error checking
+        *send_buffer = generate_table_res(table_json);
+    }
 
-    return res;
+    return 200;
 }

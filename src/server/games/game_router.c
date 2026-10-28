@@ -4,52 +4,58 @@
 #include "../../include/server/database/database.h"
 #include "../../include/server/games/games.h"
 
+#include "../../include/server/games/blackjack/blackjack.h"
+
 #include "./blackjack/internal.h"
 
-char *route_blackjack(char *function, char *data) {
+int route_blackjack(char *function, char *data, char **send_buffer) {
     struct json_value *blackjack_db = db_initialize("blackjack");
 
-    char *return_header = NULL;
+    int code = 404;
 
     if (strstr(function, "join-table") != NULL) {
-        return_header = blackjack_join_table(blackjack_db, data);
+        code = blackjack_join_table(blackjack_db, data, send_buffer);
     } else if (strstr(function, "check-status") != NULL) {
-        return_header = blackjack_status_update(blackjack_db, data);
+        code = blackjack_status_update(blackjack_db, data, send_buffer);
     } else if (strstr(function, "bet") != NULL) {
-        return_header = blackjack_place_bet(blackjack_db, data);
+        code = blackjack_place_bet(blackjack_db, data, send_buffer);
     } else if (strstr(function, "progress-hand") != NULL) {
-        return_header = blackjack_progress_hand(blackjack_db, data, USER_NO_ACTION);
+        code = blackjack_progress_hand(blackjack_db, data, USER_NO_ACTION, send_buffer);
     } else if (strstr(function, "hit") != NULL) {
-        return_header = blackjack_progress_hand(blackjack_db, data, USER_HIT);
+        code = blackjack_progress_hand(blackjack_db, data, USER_HIT, send_buffer);
     } else if (strstr(function, "stand") != NULL) {
-        return_header = blackjack_progress_hand(blackjack_db, data, USER_STAND);
+        code = blackjack_progress_hand(blackjack_db, data, USER_STAND, send_buffer);
     }
+
+    // TODO: Maybe check for an error code before saving the db
 
     db_save(blackjack_db, "blackjack");
 
     // TODO: Return an error that the function couldn't be found if the header is still NULL at this point
-    if (return_header == NULL) {
+    if (code >= 400) {
         // TODO: Better return header error
         const char *header_const = "{\"error\":\"Make me more descriptive\"}";
-        return_header = (char *)calloc(strlen(header_const) + 1, sizeof(char));
+        char *return_header = (char *)calloc(strlen(header_const) + 1, sizeof(char));
         strcpy(return_header, header_const);
+
+        *send_buffer = return_header;
     }
 
-    return return_header;
+    return code;
 }
 
 // TODO: Return the response to the route request
-char *route_game(char *path, char *data) {
+int route_game(char *path, char *data, char **send_buffer) {
     char *route = NULL;
     if ((route = strstr(path, "blackjack/")) != NULL) {
-        char *res = route_blackjack(route + strlen("blackjack/"), data);
-
-        return res;
+        return route_blackjack(route + strlen("blackjack/"), data, send_buffer);
     }
 
     const char *header_const = "{\"error\":\"Unknown game route\"}";
     char *return_header = (char *)calloc(strlen(header_const) + 1, sizeof(char));
     strcpy(return_header, header_const);
 
-    return return_header;
+    *send_buffer = return_header;
+
+    return 404;
 }

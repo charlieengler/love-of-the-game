@@ -6,7 +6,7 @@
 
 #include "../../include/server/utils/json.h"
 
-char *find_user(struct json_value *db_json, char *req) {
+int find_user(struct json_value *db_json, char *req, char **send_buffer) {
     if (db_json->type != JSON_OBJECT) {
         // TODO: Fail
     }
@@ -37,14 +37,16 @@ char *find_user(struct json_value *db_json, char *req) {
         found_user_json = create_false_json_value();
     }
 
+    // TODO: Error checkign
     json_object_add_value(&res_object, "foundUser", found_user_json, NULL, found_user_json->type);
 
-    char *res = json_value_to_string(res_json);
+    // TODO: Error checking
+    *send_buffer = json_value_to_string(res_json);
 
-    return res;
+    return 200;
 }
 
-char *login_user(struct json_value *db_json, char *req) {
+int login_user(struct json_value *db_json, char *req, char **send_buffer) {
     if (db_json->type != JSON_OBJECT) {
         // TODO: Fail
     }
@@ -117,14 +119,14 @@ char *login_user(struct json_value *db_json, char *req) {
     // TODO: error checking
     json_object_add_value(&user_object, "last_login", last_login_json, NULL, JSON_OBJECT);
 
-    // TODO: Return value
-    char *res = json_value_to_string(user_json);
+    // TODO: Return value and error checking
+    *send_buffer = json_value_to_string(user_json);
 
-    return res;
+    return 200;
 }
 
-// TODO: Some issue with create_user
-char *create_user(struct json_value *db_json, char *req) {
+// TODO: Some issue with create_user, corrupts db
+int create_user(struct json_value *db_json, char *req, char **send_buffer) {
     if (db_json->type != JSON_OBJECT) {
         // TODO: Fail
     }
@@ -164,14 +166,16 @@ char *create_user(struct json_value *db_json, char *req) {
     struct json_object *res_object;
     struct json_value *res_json = create_object_json_value(&res_object);
 
+    // TODO: Error checking
     json_object_add_value(&res_object, "createdUser", create_true_json_value(), NULL, JSON_TRUE);
 
-    char *res = json_value_to_string(res_json);
+    // TODO: Error checking
+    *send_buffer = json_value_to_string(res_json);
 
-    return res;
+    return 200;
 }
 
-char *logout_user(struct json_value *db_json, char *req) {
+int logout_user(struct json_value *db_json, char *req, char **send_buffer) {
     if (db_json->type != JSON_OBJECT) {
         // TODO: Fail
     }
@@ -209,7 +213,7 @@ char *logout_user(struct json_value *db_json, char *req) {
     json_object_add_value(&res_object, "loggedOut", create_true_json_value(), NULL, JSON_TRUE);
 
     // TODO: Error checking
-    char *res = json_value_to_string(res_json);
+    *send_buffer = json_value_to_string(res_json);
 
-    return res;
+    return 200;
 }

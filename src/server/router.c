@@ -8,8 +8,6 @@
 #include "../include/server/games/games.h"
 #include "../include/server/users/users.h"
 
-#include "../include/server/utils/server_errors.h"
-
 static int split_string(char *input, char delimiter) {
     char *current_char = input;
     int num_chars = 0;
@@ -30,8 +28,6 @@ int route_get(char *trimmed_path, char *full_path, int new_fd, char **send_buffe
     }
 
     if (access(full_path, F_OK) != 0) {
-        send_http_error(404, new_fd);
-
         printf("[./server/server.c | run_server()] File %s doesn't exist on server\n", full_path);
         return 404;
     }
@@ -75,19 +71,16 @@ int route_get(char *trimmed_path, char *full_path, int new_fd, char **send_buffe
     strcat(*content_type, end_str);
     (*content_type)[strlen(text_str) + type_length + strlen(end_str)] = '\0';
 
-    return 0;
+    return 200;
 }
 
 int route_post(char *path, char *data, char **send_buffer) {
     char *route = NULL;
     if ((route = strstr(path, "routes/games/")) != NULL) {
-        *send_buffer = route_game(route + strlen("routes/games/"), data);
-
-        return 0;
+        // TODO: Pass send buffer as argument to route call and return status code instead
+        return route_game(route + strlen("routes/games/"), data, send_buffer);
     } else if ((route = strstr(path, "routes/users/")) != NULL) {
-        *send_buffer = route_users(route + strlen("routes/users/"), data);
-
-        return 0;
+        return route_users(route + strlen("routes/users/"), data, send_buffer);
     }
 
     // TODO: Replace this with a better error message
@@ -97,5 +90,5 @@ int route_post(char *path, char *data, char **send_buffer) {
 
     *send_buffer = return_header;
 
-    return 0;
+    return 404;
 }

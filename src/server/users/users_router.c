@@ -6,45 +6,48 @@
 
 #include "../../include/server/database/database.h"
 
-char *route_auth(char *function, char *data) {
+int route_auth(char *function, char *data, char **send_buffer) {
     struct json_value *users_db = db_initialize("users");
 
-    char *return_header = NULL;
+    int code = 404;
 
     if (strstr(function, "login") != NULL) {
-        return_header = login_user(users_db, data);
+        code = login_user(users_db, data, send_buffer);
     } else if (strstr(function, "find") != NULL) {
-        return_header = find_user(users_db, data);
+        code = find_user(users_db, data, send_buffer);
     } else if (strstr(function, "signup") != NULL) {
-        return_header = create_user(users_db, data);
+        code = create_user(users_db, data, send_buffer);
     } else if (strstr(function, "logout") != NULL) {
-        return_header = logout_user(users_db, data);
+        code = logout_user(users_db, data, send_buffer);
     }
 
+    // TODO: Maybe only save the db if no error code
     db_save(users_db, "users");
 
     // TODO: Return an error that the function couldn't be found if the header is still NULL at this point
-    if (return_header == NULL) {
+    if (code >= 400) {
         // TODO: Better return header error
         const char *header_const = "{\"error\":\"Make me more descriptive\"}";
-        return_header = (char *)calloc(strlen(header_const) + 1, sizeof(char));
+        char *return_header = (char *)calloc(strlen(header_const) + 1, sizeof(char));
         strcpy(return_header, header_const);
+
+        *send_buffer = return_header;
     }
 
-    return return_header;
+    return code;
 }
 
-char *route_users(char *path, char *data) {
+int route_users(char *path, char *data, char **send_buffer) {
     char *route = NULL;
     if ((route = strstr(path, "auth/")) != NULL) {
-        char *res = route_auth(route + strlen("auth/"), data);
-
-        return res;
+        return route_auth(route + strlen("auth/"), data, send_buffer);
     }
 
     const char *header_const = "{\"error\":\"Unknown users route\"}";
     char *return_header = (char *)calloc(strlen(header_const) + 1, sizeof(char));
     strcpy(return_header, header_const);
 
-    return return_header;
+    *send_buffer = return_header;
+
+    return 404;
 }

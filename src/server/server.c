@@ -10,7 +10,7 @@
 
 #include "../include/server/server.h"
 #include "../include/server/utils/parse_header.h"
-#include "../include/server/utils/server_errors.h"
+#include "../include/server/utils/server_codes.h"
 
 #include "../include/router.h"
 
@@ -120,26 +120,32 @@ int run_server(int sockfd) {
         find_path[strlen(HTML_BASE_PATH) + strlen(recv_header.path)] = 0;
 
         char *send_buffer = NULL;
-
+        int code = 418;
         char *content_type = NULL;
         if (!strcmp(recv_header.method, "GET")) {
-            route_get(recv_header.path, find_path, new_fd, &send_buffer, &content_type);
+            code = route_get(recv_header.path, find_path, new_fd, &send_buffer, &content_type);
         } else if (!strcmp(recv_header.method, "POST")) {
-            route_post(find_path, recv_header.content, &send_buffer);
+            code = route_post(find_path, recv_header.content, &send_buffer);
         } else {
-            send_http_error(400, new_fd);
+            code = 400;
 
             printf("[./server/server.c | run_server()] Undefined HTTP Method in incoming header\n");
-            continue;
         }
 
         if (send_buffer == NULL) {
             printf("Send buffer was null in server\n");
+
+            code = 500;
+        }
+
+        if (code >= 400) {
+            send_http_error(code, new_fd);
+
             continue;
         }
 
         // TODO: Better response header
-        char *response_type = "HTTP/1.1 200 OK\r\n";
+        char *response_type = generate_http_status(code);
 
         int content_length = strlen(send_buffer);
         char *response_length = (char *)malloc((strlen("Content-Length: \r\n\r\n") + (content_length == 0 ? 1 : (int)(log10(content_length) + 1)) + 1) * sizeof(char));

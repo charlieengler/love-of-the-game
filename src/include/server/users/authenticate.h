@@ -3,9 +3,9 @@
 
 struct json_value;
 
-char *login_user(struct json_value *db_json, char *req);
-char *find_user(struct json_value *db_json, char *req);
-char *create_user(struct json_value *db_json, char *req);
-char *logout_user(struct json_value *db_json, char *req);
+int login_user(struct json_value *db_json, char *req, char **send_buffer);
+int find_user(struct json_value *db_json, char *req, char **send_buffer);
+int create_user(struct json_value *db_json, char *req, char **send_buffer);
+int logout_user(struct json_value *db_json, char *req, char **send_buffer);
 
 #endif // AUTHENTICATE_H

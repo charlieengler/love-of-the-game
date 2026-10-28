@@ -46,7 +46,7 @@ int update_user_balance(char *user_id, int amount) {
     return 0;
 }
 
-char *blackjack_place_bet(struct json_value *db_json, char *req) {
+int blackjack_place_bet(struct json_value *db_json, char *req, char **send_buffer) {
     if (db_json->type != JSON_OBJECT) {
         // TODO: Fail
     }
@@ -84,7 +84,7 @@ char *blackjack_place_bet(struct json_value *db_json, char *req) {
 
     if (!table_json) {
         // TODO: Error checking
-        blackjack_join_table(db_json, req);
+        blackjack_join_table(db_json, req, send_buffer);
     }
 
     struct json_array *users_array;
@@ -111,7 +111,7 @@ char *blackjack_place_bet(struct json_value *db_json, char *req) {
 
     if (!found_user_json) {
         // TODO: Error checking
-        blackjack_join_table(db_json, req);
+        blackjack_join_table(db_json, req, send_buffer);
     }
 
     // TODO: If had to join the table, make sure found_user_json set
@@ -152,6 +152,7 @@ char *blackjack_place_bet(struct json_value *db_json, char *req) {
     user_bet_num->integer = bet;
 
     // TODO: Better res
-    char *res = req;
-    return res;
+    *send_buffer = req;
+
+    return 200;
 }

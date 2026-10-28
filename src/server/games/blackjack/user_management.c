@@ -10,8 +10,9 @@ int validate_user(char *req) {
     // TODO: Error checking
     struct json_value *users_db_json = db_initialize("users");
 
+    char *find_user_res;
     // TODO: Error checking
-    char *find_user_res = find_user(users_db_json, req);
+    int code = find_user(users_db_json, req, &find_user_res);
     char *find_user_res_start = find_user_res;
 
     // TODO: Error checking

@@ -1,6 +1,6 @@
 #ifndef USERS_H
 #define USERS_H
 
-char *route_users(char *path, char *data);
+int route_users(char *path, char *data, char **send_buffer);
 
 #endif // USERS_H

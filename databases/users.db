@@ -10,7 +10,7 @@
         },
         "password": "password",
         "logged_in": true,
-        "balance": 1000
+        "balance": 1020
     },
     "other": {
         "last_login": {
