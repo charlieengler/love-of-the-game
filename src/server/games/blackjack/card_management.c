@@ -2,6 +2,8 @@
 
 #include "./internal.h"
 
+#include "../../../include/logging.h"
+
 #include "../../../include/server/games/blackjack/blackjack.h"
 
 #include "../../../include/server/games/common/cards.h"
@@ -17,14 +19,21 @@ int deal_card(struct json_object *table_object, struct json_value *user_hand_jso
     struct json_value *deck_json = json_object_get_value(table_object, "deck", (void **)&deck_array, JSON_ARRAY);
 
     if (!deck_json) {
-        // TODO: Error checking
         deck_json = create_array_json_value(NULL);
 
-        json_object_add_value(&table_object, "deck", deck_json, (void **)&deck_array, JSON_ARRAY);
+        if (json_object_add_value(&table_object, "deck", deck_json, (void **)&deck_array, JSON_ARRAY)) {
+            printd("card_management.c->deal_card(): unable to add deck array to table object\n");
+
+            destroy_json_value(deck_json);
+
+            return -1;
+        }
     }
 
     if (deck_json->type != JSON_ARRAY) {
-        // TODO: Fail
+        printd("card_management.c->deal_card(): deck_json is of type %d, expected %d\n", deck_json->type, JSON_ARRAY);
+
+        return -1;
     }
 
     if (deck_array->length == 0) {
@@ -32,39 +41,57 @@ int deal_card(struct json_object *table_object, struct json_value *user_hand_jso
         int *shuffled_deck = get_boot(5, 0);
 
         for (int i = 0; i < num_cards; ++i) {
-            // TODO: Error checking
             struct json_value *card_json = create_number_json_value(NULL, shuffled_deck[i], 0, 0, JSON_INTEGER);
 
-            // TODO: Error checking
-            json_array_add_value(&deck_array, card_json);
+            if (json_array_add_value(&deck_array, card_json)) {
+                printd("card_management.c->deal_card(): unable to add card_json to deck_array\n");
+
+                destroy_json_value(card_json);
+
+                return -1;
+            }
         }
 
         free(shuffled_deck);
     }
 
-    // TODO: Error checking
     struct json_value *popped_card_json = json_array_pop_value(deck_array);
-    if (popped_card_json->type != JSON_NUMBER) {
-        // TODO: Fail
+    if (!popped_card_json) {
+        printd("card_management.c->deal_card(): unable to pop card value from deck_array\n");
+
+        return -1;
     }
 
-    // TODO: Error checking
+    if (popped_card_json->type != JSON_NUMBER) {
+        printd("card_management.c->deal_card(): popped_card_json is of type %d, expected %d\n", popped_card_json->type, JSON_ARRAY);
+
+        return -1;
+    }
+
     int selected_card = (int)(((struct json_number *)(popped_card_json->data))->integer);
 
     if (user_hand_json->type != JSON_ARRAY) {
-        // TODO: Fail
+        printd("card_management.c->deal_card(): user_hand_json is of type %d, expected %d\n", user_hand_json->type, JSON_ARRAY);
+
+        return -1;
     }
 
     struct json_array *user_hand_arr = (struct json_array *)(user_hand_json->data);
 
-    json_array_add_value(&user_hand_arr, popped_card_json);
+    if (json_array_add_value(&user_hand_arr, popped_card_json)) {
+        printd("card_management.c->deal_card(): unable to add popped_card_json to user_hand_arr\n");
+
+        return -1;
+    }
 
     return selected_card;
 }
 
 int tally_hand(struct json_value *user_hand_json) {
     if (user_hand_json->type != JSON_ARRAY) {
-        // TODO: Fail
+        printd("card_management.c->tally_hand(): user_hand_json is of type %d, expected %d\n", user_hand_json->type, JSON_ARRAY);
+
+        return -1;
     }
 
     struct json_array *user_hand_arr = (struct json_array *)(user_hand_json->data);
@@ -75,7 +102,9 @@ int tally_hand(struct json_value *user_hand_json) {
     for (int i = 0; i < user_hand_arr->length; ++i) {
         struct json_value *card_json = user_hand_arr->values[i];
         if (card_json->type != JSON_NUMBER) {
-            // TODO: Fail
+            printd("card_management.c->tally_hand(): card_json is of type %d, expected %d\n", card_json->type, JSON_ARRAY);
+
+            return -1;
         }
 
         int card = (int)(((struct json_number *)(card_json->data))->integer);
