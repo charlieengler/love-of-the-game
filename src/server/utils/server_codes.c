@@ -4,6 +4,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "../../include/logging.h"
+
 #include "../../include/server/utils/server_codes.h"
 
 char *generate_http_status(int code) {
@@ -75,10 +77,10 @@ int send_http_error(int error, int sock) {
 
     int send_size = send(sock, tmp, send_len, 0);
     if (send_size == -1) {
-        printf("[./server/utils/server_codes.c | send_http_error()] send() error: size of header was negative\n");
+        printd("send() error, size of header was negative\n");
         return 1;
-    } else if ((size_t)send_size != send_len) {
-        printf("[./server/utils/server_codes.c | send_http_error()] send() error: size of header (%ld) doesn't match size of data sent (%ld)\n", (size_t)send_size, strlen(header));
+    } else if (send_size != send_len) {
+        printd("send() error, size of header (%ld) doesn't match size of data sent (%ld)\n", (size_t)send_size, strlen(header));
         return 1;
     }
 

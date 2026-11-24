@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../include/server/utils/json.h"
 #include "tests.h"
 
+#include "../include/logging.h"
+
+#include "../include/server/utils/json.h"
+
 static int test_json_value_to_string_1() {
-    printf("    Running test_json_value_to_string_1()\n");
+    printd("    Running test_json_value_to_string_1()\n");
 
     char *test_string_one = "\"test string\"";
     char *str_start = test_string_one;
@@ -19,7 +22,7 @@ static int test_json_value_to_string_1() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_1(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_1(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -28,7 +31,7 @@ static int test_json_value_to_string_1() {
 }
 
 static int test_json_value_to_string_2() {
-    printf("    Running test_json_value_to_string_2()\n");
+    printd("    Running test_json_value_to_string_2()\n");
 
     char *test_string_one = "0";
     char *str_start = test_string_one;
@@ -42,7 +45,7 @@ static int test_json_value_to_string_2() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_2(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_2(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -51,7 +54,7 @@ static int test_json_value_to_string_2() {
 }
 
 static int test_json_value_to_string_3() {
-    printf("    Running test_json_value_to_string_3()\n");
+    printd("    Running test_json_value_to_string_3()\n");
 
     char *test_string_one = "1.1";
     char *str_start = test_string_one;
@@ -65,7 +68,7 @@ static int test_json_value_to_string_3() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_3(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_3(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -74,7 +77,7 @@ static int test_json_value_to_string_3() {
 }
 
 static int test_json_value_to_string_4() {
-    printf("    Running test_json_value_to_string_4()\n");
+    printd("    Running test_json_value_to_string_4()\n");
 
     char *test_string_one = "1.0e10";
     char *str_start = test_string_one;
@@ -88,7 +91,7 @@ static int test_json_value_to_string_4() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_4(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_4(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -97,7 +100,7 @@ static int test_json_value_to_string_4() {
 }
 
 static int test_json_value_to_string_5() {
-    printf("    Running test_json_value_to_string_5()\n");
+    printd("    Running test_json_value_to_string_5()\n");
 
     char *test_string_one = "{\n"
                             "    \"0\": \"first test\",\n"
@@ -115,7 +118,7 @@ static int test_json_value_to_string_5() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_5(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_5(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -124,7 +127,7 @@ static int test_json_value_to_string_5() {
 }
 
 static int test_json_value_to_string_6() {
-    printf("    Running test_json_value_to_string_6()\n");
+    printd("    Running test_json_value_to_string_6()\n");
 
     char *test_string_one = "{\n"
                             "    \"0\": 1,\n"
@@ -142,7 +145,7 @@ static int test_json_value_to_string_6() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_6(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_6(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -151,7 +154,7 @@ static int test_json_value_to_string_6() {
 }
 
 static int test_json_value_to_string_7() {
-    printf("    Running test_json_value_to_string_7()\n");
+    printd("    Running test_json_value_to_string_7()\n");
 
     char *test_string_one = "{\n"
                             "    \"0\": [\n"
@@ -182,7 +185,7 @@ static int test_json_value_to_string_7() {
     // destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_7(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_7(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -191,7 +194,7 @@ static int test_json_value_to_string_7() {
 }
 
 static int test_json_value_to_string_8() {
-    printf("    Running test_json_value_to_string_8()\n");
+    printd("    Running test_json_value_to_string_8()\n");
 
     char *test_string_one = "{\n"
                             "    \"0\": [\n"
@@ -222,7 +225,7 @@ static int test_json_value_to_string_8() {
     // destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_8(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_8(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -231,7 +234,7 @@ static int test_json_value_to_string_8() {
 }
 
 static int test_json_value_to_string_9() {
-    printf("    Running test_json_value_to_string_9()\n");
+    printd("    Running test_json_value_to_string_9()\n");
 
     char *test_string_one = "{\n"
                             "    \"0\": [\n"
@@ -280,7 +283,7 @@ static int test_json_value_to_string_9() {
     // destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_9(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_9(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -289,7 +292,7 @@ static int test_json_value_to_string_9() {
 }
 
 static int test_json_value_to_string_10() {
-    printf("    Running test_json_value_to_string_10()\n");
+    printd("    Running test_json_value_to_string_10()\n");
 
     char *test_string_one = "{\n"
                             "    \"0\": [\n"
@@ -321,7 +324,7 @@ static int test_json_value_to_string_10() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_10(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_10(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -330,7 +333,7 @@ static int test_json_value_to_string_10() {
 }
 
 static int test_json_value_to_string_11() {
-    printf("    Running test_json_value_to_string_11()\n");
+    printd("    Running test_json_value_to_string_11()\n");
 
     char *test_string_one = "{\n"
                             "    \"0\": [\n"
@@ -350,7 +353,7 @@ static int test_json_value_to_string_11() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_11(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_11(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -359,7 +362,7 @@ static int test_json_value_to_string_11() {
 }
 
 static int test_json_value_to_string_12() {
-    printf("    Running test_json_value_to_string_12()\n");
+    printd("    Running test_json_value_to_string_12()\n");
 
     char *test_string_one = "{\n"
                             "    \"0\": true,\n"
@@ -377,7 +380,7 @@ static int test_json_value_to_string_12() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_12(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_12(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -386,7 +389,7 @@ static int test_json_value_to_string_12() {
 }
 
 static int test_json_value_to_string_13() {
-    printf("    Running test_json_value_to_string_13()\n");
+    printd("    Running test_json_value_to_string_13()\n");
 
     char *test_string_one = "[\n"
                             "    \"first test\",\n"
@@ -404,7 +407,7 @@ static int test_json_value_to_string_13() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_13(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_13(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -413,7 +416,7 @@ static int test_json_value_to_string_13() {
 }
 
 static int test_json_value_to_string_14() {
-    printf("    Running test_json_value_to_string_14()\n");
+    printd("    Running test_json_value_to_string_14()\n");
 
     char *test_string_one = "[\n"
                             "    0,\n"
@@ -431,7 +434,7 @@ static int test_json_value_to_string_14() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_14(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_14(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -440,7 +443,7 @@ static int test_json_value_to_string_14() {
 }
 
 static int test_json_value_to_string_15() {
-    printf("    Running test_json_value_to_string_15()\n");
+    printd("    Running test_json_value_to_string_15()\n");
 
     char *test_string_one = "[\n"
                             "    {\n"
@@ -468,7 +471,7 @@ static int test_json_value_to_string_15() {
     char *new_string = json_value_to_string(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_15(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_15(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -477,7 +480,7 @@ static int test_json_value_to_string_15() {
 }
 
 static int test_json_value_to_string_16() {
-    printf("    Running test_json_value_to_string_16()\n");
+    printd("    Running test_json_value_to_string_16()\n");
 
     char *test_string_one = "[\n"
                             "    {\n"
@@ -507,7 +510,7 @@ static int test_json_value_to_string_16() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_16(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_16(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -516,7 +519,7 @@ static int test_json_value_to_string_16() {
 }
 
 static int test_json_value_to_string_17() {
-    printf("    Running test_json_value_to_string_17()\n");
+    printd("    Running test_json_value_to_string_17()\n");
 
     char *test_string_one = "[\n"
                             "    {\n"
@@ -542,7 +545,7 @@ static int test_json_value_to_string_17() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_17(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_17(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -551,7 +554,7 @@ static int test_json_value_to_string_17() {
 }
 
 static int test_json_value_to_string_18() {
-    printf("    Running test_json_value_to_string_18()\n");
+    printd("    Running test_json_value_to_string_18()\n");
 
     char *test_string_one = "[\n"
                             "    {\n"
@@ -585,7 +588,7 @@ static int test_json_value_to_string_18() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_18(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_18(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -594,7 +597,7 @@ static int test_json_value_to_string_18() {
 }
 
 static int test_json_value_to_string_19() {
-    printf("    Running test_json_value_to_string_19()\n");
+    printd("    Running test_json_value_to_string_19()\n");
 
     char *test_string_one = "[\n"
                             "    {\n"
@@ -616,7 +619,7 @@ static int test_json_value_to_string_19() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_19(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_19(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -625,7 +628,7 @@ static int test_json_value_to_string_19() {
 }
 
 static int test_json_value_to_string_20() {
-    printf("    Running test_json_value_to_string_20()\n");
+    printd("    Running test_json_value_to_string_20()\n");
 
     char *test_string_one = "[\n"
                             "    [\n"
@@ -655,7 +658,7 @@ static int test_json_value_to_string_20() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_20(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_20(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -664,7 +667,7 @@ static int test_json_value_to_string_20() {
 }
 
 static int test_json_value_to_string_21() {
-    printf("    Running test_json_value_to_string_21()\n");
+    printd("    Running test_json_value_to_string_21()\n");
 
     char *test_string_one = "[\n"
                             "    [\n"
@@ -694,7 +697,7 @@ static int test_json_value_to_string_21() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_21(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_21(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -703,7 +706,7 @@ static int test_json_value_to_string_21() {
 }
 
 static int test_json_value_to_string_22() {
-    printf("    Running test_json_value_to_string_22()\n");
+    printd("    Running test_json_value_to_string_22()\n");
 
     char *test_string_one = "[\n"
                             "    [\n"
@@ -751,7 +754,7 @@ static int test_json_value_to_string_22() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_22(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_22(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -760,7 +763,7 @@ static int test_json_value_to_string_22() {
 }
 
 static int test_json_value_to_string_23() {
-    printf("    Running test_json_value_to_string_23()\n");
+    printd("    Running test_json_value_to_string_23()\n");
 
     char *test_string_one = "[\n"
                             "    [\n"
@@ -792,7 +795,7 @@ static int test_json_value_to_string_23() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_23(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_23(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -801,7 +804,7 @@ static int test_json_value_to_string_23() {
 }
 
 static int test_json_value_to_string_24() {
-    printf("    Running test_json_value_to_string_24()\n");
+    printd("    Running test_json_value_to_string_24()\n");
 
     char *test_string_one = "[\n"
                             "    [\n"
@@ -831,7 +834,7 @@ static int test_json_value_to_string_24() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_24(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_24(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -840,7 +843,7 @@ static int test_json_value_to_string_24() {
 }
 
 static int test_json_value_to_string_25() {
-    printf("    Running test_json_value_to_string_25()\n");
+    printd("    Running test_json_value_to_string_25()\n");
 
     char *test_string_one = "[\n"
                             "    true,\n"
@@ -858,7 +861,7 @@ static int test_json_value_to_string_25() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_25(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_25(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -867,7 +870,7 @@ static int test_json_value_to_string_25() {
 }
 
 static int test_json_value_to_string_26() {
-    printf("    Running test_json_value_to_string_26()\n");
+    printd("    Running test_json_value_to_string_26()\n");
 
     char *test_string_one = "true";
     char *str_start = test_string_one;
@@ -881,7 +884,7 @@ static int test_json_value_to_string_26() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_26(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_26(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -890,7 +893,7 @@ static int test_json_value_to_string_26() {
 }
 
 static int test_json_value_to_string_27() {
-    printf("    Running test_json_value_to_string_27()\n");
+    printd("    Running test_json_value_to_string_27()\n");
 
     char *test_string_one = "false";
     char *str_start = test_string_one;
@@ -904,7 +907,7 @@ static int test_json_value_to_string_27() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_27(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_27(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -913,7 +916,7 @@ static int test_json_value_to_string_27() {
 }
 
 static int test_json_value_to_string_28() {
-    printf("    Running test_json_value_to_string_28()\n");
+    printd("    Running test_json_value_to_string_28()\n");
 
     char *test_string_one = "null";
     char *str_start = test_string_one;
@@ -927,7 +930,7 @@ static int test_json_value_to_string_28() {
     destroy_json_value(json_val);
 
     if (strcmp(new_string, test_string_one)) {
-        printf("[TEST FAIL] test_json_value_to_string_28(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
+        printd("[TEST FAIL] test_json_value_to_string_28(): new_string %s does not equal expected value (%s)\n", new_string, test_string_one);
 
         return 1;
     }
@@ -936,7 +939,7 @@ static int test_json_value_to_string_28() {
 }
 
 int test_json_api() {
-    printf("Testing JSON API\n");
+    printd("Testing JSON API\n");
 
     int failed_test_counter = 0;
     int num_tests = 0;
@@ -1025,7 +1028,7 @@ int test_json_api() {
     failed_test_counter += test_json_value_to_string_28();
     ++num_tests;
 
-    printf("[TESTING COMPLETE] JSON API testing %d/%d tests passed\n", num_tests - failed_test_counter, num_tests);
+    printd("[TESTING COMPLETE] JSON API testing %d/%d tests passed\n", num_tests - failed_test_counter, num_tests);
 
     return 0;
 }

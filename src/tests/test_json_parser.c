@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/server/utils/json.h"
-
 #include "tests.h"
 
+#include "../include/logging.h"
+
+#include "../include/server/utils/json.h"
+
 static int test_json_value_to_string_1() {
-    printf("    Running test_json_value_to_string_1()\n");
+    printd("    Running test_json_value_to_string_1()\n");
 
     char *test_string = "{\n"
                         "    \"0\": \"1\",\n"
@@ -21,7 +23,7 @@ static int test_json_value_to_string_1() {
     test_string = str_start;
 
     if (strcmp(json_value_to_string(test_val), test_string)) {
-        printf("[TEST FAIL] test_json_value_to_string_1(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
+        printd("[TEST FAIL] test_json_value_to_string_1(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
 
         return 1;
     }
@@ -37,13 +39,13 @@ static int test_json_value_to_string_1() {
         struct json_value *child_value = json_object_get_value((struct json_object *)test_val->data, entry_key, (void **)&child_str, JSON_STRING);
 
         if (child_value->type != JSON_STRING) {
-            printf("[TEST FAIL] test_json_parse_string_1(): child_value->type %d does not equal JSON_STRING\n", test_val->type);
+            printd("[TEST FAIL] test_json_parse_string_1(): child_value->type %d does not equal JSON_STRING\n", test_val->type);
 
             return 1;
         }
 
         if (strcmp(child_str, entry_val)) {
-            printf("[TEST FAIL] test_json_parse_string_1(): child_value->data %s does not equal expected value (%s)\n", child_str, entry_val);
+            printd("[TEST FAIL] test_json_parse_string_1(): child_value->data %s does not equal expected value (%s)\n", child_str, entry_val);
 
             return 1;
         }
@@ -56,7 +58,7 @@ static int test_json_value_to_string_1() {
 }
 
 static int test_json_value_to_string_2() {
-    printf("    Running test_json_value_to_string_2()\n");
+    printd("    Running test_json_value_to_string_2()\n");
 
     char *test_string = "{\n"
                         "    \"0\": 1,\n"
@@ -70,7 +72,7 @@ static int test_json_value_to_string_2() {
     test_string = str_start;
 
     if (strcmp(json_value_to_string(test_val), test_string)) {
-        printf("[TEST FAIL] test_json_value_to_string_2(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
+        printd("[TEST FAIL] test_json_value_to_string_2(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
 
         return 1;
     }
@@ -84,19 +86,19 @@ static int test_json_value_to_string_2() {
         struct json_value *child_value = json_object_get_value((struct json_object *)test_val->data, entry_key, (void **)&child_num, JSON_NUMBER);
 
         if (child_value->type != JSON_NUMBER) {
-            printf("[TEST FAIL] test_json_parse_string_2(): child_value->type %d does not equal JSON_NUMBER\n", test_val->type);
+            printd("[TEST FAIL] test_json_parse_string_2(): child_value->type %d does not equal JSON_NUMBER\n", test_val->type);
 
             return 1;
         }
 
         if (child_num->type != JSON_INTEGER) {
-            printf("[TEST FAIL] test_json_parse_string_2(): child_value->data->type %d does not equal JSON_INTEGER\n", child_num->type);
+            printd("[TEST FAIL] test_json_parse_string_2(): child_value->data->type %d does not equal JSON_INTEGER\n", child_num->type);
 
             return 1;
         }
 
         if (child_num->integer != i + 1) {
-            printf("[TEST FAIL] test_json_parse_string_2(): child_value->data %lld does not equal expected value (%d)\n", child_num->integer, i + 1);
+            printd("[TEST FAIL] test_json_parse_string_2(): child_value->data %lld does not equal expected value (%d)\n", child_num->integer, i + 1);
 
             return 1;
         }
@@ -108,7 +110,7 @@ static int test_json_value_to_string_2() {
 }
 
 static int test_json_value_to_string_3() {
-    printf("    Running test_json_value_to_string_3()\n");
+    printd("    Running test_json_value_to_string_3()\n");
 
     char *test_string = "{\n"
                         "    \"0\": {\n"
@@ -128,7 +130,7 @@ static int test_json_value_to_string_3() {
     test_string = str_start;
 
     if (strcmp(json_value_to_string(test_val), test_string)) {
-        printf("[TEST FAIL] test_json_value_to_string_3(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
+        printd("[TEST FAIL] test_json_value_to_string_3(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
 
         return 1;
     }
@@ -142,7 +144,7 @@ static int test_json_value_to_string_3() {
         struct json_value *child_value = json_object_get_value((struct json_object *)test_val->data, entry_key, (void **)&child_object, JSON_OBJECT);
 
         if (child_value->type != JSON_OBJECT) {
-            printf("[TEST FAIL] test_json_parse_string_3(): child_value->type %d does not equal JSON_OBJECT\n", test_val->type);
+            printd("[TEST FAIL] test_json_parse_string_3(): child_value->type %d does not equal JSON_OBJECT\n", test_val->type);
 
             return 1;
         }
@@ -154,19 +156,19 @@ static int test_json_value_to_string_3() {
         struct json_number *child_child_num;
         struct json_value *child_child_value = json_object_get_value(child_object, entry_entry_key, (void **)&child_child_num, JSON_NUMBER);
         if (child_child_value->type != JSON_NUMBER) {
-            printf("[TEST FAIL] test_json_parse_string_3(): child_child_value->type %d does not equal JSON_NUMBER\n", child_child_value->type);
+            printd("[TEST FAIL] test_json_parse_string_3(): child_child_value->type %d does not equal JSON_NUMBER\n", child_child_value->type);
 
             return 1;
         }
 
         if (child_child_num->type != JSON_INTEGER) {
-            printf("[TEST FAIL] test_json_parse_string_3(): child_child_value->data->type %d does not equal JSON_INTEGER\n", child_child_num->type);
+            printd("[TEST FAIL] test_json_parse_string_3(): child_child_value->data->type %d does not equal JSON_INTEGER\n", child_child_num->type);
 
             return 1;
         }
 
         if (child_child_num->integer != i + 2) {
-            printf("[TEST FAIL] test_json_parse_string_3(): child_child_value->data->integer %lld does not equal expected value (%d)\n", child_child_num->integer, i + 2);
+            printd("[TEST FAIL] test_json_parse_string_3(): child_child_value->data->integer %lld does not equal expected value (%d)\n", child_child_num->integer, i + 2);
 
             return 1;
         }
@@ -180,7 +182,7 @@ static int test_json_value_to_string_3() {
 }
 
 static int test_json_value_to_string_4() {
-    printf("    Running test_json_value_to_string_4()\n");
+    printd("    Running test_json_value_to_string_4()\n");
 
     char *test_string = "{\n"
                         "    \"0\": [\n"
@@ -206,7 +208,7 @@ static int test_json_value_to_string_4() {
     test_string = str_start;
 
     if (strcmp(json_value_to_string(test_val), test_string)) {
-        printf("[TEST FAIL] test_json_value_to_string_4(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
+        printd("[TEST FAIL] test_json_value_to_string_4(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
 
         return 1;
     }
@@ -220,7 +222,7 @@ static int test_json_value_to_string_4() {
         struct json_value *child_value = json_object_get_value((struct json_object *)test_val->data, entry_key, (void **)&child_arr, JSON_ARRAY);
 
         if (child_value->type != JSON_ARRAY) {
-            printf("[TEST FAIL] test_json_parse_string_4(): child_value->type %d does not equal JSON_ARRAY\n", test_val->type);
+            printd("[TEST FAIL] test_json_parse_string_4(): child_value->type %d does not equal JSON_ARRAY\n", test_val->type);
 
             return 1;
         }
@@ -229,19 +231,19 @@ static int test_json_value_to_string_4() {
             struct json_value *child_child_value = child_arr->values[j];
             struct json_number *child_child_num = (struct json_number *)child_child_value->data;
             if (child_child_value->type != JSON_NUMBER) {
-                printf("[TEST FAIL] test_json_parse_string_4(): child_child_value->type %d does not equal JSON_NUMBER\n", child_child_num->type);
+                printd("[TEST FAIL] test_json_parse_string_4(): child_child_value->type %d does not equal JSON_NUMBER\n", child_child_num->type);
 
                 return 1;
             }
 
             if (child_child_num->type != JSON_INTEGER) {
-                printf("[TEST FAIL] test_json_parse_string_4(): child_child_value->data->type %d does not equal JSON_INTEGER\n", child_child_num->type);
+                printd("[TEST FAIL] test_json_parse_string_4(): child_child_value->data->type %d does not equal JSON_INTEGER\n", child_child_num->type);
 
                 return 1;
             }
 
             if (child_child_num->integer != j) {
-                printf("[TEST FAIL] test_json_parse_string_4(): child_child_value->data->integer %lld does not equal expected value (%d)\n", child_child_num->integer, j);
+                printd("[TEST FAIL] test_json_parse_string_4(): child_child_value->data->integer %lld does not equal expected value (%d)\n", child_child_num->integer, j);
 
                 return 1;
             }
@@ -254,7 +256,7 @@ static int test_json_value_to_string_4() {
 }
 
 static int test_json_value_to_string_5() {
-    printf("    Running test_json_value_to_string_5()\n");
+    printd("    Running test_json_value_to_string_5()\n");
 
     char *test_string = "{\n"
                         "    \"0\": true,\n"
@@ -268,7 +270,7 @@ static int test_json_value_to_string_5() {
     test_string = str_start;
 
     if (strcmp(json_value_to_string(test_val), test_string)) {
-        printf("[TEST FAIL] test_json_value_to_string_5(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
+        printd("[TEST FAIL] test_json_value_to_string_5(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
 
         return 1;
     }
@@ -282,7 +284,7 @@ static int test_json_value_to_string_5() {
         struct json_value *child_value = json_object_get_value((struct json_object *)test_val->data, entry_key, NULL, JSON_TRUE);
 
         if (child_value->type != JSON_TRUE) {
-            printf("[TEST FAIL] test_json_parse_string_5(): child_value->type %d does not equal JSON_TRUE\n", test_val->type);
+            printd("[TEST FAIL] test_json_parse_string_5(): child_value->type %d does not equal JSON_TRUE\n", test_val->type);
 
             return 1;
         }
@@ -294,7 +296,7 @@ static int test_json_value_to_string_5() {
 }
 
 static int test_json_value_to_string_6() {
-    printf("    Running test_json_value_to_string_6()\n");
+    printd("    Running test_json_value_to_string_6()\n");
 
     char *test_string = "{\n"
                         "    \"0\": false,\n"
@@ -308,7 +310,7 @@ static int test_json_value_to_string_6() {
     test_string = str_start;
 
     if (strcmp(json_value_to_string(test_val), test_string)) {
-        printf("[TEST FAIL] test_json_value_to_string_6(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
+        printd("[TEST FAIL] test_json_value_to_string_6(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
 
         return 1;
     }
@@ -321,7 +323,7 @@ static int test_json_value_to_string_6() {
         struct json_value *child_value = json_object_get_value((struct json_object *)test_val->data, entry_key, NULL, JSON_FALSE);
 
         if (child_value->type != JSON_FALSE) {
-            printf("[TEST FAIL] test_json_parse_string_6(): child_value->type %d does not equal JSON_FALSE\n", test_val->type);
+            printd("[TEST FAIL] test_json_parse_string_6(): child_value->type %d does not equal JSON_FALSE\n", test_val->type);
 
             return 1;
         }
@@ -333,7 +335,7 @@ static int test_json_value_to_string_6() {
 }
 
 static int test_json_value_to_string_7() {
-    printf("    Running test_json_value_to_string_7()\n");
+    printd("    Running test_json_value_to_string_7()\n");
 
     char *test_string = "{\n"
                         "    \"0\": null,\n"
@@ -347,7 +349,7 @@ static int test_json_value_to_string_7() {
     test_string = str_start;
 
     if (strcmp(json_value_to_string(test_val), test_string)) {
-        printf("[TEST FAIL] test_json_value_to_string_7(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
+        printd("[TEST FAIL] test_json_value_to_string_7(): test_val string %s does not equal expected value (%s)\n", json_value_to_string(test_val), test_string);
 
         return 1;
     }
@@ -360,7 +362,7 @@ static int test_json_value_to_string_7() {
         struct json_value *child_value = json_object_get_value((struct json_object *)test_val->data, entry_key, NULL, JSON_NULL);
 
         if (child_value->type != JSON_NULL) {
-            printf("[TEST FAIL] test_json_parse_string_7(): child_value->type %d does not equal JSON_NULL\n", test_val->type);
+            printd("[TEST FAIL] test_json_parse_string_7(): child_value->type %d does not equal JSON_NULL\n", test_val->type);
 
             return 1;
         }
@@ -372,7 +374,7 @@ static int test_json_value_to_string_7() {
 }
 
 int test_json_parser() {
-    printf("Testing JSON parser\n");
+    printd("Testing JSON parser\n");
 
     int failed_test_counter = 0;
     int num_tests = 0;
@@ -398,7 +400,7 @@ int test_json_parser() {
     failed_test_counter += test_json_value_to_string_7();
     ++num_tests;
 
-    printf("[TESTING COMPLETE] JSON parser testing %d/%d tests passed\n", num_tests - failed_test_counter, num_tests);
+    printd("[TESTING COMPLETE] JSON parser testing %d/%d tests passed\n", num_tests - failed_test_counter, num_tests);
 
     return 0;
 }

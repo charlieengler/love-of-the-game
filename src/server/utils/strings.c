@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../../include/logging.h"
+
 #include "../../include/server/utils/numbers.h"
 #include "../../include/server/utils/strings.h"
 
@@ -191,7 +193,7 @@ int append_str(char **target, char *addition, int *current_size, int *allocated_
     int addition_size = strlen(addition) + 1;
 
     if (grow_str(target, addition_size, *current_size, allocated_size)) {
-        printf("strings.c->append_str(): Unable to grow string\n");
+        printd("unable to grow string\n");
 
         return -1;
     }

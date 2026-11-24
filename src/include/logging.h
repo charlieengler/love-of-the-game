@@ -6,7 +6,9 @@
 #define DEBUG
 
 #ifdef DEBUG
-#define printd(...) printf(__VA_ARGS__)
+#define printd(...)                                                                                                                                                                                    \
+    printf("%s->%s[%d]: ", __FILE__, __func__, __LINE__);                                                                                                                                              \
+    printf(__VA_ARGS__)
 #else
 #define printd(...) asm("nop")
 #endif

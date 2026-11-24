@@ -47,7 +47,7 @@ int destroy_json_object(struct json_object *json_obj) {
 
         struct json_value *child_value = json_object_get_value(json_obj, json_obj->keys[i], NULL, -1);
         if (!child_value) {
-            printd("json_api.c->destroy_json_object(): could not find object value at key %s\n", json_obj->keys[i]);
+            printd("could not find object value at key %s\n", json_obj->keys[i]);
 
             return -1;
         }
@@ -56,7 +56,7 @@ int destroy_json_object(struct json_object *json_obj) {
 
         output = destroy_json_value(child_value);
         if (output) {
-            printd("json_api.c->destroy_json_object(): unable to destroy object value at key %s\n", json_obj->keys[i]);
+            printd("unable to destroy object value at key %s\n", json_obj->keys[i]);
 
             return output;
         }
@@ -75,7 +75,7 @@ int destroy_json_array(struct json_array *json_arr) {
     for (int i = 0; i < json_arr->length; ++i) {
         output = destroy_json_value(json_arr->values[i]);
         if (output) {
-            printd("json_api.c->destroy_json_array(): unable to destroy object value at position %d\n", i);
+            printd("unable to destroy object value at position %d\n", i);
 
             return output;
         }
@@ -93,7 +93,7 @@ int destroy_json_value(struct json_value *json_val) {
     case JSON_STRING:
         output = destroy_json_string((char *)json_val->data);
         if (output) {
-            printd("json_api.c->destroy_json_value(): destroy_json_string() returned %d\n", output);
+            printd("destroy_json_string() returned %d\n", output);
 
             return output;
         }
@@ -102,7 +102,7 @@ int destroy_json_value(struct json_value *json_val) {
     case JSON_NUMBER:
         output = destroy_json_number((struct json_number *)json_val->data);
         if (output) {
-            printd("json_api.c->destroy_json_value(): destroy_json_number() returned %d\n", output);
+            printd("destroy_json_number() returned %d\n", output);
 
             return output;
         }
@@ -111,7 +111,7 @@ int destroy_json_value(struct json_value *json_val) {
     case JSON_OBJECT:
         output = destroy_json_object((struct json_object *)json_val->data);
         if (output) {
-            printd("json_api.c->destroy_json_value(): destroy_json_object() returned %d\n", output);
+            printd("destroy_json_object() returned %d\n", output);
 
             return output;
         }
@@ -120,7 +120,7 @@ int destroy_json_value(struct json_value *json_val) {
     case JSON_ARRAY:
         output = destroy_json_array((struct json_array *)json_val->data);
         if (output) {
-            printd("json_api.c->destroy_json_value(): destroy_json_array() returned %d\n", output);
+            printd("destroy_json_array() returned %d\n", output);
 
             return output;
         }
@@ -133,7 +133,7 @@ int destroy_json_value(struct json_value *json_val) {
 
     case JSON_UNDEFINED:
     default:
-        printd("json_api.c->destroy_json_value(): JSON value had undefined type\n");
+        printd("JSON value had undefined type\n");
 
         goto out;
     }
@@ -171,7 +171,7 @@ struct json_value *create_number_json_value(struct json_number **output, long lo
 
     struct json_number *json_num = create_json_number();
     if (!json_num) {
-        printd("json_api.c->create_number_json_value(): create_json_number() returned NULL\n");
+        printd("create_json_number() returned NULL\n");
 
         free(json_val);
 
@@ -211,7 +211,7 @@ struct json_value *create_object_json_value(struct json_object **output) {
 
     struct json_object *json_obj = create_json_object();
     if (!json_obj) {
-        printd("json_api.c->create_object_json_value(): create_json_object() returned NULL\n");
+        printd("create_json_object() returned NULL\n");
 
         free(json_val);
 
@@ -253,11 +253,11 @@ int json_object_add_value(struct json_object **json_obj, char *key, struct json_
         int new_size = json_object_grow(json_obj);
 
         if (new_size == 0) {
-            printd("json_api.c->json_object_add_value(): grown JSON object had size zero\n");
+            printd("grown JSON object had size zero\n");
 
             return -1;
         } else if (new_size <= (*json_obj)->num_allocated) {
-            printd("json_api.c->json_object_add_value(): grown JSON object new_size (%d) is the same as or less than the previous size (%d)\n", new_size, (*json_obj)->num_allocated);
+            printd("grown JSON object new_size (%d) is the same as or less than the previous size (%d)\n", new_size, (*json_obj)->num_allocated);
 
             return -1;
         }
@@ -275,7 +275,7 @@ int json_object_add_value(struct json_object **json_obj, char *key, struct json_
         ++num_loops;
 
         if (num_loops > (*json_obj)->num_allocated) {
-            printd("json_api.c->json_object_add_value(): unable to add value to JSON object, the object didn't grow\n");
+            printd("unable to add value to JSON object, the object didn't grow\n");
 
             return -1;
         }
@@ -288,15 +288,13 @@ int json_object_add_value(struct json_object **json_obj, char *key, struct json_
     ++((*json_obj)->num_entries);
 
     if ((*json_obj)->num_entries == -1) {
-        printd("json_api.c->json_object_add_value(): unable to add value to JSON object, it's completely full somehow\n");
+        printd("unable to add value to JSON object, it's completely full somehow\n");
 
         return -1;
     }
 
-    if ((*json_obj)->values[index]->type != expected_data_type && expected_data_type != -1) {
-        printd("json_api.c->json_object_add_value(): data types do not match for key %s, expected %d, got %d\n", key, expected_data_type, (*json_obj)->values[index]->type);
-
-        return -1;
+    if ((int)expected_data_type != -1) {
+        check_json_type((*json_obj)->values[index]->type, expected_data_type, return -1);
     }
 
     if (output_data) {
@@ -308,7 +306,7 @@ int json_object_add_value(struct json_object **json_obj, char *key, struct json_
 
 struct json_value *json_object_get_value(struct json_object *json_obj, char *key, void **output_data, enum json_value_types expected_data_type) {
     if (json_obj->num_entries == 0) {
-        printd("json_api.c->json_object_get_value(): unable to find json value at %s in object, object was empty\n", key);
+        printd("unable to find json value at %s in object, object was empty\n", key);
 
         return NULL;
     }
@@ -319,7 +317,7 @@ struct json_value *json_object_get_value(struct json_object *json_obj, char *key
         ++num_loops;
 
         if (num_loops >= json_obj->num_allocated) {
-            printd("json_api.c->json_object_get_value(): unable to find JSON value at %s in object\n", key);
+            printd("unable to find JSON value at %s in object\n", key);
 
             return NULL;
         }
@@ -361,7 +359,7 @@ int json_object_remove_value(struct json_object **json_obj, char *key) {
         ++num_loops;
 
         if (num_loops >= (*json_obj)->num_allocated) {
-            printd("json_api.c->json_object_remove_value(): unable to find JSON value at %s in object\n", key);
+            printd("unable to find JSON value at %s in object\n", key);
 
             return -1;
         }
@@ -410,7 +408,7 @@ struct json_value *create_array_json_value(struct json_array **output) {
 
     struct json_array *json_arr = create_json_array();
     if (!json_arr) {
-        printd("json_api.c->create_array_json_value(): create_json_array() returned NULL\n");
+        printd("create_json_array() returned NULL\n");
 
         free(json_val);
 

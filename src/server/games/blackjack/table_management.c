@@ -11,11 +11,7 @@
 #include "../../../include/server/utils/json.h"
 
 int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int user_action, char **send_buffer) {
-    if (blackjack_db_json->type != JSON_OBJECT) {
-        printd("table_management.c->blackjack_progress_hand(): blackjack_db_json is of type %d, expected %d\n", blackjack_db_json->type, JSON_OBJECT);
-
-        return 500;
-    }
+    check_json_type(blackjack_db_json->type, JSON_OBJECT, return 500);
 
     struct json_object *blackjack_db_object = (struct json_object *)blackjack_db_json->data;
 
@@ -24,23 +20,18 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
     req = req_start;
 
     if (!req) {
-        printd("table_management.c->blackjack_progress_hand(): unable to convert req %s to json value\n", req);
+        printd("unable to convert req %s to json value\n", req);
 
         return 500;
     }
 
-    // TODO: Macro with callback for verifying JSON object type
-    if (req_json->type != JSON_OBJECT) {
-        printd("table_management.c->blackjack_progress_hand(): req_json is of type %d, expected %d\n", req_json->type, JSON_OBJECT);
-
-        return 500;
-    }
+    check_json_type(req_json->type, JSON_OBJECT, return 500);
 
     struct json_object *req_object = (struct json_object *)(req_json->data);
 
     char *table_id;
     if (!json_object_get_value(req_object, "tableID", (void **)&table_id, JSON_STRING)) {
-        printd("table_management.c->blackjack_progress_hand(): unable to get tableID from req_object\n");
+        printd("unable to get tableID from req_object\n");
 
         return 500;
     }
@@ -49,7 +40,7 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
     struct json_value *table_json = json_object_get_value(blackjack_db_object, table_id, (void **)&table_object, JSON_OBJECT);
     if (!table_json) {
         // TODO: Potentially need to create the table here, although it should already exist
-        printf("table_management.c->blackjack_progress_hand(): could not find table %s in blackjack DB\n", table_id);
+        printd("could not find table %s in blackjack DB\n", table_id);
 
         return 500;
     }
@@ -59,13 +50,13 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
     if (!hand_progress_json) {
         hand_progress_json = create_number_json_value(NULL, -1, 0, 0, JSON_INTEGER);
         if (!hand_progress_json) {
-            printd("table_management.c->blackjack_progress_hand(): unable to create hand_progress_json\n");
+            printd("unable to create hand_progress_json\n");
 
             return 500;
         }
 
         if (json_object_add_value(&table_object, "hand-progress", hand_progress_json, (void **)&hand_progress_num, JSON_NUMBER)) {
-            printd("table_management.c->blackjack_progress_hand(): unable to add hand_progress_json to table_object\n");
+            printd("unable to add hand_progress_json to table_object\n");
 
             return 500;
         }
@@ -75,7 +66,7 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
 
     struct json_array *users_array;
     if (!json_object_get_value(table_object, "users", (void **)&users_array, JSON_ARRAY)) {
-        printd("table_management.c->blackjack_progress_hand(): unable to get users array from table_object\n");
+        printd("unable to get users array from table_object\n");
 
         return 500;
     }
@@ -85,7 +76,7 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
     struct json_object *dealer_object;
     struct json_value *dealer_json = json_object_get_value(table_object, "dealer", (void **)&dealer_object, JSON_OBJECT);
     if (!dealer_json) {
-        printd("table_management.c->blackjack_progress_hand(): unable to get dealer object from table_object\n");
+        printd("unable to get dealer object from table_object\n");
 
         return 500;
     }
@@ -95,13 +86,13 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
     if (!dealer_hand_json) {
         dealer_hand_json = create_array_json_value(NULL);
         if (!dealer_hand_json) {
-            printd("table_management.c->blackjack_progress_hand(): unable to create dealer_hand_json\n");
+            printd("unable to create dealer_hand_json\n");
 
             return 500;
         }
 
         if (json_object_add_value(&dealer_object, "hand", dealer_hand_json, (void **)&dealer_hand_arr, JSON_ARRAY)) {
-            printd("table_management.c->blackjack_progress_hand(): unable to add dealer_hand_json to dealer_object\n");
+            printd("unable to add dealer_hand_json to dealer_object\n");
 
             return 500;
         }
@@ -110,18 +101,14 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
     char *res = req;
     if (hand_progress == -1) {
         if (json_object_remove_value(&table_object, "new-hand")) {
-            printd("table_management.c->blackjack_progress_hand(): unable to remove new-hand from table_object\n");
+            printd("unable to remove new-hand from table_object\n");
 
             return 500;
         }
 
         for (int i = 0; i < num_users; ++i) {
             struct json_value *tmp_user_json = users_array->values[i];
-            if (tmp_user_json->type != JSON_OBJECT) {
-                printd("table_management.c->blackjack_progress_hand(): tmp_user_json is of type %d, expected %d\n", tmp_user_json->type, JSON_OBJECT);
-
-                return 500;
-            }
+            check_json_type(tmp_user_json->type, JSON_OBJECT, return 500);
 
             struct json_object *tmp_user_object = (struct json_object *)(tmp_user_json->data);
 
@@ -129,70 +116,63 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
             if (!tmp_user_hand_json) {
                 tmp_user_hand_json = create_array_json_value(NULL);
                 if (!tmp_user_hand_json) {
-                    printd("table_management.c->blackjack_progress_hand(): unable to create tmp_user_hand_json\n");
+                    printd("unable to create tmp_user_hand_json\n");
 
                     return 500;
                 }
 
                 if (json_object_add_value(&tmp_user_object, "hand", tmp_user_hand_json, NULL, JSON_ARRAY)) {
-                    printd("table_management.c->blackjack_progress_hand(): unable to add tmp_user_hand_json to tmp_user_object\n");
+                    printd("unable to add tmp_user_hand_json to tmp_user_object\n");
 
                     return 500;
                 }
             }
 
-            if (tmp_user_hand_json->type != JSON_ARRAY) {
-                printd("table_management.c->blackjack_progress_hand(): tmp_user_hand_json is of type %d, expected %d\n", tmp_user_hand_json->type, JSON_ARRAY);
-
-                return 500;
-            }
+            check_json_type(tmp_user_hand_json->type, JSON_ARRAY, return 500);
 
             if (deal_card(table_object, tmp_user_hand_json) == -1) {
-                printd("table_management.c->blackjack_progress_hand(): unable to deal first user card\n");
+                printd("unable to deal first user card\n");
 
                 return 500;
             }
         }
 
         if (deal_card(table_object, dealer_hand_json) == -1) {
-            printd("table_management.c->blackjack_progress_hand(): unable to deal first dealer card\n");
+            printd("unable to deal first dealer card\n");
 
             return 500;
         }
 
         for (int i = 0; i < num_users; ++i) {
             struct json_value *tmp_user_json = users_array->values[i];
-            if (tmp_user_json->type != JSON_OBJECT) {
-                printd("table_management.c->blackjack_progress_hand(): tmp_user_json is of type %d, expected %d\n", tmp_user_json->type, JSON_OBJECT);
 
-                return 500;
-            }
+            check_json_type(tmp_user_json->type, JSON_OBJECT, return 500);
 
             struct json_object *tmp_user_object = (struct json_object *)(tmp_user_json->data);
 
             struct json_value *tmp_user_hand_json = json_object_get_value(tmp_user_object, "hand", NULL, JSON_ARRAY);
             if (!tmp_user_hand_json) {
-                printd("table_management.c->blackjack_progress_hand(): unable to get hand from tmp_user_object\n");
+                printd("unable to get hand from tmp_user_object\n");
 
                 return 500;
             }
 
             if (deal_card(table_object, tmp_user_hand_json) == -1) {
-                printd("table_management.c->blackjack_progress_hand(): unable to deal second user card\n");
+                printd("unable to deal second user card\n");
 
                 return 500;
             }
         }
 
         if (deal_card(table_object, dealer_hand_json) == -1) {
-            printd("table_management.c->blackjack_progress_hand(): unable to deal second dealer card\n");
+            printd("unable to deal second dealer card\n");
 
             return 500;
         }
 
         res = generate_table_res(table_json);
         if (!res) {
-            printd("table_management.c->blackjack_progress_hand(): res was null when starting hand\n");
+            printd("res was null when starting hand\n");
 
             return 500;
         }
@@ -202,36 +182,32 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
         char *req_user_id;
         struct json_value *req_user_id_json = json_object_get_value(req_object, "userID", (void **)&req_user_id, JSON_STRING);
         if (!req_user_id_json) {
-            printd("table_management.c->blackjack_progress_hand(): unable to get userID from req_object\n");
+            printd("unable to get userID from req_object\n");
 
             return 500;
         }
 
         struct json_value *user_json = users_array->values[hand_progress];
         if (!user_json) {
-            printd("table_management.c->blackjack_progress_hand(): user was null at index %d\n", hand_progress);
+            printd("user was null at index %d\n", hand_progress);
 
             return 500;
         }
 
-        if (user_json->type != JSON_OBJECT) {
-            printd("table_management.c->blackjack_progress_hand(): user_json is of type %d, expected %d\n", user_json->type, JSON_OBJECT);
-
-            return 500;
-        }
+        check_json_type(user_json->type, JSON_OBJECT, return 500);
 
         struct json_object *user_object = (struct json_object *)(user_json->data);
 
         char *user_id;
         if (!json_object_get_value(user_object, "id", (void **)&user_id, JSON_STRING)) {
-            printd("table_management.c->blackjack_progress_hand(): unable to get id from user_object\n");
+            printd("unable to get id from user_object\n");
 
             return 500;
         }
 
         if (strcmp(req_user_id, user_id)) {
             // TODO: Return error as res, not a printf
-            printd("table_management.c->blackjack_progress_hand(): user played out of turn\n");
+            printd("user played out of turn\n");
 
             // TODO: Error checking
             destroy_json_value(req_user_id_json);
@@ -241,7 +217,7 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
 
         struct json_value *user_hand_json = json_object_get_value(user_object, "hand", NULL, JSON_ARRAY);
         if (!user_hand_json) {
-            printd("table_management.c->blackjack_progress_hand(): unable to get hand from user_object\n");
+            printd("unable to get hand from user_object\n");
 
             return 500;
         }
@@ -249,7 +225,7 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
         int progress_hand = 1;
         if (user_action == USER_HIT) {
             if (deal_card(table_object, user_hand_json) == -1) {
-                printd("table_management.c->blackjack_progress_hand(): unable to deal card to user during turn %d\n", hand_progress);
+                printd("unable to deal card to user during turn %d\n", hand_progress);
 
                 return 500;
             }
@@ -260,13 +236,13 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
         } else if (user_action == USER_STAND) {
             // TODO: Stand behavior (if any)
         } else {
-            printd("table_management.c->blackjack_progress_hand(): invalid user action during turn %d\n", hand_progress);
+            printd("invalid user action during turn %d\n", hand_progress);
             progress_hand = 0;
         }
 
         res = generate_table_res(table_json);
         if (!res) {
-            printd("table_management.c->blackjack_progress_hand(): unable to generate res during turn %d\n", hand_progress);
+            printd("unable to generate res during turn %d\n", hand_progress);
 
             return 500;
         }
@@ -278,14 +254,14 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
         // Dealer's turn
         struct json_object *dealer_object;
         if (!json_object_get_value(table_object, "dealer", (void **)&dealer_object, JSON_OBJECT)) {
-            printd("table_management.c->blackjack_progress_hand(): unable to add dealer_object to table_object\n");
+            printd("unable to add dealer_object to table_object\n");
 
             return 500;
         }
 
         struct json_value *dealer_hand_json = json_object_get_value(dealer_object, "hand", NULL, JSON_ARRAY);
         if (!dealer_hand_json) {
-            printd("table_management.c->blackjack_progress_hand(): unable to add hand to dealer_object\n");
+            printd("unable to add hand to dealer_object\n");
 
             return 500;
         }
@@ -294,7 +270,7 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
 
         while (dealer_sum < 17) {
             if (deal_card(table_object, dealer_hand_json) == -1) {
-                printd("table_management.c->blackjack_progress_hand(): unable to deal card to dealer during dealer turn\n");
+                printd("unable to deal card to dealer during dealer turn\n");
 
                 return 500;
             }
@@ -304,7 +280,7 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
 
         res = generate_table_res(table_json);
         if (!res) {
-            printd("table_management.c->blackjack_progress_hand(): unable to generate res during dealer turn\n");
+            printd("unable to generate res during dealer turn\n");
 
             return 500;
         }
@@ -319,22 +295,18 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
         for (int i = 0; i < num_users; ++i) {
             struct json_value *tmp_user_json = users_array->values[i];
             if (!tmp_user_json) {
-                printd("table_management.c->blackjack_progress_hand(): tmp_user_json was null at index %d when hand was over\n", i);
+                printd("tmp_user_json was null at index %d when hand was over\n", i);
 
                 continue;
             }
 
-            if (tmp_user_json->type != JSON_OBJECT) {
-                printd("table_management.c->blackjack_progress_hand(): tmp_user_json is of type %d, expected %d\n", tmp_user_json->type, JSON_OBJECT);
-
-                continue;
-            }
+            check_json_type(tmp_user_json->type, JSON_OBJECT, continue);
 
             struct json_object *tmp_user_object = (struct json_object *)tmp_user_json->data;
 
             struct json_value *tmp_user_hand_json = json_object_get_value(tmp_user_object, "hand", NULL, JSON_ARRAY);
             if (!tmp_user_hand_json) {
-                printd("table_management.c->blackjack_progress_hand(): unable to get hand from tmp_user_object when hand was over\n");
+                printd("unable to get hand from tmp_user_object when hand was over\n");
 
                 continue;
             }
@@ -346,14 +318,14 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
 
             char *tmp_user_id;
             if (!json_object_get_value(tmp_user_object, "id", (void **)&tmp_user_id, JSON_STRING)) {
-                printd("table_management.c->blackjack_progress_hand(): unable to get id from tmp_user_object\n");
+                printd("unable to get id from tmp_user_object\n");
 
                 continue;
             }
 
             struct json_number *tmp_user_bet_num;
             if (!json_object_get_value(tmp_user_object, "bet", (void **)&tmp_user_bet_num, JSON_NUMBER)) {
-                printd("table_management.c->blackjack_progress_hand(): unable to get bet from tmp_user_object\n");
+                printd("unable to get bet from tmp_user_object\n");
 
                 continue;
             }
@@ -362,14 +334,14 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
 
             if (user_value > dealer_value) {
                 if (update_user_balance(tmp_user_id, tmp_user_bet * 2) == -1) {
-                    printd("table_management.c->blackjack_progress_hand(): unable to update user balance for %s (user won)\n", tmp_user_id);
+                    printd("unable to update user balance for %s (user won)\n", tmp_user_id);
 
                     continue;
                 }
             } else if (user_value == dealer_value) {
                 if (user_value) {
                     if (update_user_balance(tmp_user_id, tmp_user_bet) == -1) {
-                        printd("table_management.c->blackjack_progress_hand(): unable to update user balance for %s (user pushed)\n", tmp_user_id);
+                        printd("unable to update user balance for %s (user pushed)\n", tmp_user_id);
 
                         continue;
                     }
@@ -378,49 +350,45 @@ int blackjack_progress_hand(struct json_value *blackjack_db_json, char *req, int
         }
 
         if (json_object_remove_value(&table_object, "hand-progress") == -1) {
-            printd("table_management.c->blackjack_progress_hand(): unable to remove hand-progress from table_object\n");
+            printd("unable to remove hand-progress from table_object\n");
         }
 
         if (json_object_remove_value(&table_object, "deck") == -1) {
-            printd("table_management.c->blackjack_progress_hand(): unable to remove deck from table_object\n");
+            printd("unable to remove deck from table_object\n");
         }
 
         if (json_object_remove_value(&dealer_object, "hand") == -1) {
-            printd("table_management.c->blackjack_progress_hand(): unable to remove hand from table_object\n");
+            printd("unable to remove hand from table_object\n");
         }
 
         for (int i = 0; i < num_users; ++i) {
             struct json_value *tmp_user_json = users_array->values[i];
             if (!tmp_user_json) {
-                printd("table_management.c->blackjack_progress_hand() user was null at index %d when ending hand\n", i);
+                printd("user was null at index %d when ending hand\n", i);
 
                 continue;
             }
 
-            if (tmp_user_json->type != JSON_OBJECT) {
-                printd("table_management.c->blackjack_progress_hand(): tmp_user_json is of type %d, expected %d when ending hand\n", tmp_user_json->type, JSON_OBJECT);
-
-                continue;
-            }
+            check_json_type(tmp_user_json->type, JSON_OBJECT, continue);
 
             if (json_object_remove_value((struct json_object **)(&tmp_user_json->data), "hand") == -1) {
-                printd("table_management.c->blackjack_progress_hand(): unable to remove hand from user %d\n", i);
+                printd("unable to remove hand from user %d\n", i);
             }
 
             if (json_object_remove_value((struct json_object **)(&tmp_user_json->data), "bet") == -1) {
-                printd("table_management.c->blackjack_progress_hand(): unable to remove bet from user %d\n", i);
+                printd("unable to remove bet from user %d\n", i);
             }
         }
 
         if (json_object_add_value(&table_object, "new-hand", create_true_json_value(), NULL, JSON_TRUE)) {
-            printd("table_management.c->blackjack_progress_hand(): unable to add new-hand to table_object\n");
+            printd("unable to add new-hand to table_object\n");
 
             return 500;
         }
 
         res = generate_table_res(table_json);
         if (!res) {
-            printd("table_management.c->blackjack_progress_hand(): unable to generate res when ending hand\n");
+            printd("unable to generate res when ending hand\n");
 
             return 500;
         }
@@ -443,11 +411,7 @@ out:
 }
 
 int blackjack_status_update(struct json_value *blackjack_db_json, char *req, char **send_buffer) {
-    if (blackjack_db_json->type != JSON_OBJECT) {
-        printd("table_management.c->blackjack_status_update(): blackjack_db_json is of type %d, expected %d when ending hand\n", blackjack_db_json->type, JSON_OBJECT);
-
-        return 500;
-    }
+    check_json_type(blackjack_db_json->type, JSON_OBJECT, return 500);
 
     struct json_object *blackjack_db_object = blackjack_db_json->data;
 
@@ -456,23 +420,18 @@ int blackjack_status_update(struct json_value *blackjack_db_json, char *req, cha
     req = req_start;
 
     if (!req_json) {
-        printd("table_management.c->blackjack_status_update(): unable to convert req %s to json\n", req);
+        printd("unable to convert req %s to json\n", req);
 
         return 500;
     }
 
-    // TODO: Macro with callback for verifying JSON object type
-    if (req_json->type != JSON_OBJECT) {
-        printd("table_management.c->blackjack_status_update(): req_json is of type %d, expected %d when ending hand\n", req_json->type, JSON_OBJECT);
-
-        return 500;
-    }
+    check_json_type(req_json->type, JSON_OBJECT, return 500);
 
     struct json_object *req_object = (struct json_object *)req_json->data;
 
     char *table_id;
     if (!json_object_get_value(req_object, "tableID", (void **)&table_id, JSON_STRING)) {
-        printd("table_management.c->blackjack_status_update(): unable to get tableID from req_object\n");
+        printd("unable to get tableID from req_object\n");
 
         return 500;
     }
@@ -482,19 +441,19 @@ int blackjack_status_update(struct json_value *blackjack_db_json, char *req, cha
 
     if (!table_json) {
         // TODO: Potentially need to create the table here, although it should already exist
-        printd("table_management.c->blackjack_status_update(): unable to get table %s from blackjack DB\n", table_id);
+        printd("unable to get table %s from blackjack DB\n", table_id);
 
         return 500;
     }
 
     struct json_number *hand_progress_num = NULL;
     if (!json_object_get_value(table_object, "hand-progress", (void **)&hand_progress_num, JSON_NUMBER)) {
-        printd("table_management.c->blackjack_status_update(): unable to get hand-progress from table_object\n");
+        printd("unable to get hand-progress from table_object\n");
     }
 
     struct json_array *users_arr = NULL;
     if (!json_object_get_value(table_object, "users", (void **)&users_arr, JSON_ARRAY)) {
-        printd("table_management.c->blackjack_status_update(): unable to get users array from table_obejct\n");
+        printd("unable to get users array from table_obejct\n");
 
         return 500;
     }
@@ -507,7 +466,7 @@ int blackjack_status_update(struct json_value *blackjack_db_json, char *req, cha
 
             if (hand_progress == num_users) {
                 if (blackjack_progress_hand(blackjack_db_json, req, USER_NO_ACTION, send_buffer) != 200) {
-                    printd("table_management.c->blackjack_status_update(): unable to progress hand\n");
+                    printd("unable to progress hand\n");
 
                     return 500;
                 }
@@ -516,21 +475,20 @@ int blackjack_status_update(struct json_value *blackjack_db_json, char *req, cha
 
         for (int i = 0; i < num_users; ++i) {
             struct json_value *current_user_json = users_arr->values[i];
-            if (current_user_json->type != JSON_OBJECT) {
-                printd("table_management.c->blackjack_status_update(): current_user_json type is %d, expected %d\n", current_user_json->type, JSON_OBJECT);
-            }
+
+            check_json_type(current_user_json->type, JSON_OBJECT, continue);
 
             struct json_object *current_user_object = (struct json_object *)current_user_json->data;
 
             char *user_id;
             if (!json_object_get_value(current_user_object, "id", (void **)&user_id, JSON_STRING)) {
-                printd("table_management.c->blackjack_status_update(): failed to find user id in user object\n");
+                printd("failed to find user id in user object\n");
 
                 return 500;
             }
 
             if (!user_id) {
-                printd("table_management.c->blackjack_status_update(): user_id was null\n");
+                printd("user_id was null\n");
 
                 continue;
             }
@@ -538,21 +496,19 @@ int blackjack_status_update(struct json_value *blackjack_db_json, char *req, cha
             struct json_value *users_db = db_initialize("users");
 
             if (!users_db) {
-                printd("table_management.c->blackjack_status_update(): failed to initialize users_db\n");
+                printd("failed to initialize users_db\n");
 
                 return 500;
             }
 
-            if (users_db->type != JSON_OBJECT) {
-                printd("table_management.c->blackjack_status_update(): users_db type is %d, expected %d\n", users_db->type, JSON_OBJECT);
-            }
+            check_json_type(users_db->type, JSON_OBJECT, continue);
 
             struct json_object *users_object = (struct json_object *)users_db->data;
 
             struct json_object *existing_user_object;
 
             if (!json_object_get_value(users_object, user_id, (void **)&existing_user_object, JSON_OBJECT)) {
-                printd("table_management.c->blackjack_status_update(): failed to find existing user at id %s\n", user_id);
+                printd("failed to find existing user at id %s\n", user_id);
 
                 return 500;
             }
@@ -560,7 +516,7 @@ int blackjack_status_update(struct json_value *blackjack_db_json, char *req, cha
             struct json_number *user_balance;
             struct json_value *user_balance_json = json_object_get_value(existing_user_object, "balance", (void **)&user_balance, JSON_NUMBER);
             if (!user_balance_json) {
-                printd("table_management.c->blackjack_status_update(): failed to find user balance at user with id %s\n", user_id);
+                printd("failed to find user balance at user with id %s\n", user_id);
 
                 return 500;
             }
@@ -569,13 +525,13 @@ int blackjack_status_update(struct json_value *blackjack_db_json, char *req, cha
             if (!json_object_get_value(current_user_object, "balance", (void **)&current_user_balance, JSON_NUMBER)) {
                 struct json_value *current_user_balance_json = create_number_json_value(&current_user_balance, 0, 0, 0, JSON_INTEGER);
                 if (!current_user_balance_json) {
-                    printd("table_management.c->blackjack_status_update(): failed to create user balance number json\n");
+                    printd("failed to create user balance number json\n");
 
                     return 500;
                 }
 
                 if (json_object_add_value(&current_user_object, "balance", current_user_balance_json, NULL, JSON_NUMBER)) {
-                    printd("table_management.c->blackjack_status_update(): failed to add current_user_balance_json to current_user_object\n");
+                    printd("failed to add current_user_balance_json to current_user_object\n");
 
                     return 500;
                 }
@@ -589,7 +545,7 @@ int blackjack_status_update(struct json_value *blackjack_db_json, char *req, cha
         *send_buffer = generate_table_res(table_json);
 
         if (!*send_buffer) {
-            printd("table_management.c->blackjack_status_update(): unable to generate res\n");
+            printd("unable to generate res\n");
 
             return 500;
         }

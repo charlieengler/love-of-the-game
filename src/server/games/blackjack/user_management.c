@@ -10,8 +10,9 @@
 
 int validate_user(char *req) {
     struct json_value *users_db_json = db_initialize("users");
+
     if (!users_db_json) {
-        printd("user_management.c->validate_user(): unable to initialize users DB\n");
+        printd("unable to initialize users DB\n");
 
         return -1;
     }
@@ -19,7 +20,7 @@ int validate_user(char *req) {
     char *find_user_res;
     int code = find_user(users_db_json, req, &find_user_res);
     if (code != 200) {
-        printd("user_management.c->validate_user(): unable to find user, returned code %d", code);
+        printd("unable to find user, returned code %d", code);
 
         return -1;
     }
@@ -30,13 +31,13 @@ int validate_user(char *req) {
     find_user_res = find_user_res_start;
 
     if (!db_found_user_json) {
-        printd("user_management.c->validate_user(): unable to convert find_user_res %s to json value\n", find_user_res);
+        printd("unable to convert find_user_res %s to json value\n", find_user_res);
 
         return -1;
     }
 
     if (db_found_user_json->type == JSON_FALSE) {
-        printd("user_management.c->validate_user(): user does not exist\n");
+        printd("user does not exist\n");
 
         return 1;
     }

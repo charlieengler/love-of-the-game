@@ -51,6 +51,12 @@ struct json_number {
         ++(*input);                                                                                                                                                                                    \
         break;
 
+#define check_json_type(type1, type2, callback)                                                                                                                                                        \
+    if (type1 != type2) {                                                                                                                                                                              \
+        printd("JSON type check failed, got %d expected %d\n", type1, type2);                                                                                                                          \
+        callback;                                                                                                                                                                                      \
+    }
+
 struct json_value *string_to_json_value(char **input);
 
 char *json_value_to_string(struct json_value *json_val);

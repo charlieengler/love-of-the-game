@@ -5,6 +5,8 @@
 
 #include "../include/router.h"
 
+#include "../include/logging.h"
+
 #include "../include/server/games/games.h"
 #include "../include/server/users/users.h"
 
@@ -28,7 +30,7 @@ int route_get(char *trimmed_path, char *full_path, int new_fd, char **send_buffe
     }
 
     if (access(full_path, F_OK) != 0) {
-        printf("[./server/server.c | run_server()] File %s doesn't exist on server\n", full_path);
+        printd("file %s doesn't exist on server\n", full_path);
         return 404;
     }
 
@@ -42,7 +44,6 @@ int route_get(char *trimmed_path, char *full_path, int new_fd, char **send_buffe
 
         fseek(send_file, 0, SEEK_SET);
 
-        // TODO: Malloc error checking
         *send_buffer = (char *)malloc((send_length + strlen("\r\n\r\n") + 1) * sizeof(char));
         fread(*send_buffer, sizeof(char), send_length, send_file);
 

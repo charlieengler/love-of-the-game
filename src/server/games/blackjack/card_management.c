@@ -22,7 +22,7 @@ int deal_card(struct json_object *table_object, struct json_value *user_hand_jso
         deck_json = create_array_json_value(NULL);
 
         if (json_object_add_value(&table_object, "deck", deck_json, (void **)&deck_array, JSON_ARRAY)) {
-            printd("card_management.c->deal_card(): unable to add deck array to table object\n");
+            printd("unable to add deck array to table object\n");
 
             destroy_json_value(deck_json);
 
@@ -30,11 +30,7 @@ int deal_card(struct json_object *table_object, struct json_value *user_hand_jso
         }
     }
 
-    if (deck_json->type != JSON_ARRAY) {
-        printd("card_management.c->deal_card(): deck_json is of type %d, expected %d\n", deck_json->type, JSON_ARRAY);
-
-        return -1;
-    }
+    check_json_type(deck_json->type, JSON_ARRAY, return -1);
 
     if (deck_array->length == 0) {
         int num_cards = NUM_CARDS * 5;
@@ -44,7 +40,7 @@ int deal_card(struct json_object *table_object, struct json_value *user_hand_jso
             struct json_value *card_json = create_number_json_value(NULL, shuffled_deck[i], 0, 0, JSON_INTEGER);
 
             if (json_array_add_value(&deck_array, card_json)) {
-                printd("card_management.c->deal_card(): unable to add card_json to deck_array\n");
+                printd("unable to add card_json to deck_array\n");
 
                 destroy_json_value(card_json);
 
@@ -57,29 +53,21 @@ int deal_card(struct json_object *table_object, struct json_value *user_hand_jso
 
     struct json_value *popped_card_json = json_array_pop_value(deck_array);
     if (!popped_card_json) {
-        printd("card_management.c->deal_card(): unable to pop card value from deck_array\n");
+        printd("unable to pop card value from deck_array\n");
 
         return -1;
     }
 
-    if (popped_card_json->type != JSON_NUMBER) {
-        printd("card_management.c->deal_card(): popped_card_json is of type %d, expected %d\n", popped_card_json->type, JSON_ARRAY);
-
-        return -1;
-    }
+    check_json_type(popped_card_json->type, JSON_NUMBER, return -1);
 
     int selected_card = (int)(((struct json_number *)(popped_card_json->data))->integer);
 
-    if (user_hand_json->type != JSON_ARRAY) {
-        printd("card_management.c->deal_card(): user_hand_json is of type %d, expected %d\n", user_hand_json->type, JSON_ARRAY);
-
-        return -1;
-    }
+    check_json_type(user_hand_json->type, JSON_ARRAY, return -1);
 
     struct json_array *user_hand_arr = (struct json_array *)(user_hand_json->data);
 
     if (json_array_add_value(&user_hand_arr, popped_card_json)) {
-        printd("card_management.c->deal_card(): unable to add popped_card_json to user_hand_arr\n");
+        printd("unable to add popped_card_json to user_hand_arr\n");
 
         return -1;
     }
@@ -88,11 +76,7 @@ int deal_card(struct json_object *table_object, struct json_value *user_hand_jso
 }
 
 int tally_hand(struct json_value *user_hand_json) {
-    if (user_hand_json->type != JSON_ARRAY) {
-        printd("card_management.c->tally_hand(): user_hand_json is of type %d, expected %d\n", user_hand_json->type, JSON_ARRAY);
-
-        return -1;
-    }
+    check_json_type(user_hand_json->type, JSON_ARRAY, return -1);
 
     struct json_array *user_hand_arr = (struct json_array *)(user_hand_json->data);
 
@@ -101,11 +85,8 @@ int tally_hand(struct json_value *user_hand_json) {
 
     for (int i = 0; i < user_hand_arr->length; ++i) {
         struct json_value *card_json = user_hand_arr->values[i];
-        if (card_json->type != JSON_NUMBER) {
-            printd("card_management.c->tally_hand(): card_json is of type %d, expected %d\n", card_json->type, JSON_ARRAY);
 
-            return -1;
-        }
+        check_json_type(card_json->type, JSON_NUMBER, return -1);
 
         int card = (int)(((struct json_number *)(card_json->data))->integer);
         int card_value = card_values[card % 13];

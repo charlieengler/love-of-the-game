@@ -6,7 +6,6 @@
 
 #include "../../../include/server/utils/json.h"
 
-#include "../../../include/server/utils/numbers.h"
 #include "../../../include/server/utils/strings.h"
 
 #include "internal.h"
@@ -59,7 +58,7 @@ char *json_object_to_string(struct json_object *json_obj, int depth) {
     char *str = (char *)calloc(alloc_size, sizeof(char));
     int append_out = append_str(&str, "{", &total_length, &alloc_size);
     if (append_out) {
-        printd("json_to_string.c->json_object_to_string(): append_str() returned %d on call %d\n", append_out, 1);
+        printd("append_str() returned %d on call %d\n", append_out, 1);
 
         goto fail;
     }
@@ -78,7 +77,7 @@ char *json_object_to_string(struct json_object *json_obj, int depth) {
 
         append_out = append_str(&str, "\n", &total_length, &alloc_size);
         if (append_out) {
-            printd("json_to_string.c->json_object_to_string(): append_str() returned %d on call %d\n", append_out, 2);
+            printd("append_str() returned %d on call %d\n", append_out, 2);
 
             goto fail;
         }
@@ -86,7 +85,7 @@ char *json_object_to_string(struct json_object *json_obj, int depth) {
         for (int j = 0; j < depth + 1; ++j) {
             append_out = append_str(&str, "    ", &total_length, &alloc_size);
             if (append_out) {
-                printd("json_to_string.c->json_object_to_string(): append_str() returned %d on call %d\n", append_out, 3);
+                printd("append_str() returned %d on call %d\n", append_out, 3);
 
                 goto fail;
             }
@@ -96,26 +95,26 @@ char *json_object_to_string(struct json_object *json_obj, int depth) {
 
         append_out = append_str(&str, "\"", &total_length, &alloc_size);
         if (append_out) {
-            printd("json_to_string.c->json_object_to_string(): append_str() returned %d on call %d\n", append_out, 4);
+            printd("append_str() returned %d on call %d\n", append_out, 4);
 
             goto fail;
         }
         append_out = append_str(&str, key, &total_length, &alloc_size);
         if (append_out) {
-            printd("json_to_string.c->json_object_to_string(): append_str() returned %d on call %d\n", append_out, 5);
+            printd("append_str() returned %d on call %d\n", append_out, 5);
 
             goto fail;
         }
         append_out = append_str(&str, "\": ", &total_length, &alloc_size);
         if (append_out) {
-            printd("json_to_string.c->json_object_to_string(): append_str() returned %d on call %d\n", append_out, 6);
+            printd("append_str() returned %d on call %d\n", append_out, 6);
 
             goto fail;
         }
 
         struct json_value *json_val = json_object_get_value(json_obj, key, NULL, -1);
         if (!json_val) {
-            printd("json_to_string.c->json_object_to_string(): json_val was null when getting json_obj value at %s\n", key);
+            printd("json_val was null when getting json_obj value at %s\n", key);
 
             goto fail;
         }
@@ -123,14 +122,14 @@ char *json_object_to_string(struct json_object *json_obj, int depth) {
         char *output = json_value_to_string_helper(json_val, depth + 1);
 
         if (!output) {
-            printd("json_to_string.c->json_object_to_string(): output was null when converting json_val to string\n");
+            printd("output was null when converting json_val to string\n");
 
             goto fail;
         }
 
         append_out = append_str(&str, output, &total_length, &alloc_size);
         if (append_out) {
-            printd("json_to_string.c->json_object_to_string(): append_str() returned %d on call %d\n", append_out, 7);
+            printd("append_str() returned %d on call %d\n", append_out, 7);
 
             goto fail;
         }
@@ -138,7 +137,7 @@ char *json_object_to_string(struct json_object *json_obj, int depth) {
         if (total_entries < json_obj->num_entries) {
             append_out = append_str(&str, ",", &total_length, &alloc_size);
             if (append_out) {
-                printd("json_to_string.c->json_object_to_string(): append_str() returned %d on call %d\n", append_out, 8);
+                printd("append_str() returned %d on call %d\n", append_out, 8);
 
                 goto fail;
             }
@@ -149,7 +148,7 @@ char *json_object_to_string(struct json_object *json_obj, int depth) {
 
     append_out = append_str(&str, "\n", &total_length, &alloc_size);
     if (append_out) {
-        printd("json_to_string.c->json_object_to_string(): append_str() returned %d on call %d\n", append_out, 9);
+        printd("append_str() returned %d on call %d\n", append_out, 9);
 
         goto fail;
     }
@@ -157,7 +156,7 @@ char *json_object_to_string(struct json_object *json_obj, int depth) {
     for (int j = 0; j < depth; ++j) {
         append_out = append_str(&str, "    ", &total_length, &alloc_size);
         if (append_out) {
-            printd("json_to_string.c->json_object_to_string(): append_str() returned %d on call %d\n", append_out, 10);
+            printd("append_str() returned %d on call %d\n", append_out, 10);
 
             goto fail;
         }
@@ -166,7 +165,7 @@ char *json_object_to_string(struct json_object *json_obj, int depth) {
 out:
     append_out = append_str(&str, "}", &total_length, &alloc_size);
     if (append_out) {
-        printd("json_to_string.c->json_object_to_string(): append_str() returned %d on call %d\n", append_out, 11);
+        printd("append_str() returned %d on call %d\n", append_out, 11);
 
         goto fail;
     }
@@ -184,7 +183,7 @@ char *json_array_to_string(struct json_array *json_arr, int depth) {
     char *str = (char *)calloc(alloc_size, sizeof(char));
     int append_out = append_str(&str, "[", &total_length, &alloc_size);
     if (append_out) {
-        printd("json_to_string.c->json_array_to_string(): append_str() returned %d on call %d\n", append_out, 1);
+        printd("append_str() returned %d on call %d\n", append_out, 1);
 
         goto fail;
     }
@@ -196,7 +195,7 @@ char *json_array_to_string(struct json_array *json_arr, int depth) {
     for (int i = 0; i < json_arr->length; ++i) {
         append_out = append_str(&str, "\n", &total_length, &alloc_size);
         if (append_out) {
-            printd("json_to_string.c->json_array_to_string(): append_str() returned %d on call %d\n", append_out, 2);
+            printd("append_str() returned %d on call %d\n", append_out, 2);
 
             goto fail;
         }
@@ -204,7 +203,7 @@ char *json_array_to_string(struct json_array *json_arr, int depth) {
         for (int j = 0; j < depth + 1; ++j) {
             append_out = append_str(&str, "    ", &total_length, &alloc_size);
             if (append_out) {
-                printd("json_to_string.c->json_array_to_string(): append_str() returned %d on call %d\n", append_out, 3);
+                printd("append_str() returned %d on call %d\n", append_out, 3);
 
                 goto fail;
             }
@@ -215,14 +214,14 @@ char *json_array_to_string(struct json_array *json_arr, int depth) {
         char *output = json_value_to_string_helper(json_val, depth + 1);
 
         if (!output) {
-            printd("json_to_string.c->json_array_to_string(): json_value_to_string_helper() returned NULL on JSON array entry %d\n", i);
+            printd("json_value_to_string_helper() returned NULL on JSON array entry %d\n", i);
 
             goto fail;
         }
 
         append_out = append_str(&str, output, &total_length, &alloc_size);
         if (append_out) {
-            printd("json_to_string.c->json_array_to_string(): append_str() returned %d on call %d\n", append_out, 4);
+            printd("append_str() returned %d on call %d\n", append_out, 4);
 
             goto fail;
         }
@@ -230,7 +229,7 @@ char *json_array_to_string(struct json_array *json_arr, int depth) {
         if (i + 1 < json_arr->length) {
             append_out = append_str(&str, ",", &total_length, &alloc_size);
             if (append_out) {
-                printd("json_to_string.c->json_array_to_string(): append_str() returned %d on call %d\n", append_out, 5);
+                printd("append_str() returned %d on call %d\n", append_out, 5);
 
                 goto fail;
             }
@@ -241,7 +240,7 @@ char *json_array_to_string(struct json_array *json_arr, int depth) {
 
     append_out = append_str(&str, "\n", &total_length, &alloc_size);
     if (append_out) {
-        printd("json_to_string.c->json_array_to_string(): append_str() returned %d on call %d\n", append_out, 6);
+        printd("append_str() returned %d on call %d\n", append_out, 6);
 
         goto fail;
     }
@@ -249,7 +248,7 @@ char *json_array_to_string(struct json_array *json_arr, int depth) {
     for (int j = 0; j < depth; ++j) {
         append_out = append_str(&str, "    ", &total_length, &alloc_size);
         if (append_out) {
-            printd("json_to_string.c->json_array_to_string(): append_str() returned %d on call %d\n", append_out, 7);
+            printd("append_str() returned %d on call %d\n", append_out, 7);
 
             goto fail;
         }
@@ -258,7 +257,7 @@ char *json_array_to_string(struct json_array *json_arr, int depth) {
 out:
     append_out = append_str(&str, "]", &total_length, &alloc_size);
     if (append_out) {
-        printd("json_to_string.c->json_array_to_string(): append_str() returned %d on call %d\n", append_out, 8);
+        printd("append_str() returned %d on call %d\n", append_out, 8);
 
         goto fail;
     }
@@ -311,7 +310,7 @@ char *json_value_to_string_helper(struct json_value *json_val, int depth) {
         output = json_string_to_string((char *)json_val->data);
 
         if (!output) {
-            printd("json_to_string.c->json_value_to_string_helper(): json_string_to_string output was NULL\n");
+            printd("json_string_to_string output was NULL\n");
 
             goto fail;
         }
@@ -321,7 +320,7 @@ char *json_value_to_string_helper(struct json_value *json_val, int depth) {
         output = json_number_to_string((struct json_number *)json_val->data);
 
         if (!output) {
-            printd("json_to_string.c->json_value_to_string_helper(): json_number_to_string output was NULL\n");
+            printd("json_number_to_string output was NULL\n");
 
             goto fail;
         }
@@ -331,7 +330,7 @@ char *json_value_to_string_helper(struct json_value *json_val, int depth) {
         output = json_object_to_string((struct json_object *)json_val->data, depth);
 
         if (!output) {
-            printd("json_to_string.c->json_value_to_string_helper(): json_object_to_string output was NULL\n");
+            printd("json_object_to_string output was NULL\n");
 
             goto fail;
         }
@@ -341,7 +340,7 @@ char *json_value_to_string_helper(struct json_value *json_val, int depth) {
         output = json_array_to_string((struct json_array *)json_val->data, depth);
 
         if (!output) {
-            printd("json_to_string.c->json_value_to_string_helper(): json_array_to_string output was NULL\n");
+            printd("json_array_to_string output was NULL\n");
 
             goto fail;
         }
@@ -351,7 +350,7 @@ char *json_value_to_string_helper(struct json_value *json_val, int depth) {
         output = json_true_to_string();
 
         if (!output) {
-            printd("json_to_string.c->json_value_to_string_helper(): json_true_to_string output was NULL\n");
+            printd("json_true_to_string output was NULL\n");
 
             goto fail;
         }
@@ -361,7 +360,7 @@ char *json_value_to_string_helper(struct json_value *json_val, int depth) {
         output = json_false_to_string();
 
         if (!output) {
-            printd("json_to_string.c->json_value_to_string_helper(): json_false_to_string output was NULL\n");
+            printd("json_false_to_string output was NULL\n");
 
             goto fail;
         }
@@ -371,7 +370,7 @@ char *json_value_to_string_helper(struct json_value *json_val, int depth) {
         output = json_null_to_string();
 
         if (!output) {
-            printd("json_to_string.c->json_value_to_string_helper(): json_null_to_string output was NULL\n");
+            printd("json_null_to_string output was NULL\n");
 
             goto fail;
         }
@@ -379,20 +378,20 @@ char *json_value_to_string_helper(struct json_value *json_val, int depth) {
 
     case JSON_UNDEFINED:
     default:
-        printd("json_to_string.c->json_value_to_string_helper(): JSON value had type undefined\n");
+        printd("JSON value had type undefined\n");
 
         goto fail;
     }
 
     if (!output) {
-        printd("json_to_string.c->json_value_to_string_helper(): NULL output detected\n");
+        printd("NULL output detected\n");
 
         goto fail;
     }
 
     int append_out = append_str(&str, output, &total_length, &alloc_size);
     if (append_out) {
-        printd("json_to_string.c->json_value_to_string_helper(): append_str() returned %d\n", append_out);
+        printd("append_str() returned %d\n", append_out);
 
         goto fail;
     }

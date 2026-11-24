@@ -4,12 +4,13 @@
 
 #include "tests.h"
 
+#include "../include/logging.h"
+
 #include "../include/server/database/database.h"
 #include "../include/server/utils/json.h"
 
-// TODO: Implement me
 static int test_db_initialize_no_file() {
-    printf("    Running test_db_initialize_no_file()\n");
+    printd("    Running test_db_initialize_no_file()\n");
 
     char *test_name = "test-initialize-no-file";
 
@@ -25,21 +26,20 @@ static int test_db_initialize_no_file() {
     return 0;
 }
 
-// TODO: Implement me
 static int test_db_initialize_with_file() {
-    printf("    Running test_db_initialize_with_file()\n");
+    printd("    Running test_db_initialize_with_file()\n");
 
     char *test_name = "test-initialize-with-file";
 
     struct json_value *db_json = db_initialize(test_name);
     if (!db_json) {
-        printf("[TEST FAIL] test_db_initialize_with_file(): db_json was null\n");
+        printd("[TEST FAIL] test_db_initialize_with_file(): db_json was null\n");
 
         return 1;
     }
 
     if (db_json->type != JSON_OBJECT) {
-        printf("[TEST FAIL] test_db_initialize_with_file(): db_json type (%d) was not JSON_OBJECT (%d)\n", db_json->type, JSON_OBJECT);
+        printd("[TEST FAIL] test_db_initialize_with_file(): db_json type (%d) was not JSON_OBJECT (%d)\n", db_json->type, JSON_OBJECT);
 
         return 1;
     }
@@ -49,7 +49,7 @@ static int test_db_initialize_with_file() {
     struct json_object *object_tests_object;
     struct json_value *object_tests_json = json_object_get_value(db_obj, "object-tests", (void **)&object_tests_object, JSON_OBJECT);
     if (!object_tests_json) {
-        printf("[TEST FAIL] test_db_initialize_with_file(): object_tests_json was null\n");
+        printd("[TEST FAIL] test_db_initialize_with_file(): object_tests_json was null\n");
 
         return 1;
     }
@@ -57,13 +57,13 @@ static int test_db_initialize_with_file() {
     struct json_object *object_objects_object;
     struct json_value *object_objects_json = json_object_get_value(object_tests_object, "object-objects", (void **)&object_objects_object, JSON_OBJECT);
     if (!object_objects_json) {
-        printf("[TEST FAIL] test_db_initialize_with_file(): object_objects_json was null\n");
+        printd("[TEST FAIL] test_db_initialize_with_file(): object_objects_json was null\n");
 
         return 1;
     }
 
     if (object_objects_json->type != JSON_OBJECT) {
-        printf("[TEST FAIL] test_db_initialize_with_file(): object_objects_json type (%d) was not JSON_OBJECT (%d)\n", object_objects_json->type, JSON_OBJECT);
+        printd("[TEST FAIL] test_db_initialize_with_file(): object_objects_json type (%d) was not JSON_OBJECT (%d)\n", object_objects_json->type, JSON_OBJECT);
 
         return 1;
     }
@@ -76,7 +76,7 @@ static int test_db_initialize_with_file() {
 
 // TODO: Implement me
 static int test_db_save() {
-    printf("    Running test_db_save()\n");
+    printd("    Running test_db_save()\n");
 
     char *test_name = "test-save";
 
@@ -103,7 +103,7 @@ static int test_db_save() {
 }
 
 int test_db() {
-    printf("Testing database\n");
+    printd("Testing database\n");
 
     int failed_test_counter = 0;
     int num_tests = 0;
@@ -117,7 +117,7 @@ int test_db() {
     failed_test_counter += test_db_save();
     ++num_tests;
 
-    printf("[TESTING COMPLETE] DB testing %d/%d tests passed\n", num_tests - failed_test_counter, num_tests);
+    printd("[TESTING COMPLETE] DB testing %d/%d tests passed\n", num_tests - failed_test_counter, num_tests);
 
     return 0;
 }

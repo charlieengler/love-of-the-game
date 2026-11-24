@@ -8,6 +8,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "../include/logging.h"
+
 #include "../include/server/server.h"
 #include "../include/server/utils/parse_header.h"
 #include "../include/server/utils/server_codes.h"
@@ -27,31 +29,31 @@ int initialize_server() {
     hints.ai_flags = AI_PASSIVE;
 
     if ((status = getaddrinfo(0, INPUT_PORT, &hints, &serv_info)) != 0) {
-        fprintf(stderr, "[./server/server.c | initialize_server()] getaddrinfo() error: %s\n", gai_strerror(status));
+        printd("getaddrinfo() error, %s\n", gai_strerror(status));
         exit(1);
     }
 
     int sockfd;
     if ((sockfd = socket(serv_info->ai_family, serv_info->ai_socktype, serv_info->ai_protocol)) == -1) {
-        printf("[./server/server.c | initialize_server()] socket() error: %s\n", strerror(errno));
+        printd("socket() error, %s\n", strerror(errno));
         exit(1);
     }
 
     int yes = 1;
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
-        printf("[./server/server.c | initialize_server()] setsockopt() error: %s\n", strerror(errno));
+        printd("setsockopt() error, %s\n", strerror(errno));
         exit(1);
     }
 
     int bind_status;
     if ((bind_status = bind(sockfd, serv_info->ai_addr, serv_info->ai_addrlen)) == -1) {
-        printf("[./server/server.c | initialize_server()] bind() error: %s\n", strerror(errno));
+        printd("bind() error, %s\n", strerror(errno));
         exit(1);
     }
 
     int listen_status;
     if ((listen_status = listen(sockfd, 5)) == -1) {
-        printf("[./server/server.c | initialize_server()] listen() error: %s\n", strerror(errno));
+        printd("listen() error, %s\n", strerror(errno));
         exit(1);
     }
 
@@ -95,10 +97,11 @@ int run_server(int sockfd) {
         if (total_read_size <= 0) {
             send_http_error(400, new_fd);
 
-            if (total_read_size == 0)
-                printf("[./server/server.c | run_server()] recv() error: no header received\n");
-            else
-                printf("[./server/server.c | run_server()] recv() error: %s\n", strerror(errno));
+            if (total_read_size == 0) {
+                printd("recv() error, no header received\n");
+            } else {
+                printd("recv() error, %s\n", strerror(errno));
+            }
 
             continue;
         }
@@ -110,7 +113,7 @@ int run_server(int sockfd) {
         if (recv_header.version != HTTP_VERSION) {
             send_http_error(505, new_fd);
 
-            printf("[./server/server.c | run_server()] Incompatible HTTP Version in incoming header %f\n", recv_header.version);
+            printd("incompatible HTTP Version in incoming header %f\n", recv_header.version);
             continue;
         }
 
@@ -123,17 +126,18 @@ int run_server(int sockfd) {
         int code = 418;
         char *content_type = NULL;
         if (!strcmp(recv_header.method, "GET")) {
+            // TODO: Remove the new_fd argument, it is no longer needed
             code = route_get(recv_header.path, find_path, new_fd, &send_buffer, &content_type);
         } else if (!strcmp(recv_header.method, "POST")) {
             code = route_post(find_path, recv_header.content, &send_buffer);
         } else {
             code = 400;
 
-            printf("[./server/server.c | run_server()] Undefined HTTP Method in incoming header\n");
+            printd("undefined HTTP Method in incoming header\n");
         }
 
         if (send_buffer == NULL) {
-            printf("Send buffer was null in server\n");
+            printd("send buffer was null in server\n");
 
             code = 500;
         }
@@ -182,7 +186,7 @@ int run_server(int sockfd) {
             if (send_size == -1) {
                 send_http_error(500, new_fd);
 
-                printf("send() error\n");
+                printd("send() error\n");
             }
 
             total_send_size += send_size;

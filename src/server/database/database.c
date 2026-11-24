@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../../include/logging.h"
+
 #include "../../include/server/database/database.h"
 #include "../../include/server/utils/json.h"
 // TODO: The contents of the database should be stored in memory, but saved to disk constantly on a separate thread
@@ -10,7 +12,7 @@
 
 struct json_value *db_initialize(char *name) {
     if (strlen(name) <= 0) {
-        printf("db initialize error: db name length <= 0\n");
+        printd("db name length <= 0\n");
         return 0;
     }
 
@@ -22,7 +24,7 @@ struct json_value *db_initialize(char *name) {
     FILE *db_file = fopen(db_filename, "a+");
 
     if (db_file == NULL) {
-        printf("db initialize error: could not open database file: %s\n", db_filename);
+        printd("could not open database file: %s\n", db_filename);
         free(db_filename);
         fclose(db_file);
         return 0;
@@ -73,10 +75,11 @@ int db_save(struct json_value *db, char *db_name) {
     FILE *db_file = fopen(db_filename, "w");
 
     if (db_file == NULL) {
-        printf("db save error: could not open database file: %s\n", db_filename);
+        printd("could not open database file: %s\n", db_filename);
         free(db_filename);
         fclose(db_file);
-        return -1;
+
+        goto fail;
     }
 
     char *db_data_str = json_value_to_string(db);
