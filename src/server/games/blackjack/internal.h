@@ -10,6 +10,8 @@ struct json_object;
 
 extern const int card_values[13];
 
+char *generate_table_res(struct json_value *table_json);
+
 int tally_hand(struct json_value *hand_json);
 int deal_card(struct json_object *table_object, struct json_value *user_hand_json);
 int validate_user(char *req);

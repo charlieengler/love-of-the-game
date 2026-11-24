@@ -178,7 +178,19 @@ const statusCheck = () => {
             }
         } else {
             document.getElementById("setup-window").style.display = "none";
+            document.getElementById("stats-board").style.display = "block";
         }
+
+        const userBet = res.users.find(x => x.id === userID).bet;
+        const userBalance = res.users.find(x => x.id === userID).balance;
+
+        if(userBet) {
+            document.getElementById("bet-value").innerText = "$" + userBet;
+        } else {
+            document.getElementById("bet-value").innerText = "$0";
+        }
+
+        document.getElementById("balance-value").innerText = "$" + userBalance;
 
         if(!res.activeUser) {
             return;

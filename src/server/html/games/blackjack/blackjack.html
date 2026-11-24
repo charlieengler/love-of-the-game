@@ -47,14 +47,21 @@
 
     <br />
 
-    <h1 style="display: inline-block;">Table ID:&nbsp;</h1>
-    <h1 id="table-id" style="display: inline-block;"></h1>
-    <br />
-    <h2 style="display: inline-block;">User ID:&nbsp;</h2>
-    <h2 id="user-id" style="display: inline-block;"></h2>
-    <br />
-    <h2 style="display: inline-block">Current Bet:&nbsp;</h2>
-    <h2 id="bet-value" style="display: inline-block;"></h2>
+    <table class="stats-board" id="stats-board" style="display: none;">
+        <tr>
+            <th>Table ID</th>
+            <th>User ID</th>
+            <th>Current Bet:&nbsp;</th>
+            <th>Current Balance:&nbsp;</th>
+        </tr>
+
+        <tr>
+            <td id="table-id"></td>
+            <td id="user-id"></td>
+            <td id="bet-value"></td>
+            <td id="balance-value"></td>
+        </tr>
+    </table>
 
     <br />
     <br />

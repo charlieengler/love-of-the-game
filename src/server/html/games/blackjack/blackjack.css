@@ -6,17 +6,10 @@ input {
     font-size: 24px;
 }
 
-.hand {
-    display: inline-block;
-}
-
-.hit-button {
-    background: none;
-    border: 2px solid #bbaa11;
-    color: #bbaa11;
-    cursor: pointer;
-    font-size: 24px;
-    width: 102px;
+th, td {
+    padding-left: 10px;
+    padding-right: 10px;
+    text-align: center;
 }
 
 .end-hand-button {
@@ -29,6 +22,19 @@ input {
     right: 0;
     top: 0;
     width: 150px;
+}
+
+.hand {
+    display: inline-block;
+}
+
+.hit-button {
+    background: none;
+    border: 2px solid #bbaa11;
+    color: #bbaa11;
+    cursor: pointer;
+    font-size: 24px;
+    width: 102px;
 }
 
 .setup {
@@ -80,6 +86,10 @@ input {
     right: 0;
     top: 0;
     width: 150px;
+}
+
+.stats-board {
+    border: 2px solid #11bb77;
 }
 
 .user-card-table {

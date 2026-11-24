@@ -341,7 +341,7 @@ struct json_value *json_object_get_value(struct json_object *json_obj, char *key
             //     return NULL;
             // }
 
-            if (output_data) {
+            if (output_data != NULL) {
                 *output_data = json_obj->values[index]->data;
             }
 
