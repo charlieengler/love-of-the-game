@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,31 +33,64 @@ struct json_value *db_initialize(char *name) {
 
     char *db_buffer = NULL;
     long length;
-    // TODO: Error checking
-    fseek(db_file, 0, SEEK_END);
-    // TODO: Error checking
+    if (fseek(db_file, 0, SEEK_END) == -1) {
+        printd("fseek() error, %s\n", strerror(errno));
+
+        free(db_filename);
+        fclose(db_file);
+
+        return NULL;
+    }
+
     length = ftell(db_file);
-    // TODO: Error checking
-    fseek(db_file, 0, SEEK_SET);
+    if (length == -1) {
+        printd("ftell() error, %s\n", strerror(errno));
+
+        free(db_filename);
+        fclose(db_file);
+
+        return NULL;
+    }
+
+    if (fseek(db_file, 0, SEEK_SET) == -1) {
+        printd("fseek() error, %s\n", strerror(errno));
+
+        free(db_filename);
+        fclose(db_file);
+
+        return NULL;
+    }
+
     db_buffer = calloc(length + 1, sizeof(char));
+
     char *db_buffer_start = db_buffer;
     if (db_buffer) {
         fread(db_buffer, 1, length, db_file);
     }
+
     fclose(db_file);
 
     struct json_value *json_val = create_object_json_value(NULL);
+    if (!json_val) {
+        printd("create_object_json_value() returned null\n");
+
+        return NULL;
+    }
+
     if (length > 1) {
         json_val = string_to_json_value(&db_buffer);
+    }
+
+    if (!json_val) {
+        printd("json_val was null\n");
+
+        return NULL;
     }
 
     db_buffer = db_buffer_start;
     free(db_buffer);
 
-    if (json_val->type != JSON_OBJECT) {
-        // TODO: Error message with reason for failure
-        goto fail;
-    }
+    check_json_type(json_val->type, JSON_OBJECT, goto fail);
 
     return json_val;
 
@@ -83,21 +117,30 @@ int db_save(struct json_value *db, char *db_name) {
     }
 
     char *db_data_str = json_value_to_string(db);
+    if (!db_data_str) {
+        printd("db_data_str was null\n");
 
-    destroy_json_value(db);
-
-    if (db_data_str) {
-        fputs(db_data_str, db_file);
-
-        free(db_data_str);
+        goto fail;
     }
+
+    if (destroy_json_value(db)) {
+        printd("unable to destroy db json value\n");
+
+        goto fail;
+    }
+
+    fputs(db_data_str, db_file);
+
+    free(db_data_str);
 
     fclose(db_file);
     free(db_filename);
 
-    // TODO: Returns 0 on success, something else on failure
     return 0;
 
 fail:
+    free(db_filename);
+    fclose(db_file);
+
     return -1;
 }
